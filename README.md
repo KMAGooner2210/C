@@ -532,3 +532,475 @@
 
  
  </details>
+
+<details>
+	<summary><strong>BÀI 2: TOÁN TỬ VÀ BIỂU THỨC</strong></summary>
+
+## **BÀI 2: TOÁN TỬ VÀ BIỂU THỨC**
+
+### **I. TOÁN TỬ**
+
+#### **1.1.Lý thuyết**
+
+* Toán tử là các ký hiệu được sử dụng để thực hiện các phép toán trên các biến hoặc giá trị.
+
+* C cung cấp nhiều loại toán tử, bao gồm số học, quan hệ, logic, bit, gán, điều kiện, sizeof và dấu phẩy.
+
+#### **1.2.Toán tử số học (Arithmetic Operators)**
+
+* **Mô tả:** Thực hiện các phép toán số học cơ bản trên các giá trị số nguyên hoặc số thực.
+
+* **Các toán tử:**
+
+| Toán Tử | Ý Nghĩa               | Ví Dụ            | Kết Quả            |
+|---------|----------------------|------------------|-------------------|
+| `+`     | Cộng                 | `5 + 3`          | `8`               |
+| `-`     | Trừ                  | `5 - 3`          | `2`               |
+| `*`     | Nhân                 | `5 * 3`          | `15`              |
+| `/`     | Chia                 | `5 / 2`          | `2` (số nguyên)   |
+| `%`     | Chia lấy dư      | `5 % 2`          | `1`               |
+| `++`    | Tăng 1 (increment)   | `x++` hoặc `++x` | `x = x + 1`       |
+| `--`    | Giảm 1 (decrement)   | `x--` hoặc `--x` | `x = x - 1`       |
+
+* **Lưu ý:**
+
+  ◦ Phép chia `/` giữa hai số nguyên cho kết quả số nguyên (phần thập phân bị bỏ).
+
+  ◦ Phép chia `%` chỉ áp dụng cho các kiểu số nguyên.
+
+  ◦ Toán tử `++` và `--` có hai dạng:
+
+        Tiền tố (++x, --x): Tăng/giảm giá trị trước, sau đó sử dụng giá trị mới.
+
+        Hậu tố (x++, x--): Sử dụng giá trị hiện tại, sau đó tăng/giảm
+
+* **VD:**
+
+        #include <stdio.h>
+
+        int main() {
+            int a = 5, b = 3;
+            printf("Cộng: %d\n", a + b); // 8
+            printf("Trừ: %d\n", a - b); // 2
+            printf("Nhân: %d\n", a * b); // 15
+            printf("Chia: %d\n", a / b); // 1
+            printf("Chia lấy dư: %d\n", a % b); // 2
+            printf("Tiền tố ++a: %d\n", ++a); // 6
+            printf("Hậu tố b++: %d\n", b++); // 3
+            printf("b sau khi tăng: %d\n", b); // 4
+            return 0;
+        }
+
+#### **1.3.Toán tử quan hệ (Relational Operators)**
+
+* **Mô tả:** So sánh hai giá trị và trả về giá trị logic (`1` cho `đúng`, `0` cho `sai`).
+
+* **Các toán tử:**
+
+| Toán Tử | Ý Nghĩa               | Ví Dụ            | Kết Quả            |
+|---------|----------------------|------------------|-------------------|
+| `==`     | Bằng                 | `5 == 3`          | `0`               |
+| `!=`     | Không bằng                  | `5 != 3`          | `1`               |
+| `>`     | Lớn hơn                 | `5 > 3`          | `1`              |
+| `<`     | Nhỏ hơn                | `5 < 3`          | `0`  |
+| `>=`     | Lớn hơn hoặc bằng      | `5 >= 3`          | `1`               |
+| `<=`    | Nhỏ hơn hoặc bằng   | `5 <= 3` | `0`       |
+
+
+* **VD:** 
+
+        #include <stdio.h>
+
+        int main() {
+            int a = 5, b = 3;
+            printf("a == b: %d\n", a == b); // 0
+            printf("a != b: %d\n", a != b); // 1
+            printf("a > b: %d\n", a > b); // 1
+            printf("a < b: %d\n", a < b); // 0
+            printf("a >= b: %d\n", a >= b); // 1
+            printf("a <= b: %d\n", a <= b); // 0
+            return 0;
+        }
+
+#### **1.4.Toán tử logic (Logical Operators)** 
+
+* **Mô tả:** Thực hiện các phép toán logic trên các giá trị logic (true hoặc false, thường là 1 hoặc 0 trong C).
+
+* **Các toán tử:**
+
+| Toán Tử | Ý Nghĩa               | Ví Dụ            | Kết Quả            |
+|---------|----------------------|------------------|-------------------|
+| `&&`     | AND                 | `(5 > 3) && (3 > 1)`          | `1`               |
+| `!`     | NOT (phủ định)              | `!(5 > 3)`          | `0`               |
+| `\|\|`     | OR (hoặc)               | `(5 > 3) \|\| (3 < 1)`          | `1`              |
+
+* **Lưu ý:**
+
+  ◦ Trong C, bất kỳ giá trị khác 0 được coi là `true`, còn 0 là `false`.
+
+  ◦ `&&` và `||` sử dụng đánh giá ngắn mạch (short-circuit evaluation):
+
+        Với &&, nếu biểu thức bên trái là false, biểu thức bên phải không được đánh giá.
+
+        Với ||, nếu biểu thức bên trái là true, biểu thức bên phải không được đánh giá.
+
+
+* **VD:** 
+
+        #include <stdio.h>
+
+        int main() {
+            int a = 5, b = 3, c = 0;
+            printf("(a > b) && (b > c): %d\n", (a > b) && (b > c)); // 1
+            printf("(a > b) || (b < c): %d\n", (a > b) || (b < c)); // 1
+            printf("!(a > b): %d\n", !(a > b)); // 0
+            return 0;
+        }
+
+#### **1.5.Toán tử Bit (Bitwise Operators)** 
+
+* **Mô tả:** Thực hiện các phép toán trên từng bit của giá trị số nguyên.
+
+* **Các toán tử:**
+
+| Toán Tử | Ý Nghĩa               | Ví Dụ            | Kết Quả (Binary)        | Kết Quả (Decimal) |
+|---------|----------------------|------------------|------------------------|------------------|
+| `&`     | AND bit              | `5 & 3`          | `0001`                 | `1`              |
+| `\|`    | OR bit               | `5 \| 3`         | `0111`                 | `7`              |
+| `^`     | XOR bit              | `5 ^ 3`          | `0110`                 | `6`              |
+| `~`     | NOT bit (phủ định)   | `~5`             | `...1010`              | Phụ thuộc hệ thống |
+| `<<`    | Dịch trái            | `5 << 1`         | `1010`                 | `10`             |
+| `>>`    | Dịch phải            | `5 >> 1`         | `0010`                 | `2`              |
+
+* **Lưu ý:**
+
+  ◦ `&, | , ^` thực hiện phép toán trên từng cặp bit tương ứng.
+
+  ◦ `~` đảo ngược tất cả các bit (0 thành 1, 1 thành 0).
+
+  ◦ `<<` dịch các bit sang trái, thêm 0 vào bên phải (tương đương nhân 2).
+
+  ◦ `>>` dịch các bit sang phải, giữ dấu cho kiểu signed (thêm bit dấu vào bên trái).
+
+* **VD:** 
+
+        #include <stdio.h>
+
+        int main() {
+            int a = 5; // 0101
+            int b = 3; // 0011
+            printf("a & b: %d\n", a & b); // 0001 (1)
+            printf("a | b: %d\n", a | b); // 0111 (7)
+            printf("a ^ b: %d\n", a ^ b); // 0110 (6)
+            printf("~a: %d\n", ~a); // ~0101 = ...1010
+            printf("a << 1: %d\n", a << 1); // 1010 (10)
+            printf("a >> 1: %d\n", a >> 1); // 0010 (2)
+            return 0;
+        }
+
+
+#### **1.6.Toán tử gán (Assignment Operators)**
+
+* **Mô tả:** Gán giá trị cho biến hoặc thực hiện phép toán kết hợp với gán.
+
+* **Các toán tử:** 
+
+| Toán Tử | Ý Nghĩa               | Ví Dụ          | Tương Đương       |
+|---------|----------------------|----------------|------------------|
+| `=`     | Gán giá trị          | `x = 5`        | `x = 5`          |
+| `+=`    | Cộng và gán          | `x += 3`       | `x = x + 3`      |
+| `-=`    | Trừ và gán           | `x -= 3`       | `x = x - 3`      |
+| `*=`    | Nhân và gán          | `x *= 3`       | `x = x * 3`      |
+| `/=`    | Chia và gán          | `x /= 3`       | `x = x / 3`      |
+| `%=`    | Chia lấy nguyên và gán | `x %= 3`     | `x = x % 3`      |
+| `&=`    | AND bit và gán       | `x &= 3`       | `x = x & 3`      |
+| `\|=`   | OR bit và gán        | `x \|= 3`      | `x = x \| 3`     |
+| `^=`    | XOR bit và gán       | `x ^= 3`       | `x = x ^ 3`      |
+| `<<=`   | Dịch trái và gán     | `x <<= 1`      | `x = x << 1`     |
+| `>>=`   | Dịch phải và gán     | `x >>= 1`      | `x = x >> 1`     |
+
+*  **VD:** 
+  
+        #include <stdio.h>
+
+        int main() {
+            int x = 10;
+            x += 5; // x = x + 5
+            printf("x += 5: %d\n", x); // 15
+            x *= 2; // x = x * 2
+            printf("x *= 2: %d\n", x); // 30
+            x &= 3; // x = x & 3
+            printf("x &= 3: %d\n", x); // 2
+            return 0;
+        }
+
+#### **1.7.Toán tử điều kiện Conditional Operator - Toán Tử 3 Ngôi)**
+
+* **Mô tả:** Toán tử điều kiện `(?:)` là toán tử ba ngôi duy nhất trong C, thực hiện lựa chọn dựa trên điều kiện và trả về một trong hai giá trị.
+
+* **Cú pháp:** `biểu_thức_điều_kiện ? giá_trị_nếu_đúng : giá_trị_nếu_sai;`
+
+* **Lưu ý:** 
+
+  ◦ Nếu `biểu_thức_điều_kiện` là `true` (khác 0), trả về `giá_trị_nếu_đúng`.
+
+  ◦ Nếu `biểu_thức_điều_kiện` là `false` (0), trả về `giá_trị_nếu_sai`.
+
+  ◦ Toán tử này thường được sử dụng để thay thế các câu lệnh `if-else` đơn giản.
+
+*  **VD:** 
+  
+        #include <stdio.h>
+
+        int main() {
+            int a = 10, b = 5;
+            int max = (a > b) ? a : b; // Nếu a > b, trả về a, ngược lại trả về b
+            printf("Max of %d and %d is: %d\n", a, b, max); // 10
+
+            int x = 0;
+            printf("x is %s\n", x ? "non-zero" : "zero"); // zero
+            return 0;
+        }
+
+#### **1.8.Toán tử Sizeof**
+
+* **Mô tả:** Toán tử `sizeof` trả về kích thước (tính bằng byte) của một kiểu dữ liệu hoặc biến.
+
+* **Cú pháp:** 
+
+        sizeof(biến);
+        sizeof(kiểu_dữ_liệu);
+
+* **Lưu ý:** 
+
+  ◦ Kết quả của `sizeof` có kiểu `size_t` (được định nghĩa trong `<stddef.h>` hoặc `<stdio.h>`).
+
+  ◦ Thường được sử dụng để xác định kích thước bộ nhớ của biến, mảng, hoặc kiểu dữ liệu.
+
+  ◦ Kích thước phụ thuộc vào hệ thống (32-bit hoặc 64-bit) và trình biên dịch.
+
+*  **VD:** 
+  
+        #include <stdio.h>
+
+        int main() {
+            int x = 42;
+            double d = 3.14;
+            printf("Size of x: %zu bytes\n", sizeof(x)); // 4
+            printf("Size of double: %zu bytes\n", sizeof(double)); // 8
+            printf("Size of int: %zu bytes\n", sizeof(int)); // 4
+            return 0;
+        }
+
+    
+#### **1.9. Toán tử dấu phẩy (Comma Operator)**
+
+* **Mô tả:**
+
+  ◦ Toán tử dấu phẩy `(,)` cho phép thực hiện nhiều biểu thức trong một câu lệnh, trả về giá trị của biểu thức cuối cùng.
+
+*  **Cú pháp:** 
+  
+        biểu_thức_1, biểu_thức_2, ..., biểu_thức_n;
+
+*  **Lưu ý:** 
+
+  ◦ Các biểu thức được đánh giá từ trái sang phải.
+
+  ◦ Giá trị của toàn bộ biểu thức dấu phẩy là giá trị của biểu thức cuối cùng.
+
+  ◦ Thường được sử dụng trong vòng lặp hoặc để gộp nhiều thao tác.
+
+*  **VD:** 
+  
+        #include <stdio.h>
+
+        int main() {
+            int x = 10, y;
+            y = (x++, x + 5); // x tăng lên 11, y nhận giá trị x + 5
+            printf("x: %d, y: %d\n", x, y); // x: 11, y: 16
+
+            // Dùng trong vòng lặp
+            for (int i = 0, j = 10; i < 5; i++, j--) {
+                printf("i: %d, j: %d\n", i, j);
+            }
+            return 0;
+        }
+
+
+### **II.BIỂU THỨC** 
+
+#### **2.1.Lý thuyết**
+
+* Biểu thức là sự kết hợp của các toán tử, biến, hằng số và giá trị để tạo ra một kết quả.
+
+* Trong C, biểu thức có thể bao gồm các phép toán số học, quan hệ, logic, bit, gán, điều kiện, sizeof hoặc dấu phẩy.
+
+#### **2.2.Ưu tiên toán tử (Operator Precedence)**
+
+* **Mô tả:** Quy định thứ tự thực hiện các toán tử trong một biểu thức. Toán tử có độ ưu tiên cao được thực hiện trước.
+
+* **Bảng ưu tiên toán tử (từ cao đến thấp):**
+
+| Độ Ưu Tiên | Toán Tử                      | Ý Nghĩa                              |
+|------------|------------------------------|--------------------------------------|
+| 1          | `()`                         | Dấu ngoặc (thay đổi thứ tự)          |
+| 2          | `++`, `--`, `!`, `~`, `(type)`, `sizeof` | Tăng, giảm, phủ định, type cast, sizeof |
+| 3          | `*`, `/`, `%`                | Nhân, chia, chia lấy nguyên          |
+| 4          | `+`, `-`                     | Cộng, trừ                            |
+| 5          | `<<`, `>>`                   | Dịch bit trái, phải                  |
+| 6          | `<`, `<=`, `>`, `>=`         | Quan hệ                              |
+| 7          | `==`, `!=`                   | Bằng, không bằng                     |
+| 8          | `&`                          | AND bit                              |
+| 9          | `^`                          | XOR bit                              |
+| 10         | `\|`                         | OR bit                               |
+| 11         | `&&`                         | AND logic                            |
+| 12         | `\|\|`                       | OR logic                             |
+| 13         | `?:`                         | Toán tử điều kiện (3 ngôi)           |
+| 14         | `=`, `+=`, `-=`, `*=`, `/=` etc. | Gán và gán kết hợp                |
+| 15         | `,`                          | Dấu phẩy                            |
+
+* **Lưu ý:** 
+
+  ◦ Các toán tử cùng mức ưu tiên được thực hiện từ trái sang phải (trừ toán tử gán và dấu phẩy, từ phải sang trái).
+
+  ◦ Sử dụng dấu ngoặc `()` để thay đổi thứ tự ưu tiên.
+
+* **VD:** 
+
+        #include <stdio.h>
+
+        int main() {
+            int x = 5 + 3 * 2; // * ưu tiên hơn +
+            printf("x = 5 + 3 * 2: %d\n", x); // 11
+            int y = (5 + 3) * 2; // () thay đổi thứ tự
+            printf("y = (5 + 3) * 2: %d\n", y); // 16
+            return 0;
+        }
+
+#### **2.3.Type Casting**
+
+* **Mô tả:** Ép kiểu (type casting) là quá trình chuyển đổi một giá trị từ kiểu dữ liệu này sang kiểu dữ liệu khác.
+
+* **Cú pháp:** `(kiểu_dữ_liệu) biểu_thức;`
+
+* **Các loại ép kiểu:** 
+
+  ◦ Ép kiểu ngầm (Implicit Casting): Tự động thực hiện bởi trình biên dịch khi các kiểu tương thích.
+
+        Gán int cho double hoặc char cho int.
+
+  ◦ Ép kiểu tường minh (Explicit Casting): Sử dụng toán tử (type) để chỉ định kiểu rõ ràng.
+
+
+* VD:
+
+        #include <stdio.h>
+
+        int main() {
+            double d = 3.14;
+            int i = (int)d; // Ép kiểu tường minh
+            printf("Double to int: %d\n", i); // 3
+
+            int a = 5, b = 2;
+            double result = (double)a / b; // Ép kiểu để giữ phần thập phân
+            printf("Division with casting: %.2f\n", result); // 2.50
+
+            char c = 'A';
+            int ascii = c; // Ép kiểu ngầm
+            printf("Char to int: %d\n", ascii); // 65
+            return 0;
+        }
+
+* **Lưu ý:** 
+
+  ◦ Ép kiểu từ kiểu lớn hơn (như `double`) sang kiểu nhỏ hơn (như `int`) có thể mất dữ liệu.
+
+  ◦ Ép kiểu ngầm chỉ xảy ra khi không có nguy cơ mất dữ liệu đáng kể.
+
+
+### **III. BIT MANIPULATION (THAO TÁC BIT)** 
+
+#### **3.1.Lý thuyết**
+
+* Thao tác bit cho phép làm việc trực tiếp trên các bit của giá trị số nguyên, thường được sử dụng để tối ưu hóa hoặc xử lý dữ liệu cấp thấp.
+
+#### **3.2.Xoay bit (Bit Rotation)**
+
+* **Mô tả:** Xoay bit không có toán tử trực tiếp trong C, nhưng có thể thực hiện bằng cách kết hợp dịch bit (`<<`, `>>`) và toán tử OR (`|`).
+
+
+* **VD:Xoay trái 1 bit** 
+
+        #include <stdio.h>
+
+        unsigned int rotateLeft(unsigned int num, int n) {
+            return (num << n) | (num >> (32 - n)); // Giả sử 32-bit
+        }
+
+        int main() {
+            unsigned int x = 0x00000005; // 0000...0101
+            unsigned int result = rotateLeft(x, 1); // Xoay trái 1 bit: 0000...1010
+            printf("Rotate left: %u\n", result); // 10
+            return 0;
+        }
+
+#### **3.3.Dịch Bit (Bit Shifting)**
+
+* **Mô tả:** Dịch các bit sang trái (`<<`) hoặc phải (`>>`), thêm các bit 0 hoặc bit dấu (cho kiểu signed).
+
+* **VD:** 
+
+        #include <stdio.h>
+
+        int main() {
+            int a = 5; // 0101
+            printf("a << 1: %d\n", a << 1); // 1010 (10)
+            printf("a >> 1: %d\n", a >> 1); // 0010 (2)
+            return 0;
+        }
+
+#### **3.4.Kiểm tra Bit**
+
+* **Mô tả:** Kiểm tra trạng thái của một bit cụ thể (0 hoặc 1) bằng toán tử AND bit (`&`).
+
+* **Cú pháp:** 
+
+  ◦ Kiểm tra bit thứ `n`: `value & (1 << n)`
+
+  ◦ Đặt bit thứ `n` thành 1: `value |= (1 << n)`
+
+  ◦ Xóa bit thứ `n` (đặt thành 0): `value &= ~(1 << n)`
+
+  ◦ Đảo bit thứ `n`: `value ^= (1 << n)`
+
+* **VD:**
+
+        #include <stdio.h>
+
+        int main() {
+            int value = 5; // 0101
+            int bitPosition = 2; // Kiểm tra bit thứ 2 (tính từ 0)
+            if (value & (1 << bitPosition)) {
+                printf("Bit %d is 1\n", bitPosition);
+            } else {
+                printf("Bit %d is 0\n", bitPosition); // Bit 2 là 1
+            }
+
+            // Đặt bit thứ 1 thành 1
+            value |= (1 << 1); // 0101 -> 0111 (7)
+            printf("After setting bit 1: %d\n", value);
+
+            // Xóa bit thứ 2
+            value &= ~(1 << 2); // 0111 -> 0011 (3)
+            printf("After clearing bit 2: %d\n", value);
+
+            // Đảo bit thứ 0
+            value ^= (1 << 0); // 0011 -> 0010 (2)
+            printf("After toggling bit 0: %d\n", value);
+            return 0;
+        }
+
+
+
+ </details>
