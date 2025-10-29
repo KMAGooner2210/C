@@ -1004,3 +1004,288 @@
 
 
  </details>
+<details>
+	<summary><strong>BÀI 3: CẤU TRÚC ĐIỀU KHIỂN</strong></summary>
+
+## **BÀI 3: CẤU TRÚC ĐIỀU KHIỂN**
+
+### **I. TỔNG QUAN**
+
+#### **1.1.Khái niệm**
+
+* Trong lập trình, cấu trúc điều khiển là tập hợp các câu lệnh cho phép thay đổi luồng thực thi của chương trình dựa trên điều kiện hoặc logic cụ thể.
+
+* Nếu không có các cấu trúc điều khiển, chương trình sẽ chỉ thực hiện tuyến tính từ trên xuống dưới — điều này không đủ linh hoạt để giải quyết các bài toán thực tế.
+
+#### **1.2.Mục tiêu của cấu trúc điều khiển**
+
+* **Ra quyết định (Selection):** → lựa chọn nhánh lệnh phù hợp.
+
+* **Lặp lại (Iteration):** → thực hiện lặp đi lặp lại một khối lệnh.
+
+* **Nhảy (Jump):** → chuyển hướng đến vị trí khác trong chương trình.
+
+#### **1.3.Phân loại**
+
+| Loại cấu trúc |   Câu lệnh              | Mục đích            | 
+|---------|----------------------|------------------|
+| Điều kiện (Selection)     | if, if-else, switch-case               | Lựa chọn một nhánh phù hợp        |
+| Lặp (Iteration)    | for, while, do-while                 | Lặp khối lệnh nhiều lần          | 
+| Nhảy (Jump)   | break, continue, goto, return               | Thay đổi luồng điều khiển tức thì          | 
+
+
+### **II.CÂU LỆNH ĐIỀU KIỆN: IF, IF-ELSE** 
+
+#### **2.1.Cấu trúc if đơn**
+
+* **Cú pháp:**
+
+        if (điều_kiện) {
+            // Khối lệnh thực thi nếu điều_kiện == true
+        }
+
+
+* **Điều kiện:** là biểu thức logic hoặc số học (0 = false, khác 0 = true).
+
+* **Khối lệnh:** có thể gồm một hoặc nhiều câu lệnh, nên dùng `{}` để an toàn.
+
+
+        int a = 10;
+        if (a > 5) {
+            printf("a lớn hơn 5\n");
+        }
+
+#### **2.2.Cấu trúc if-else**
+
+* **Cú pháp:**
+
+        if (điều_kiện) {
+            // Thực thi nếu đúng
+        } else {
+            // Thực thi nếu sai
+        }
+
+
+
+* **VD:** 
+
+
+        int score = 75;
+        if (score >= 60) {
+            printf("Đạt\n");
+        } else {
+            printf("Không đạt\n");
+        }
+
+
+#### **2.3.Cấu trúc if - else if - else (chuỗi điều kiện)**
+
+* **Khi cần phân loại nhiều trường hợp:**
+
+        if (điều_kiện_1) {
+            // ...
+        } else if (điều_kiện_2) {
+            // ...
+        } else {
+            // mặc định
+        }
+
+* **Nguyên tắc kiểm tra:** 
+
+  ◦ Chương trình đánh giá từ trên xuống → gặp điều kiện đúng → thực thi → bỏ qua phần còn lại.
+
+* **VD:** 
+
+
+        float diem = 8.5;
+        if (diem >= 9.0)
+            printf("Xuất sắc\n");
+        else if (diem >= 8.0)
+            printf("Giỏi\n");
+        else if (diem >= 6.5)
+            printf("Khá\n");
+        else if (diem >= 5.0)
+            printf("Trung bình\n");
+        else
+            printf("Yếu\n");
+
+
+#### **2.4.Toán tử điều kiện (Conditional Operator – ?:)**
+
+* **Mô tả:** Toán tử `?:` cho phép viết câu điều kiện ngắn gọn trên một dòng.
+
+* **Cú pháp:**
+
+        biến = (điều_kiện) ? giá_trị_true : giá_trị_false;
+
+* **VD:**
+
+        int a = 10, b = 20;
+        int max = (a > b) ? a : b;
+
+#### **2.5.Lỗi thường gặp**
+
+| **Lỗi** | **Mô tả** | **Cách khắc phục** |
+|-------------|--------------|-----------------------|
+| `if (a = 5)` | Gán giá trị thay vì so sánh, khiến điều kiện luôn **đúng** (vì `a` nhận giá trị 5). | Dùng `==` để so sánh: `if (a == 5)` |
+| Thiếu `{}` | Khi có nhiều hơn 1 lệnh trong `if` → chỉ lệnh đầu tiên được kiểm soát. | Luôn dùng `{}` bao khối lệnh. |
+| So sánh chuỗi bằng `==` | `==` chỉ so sánh **địa chỉ bộ nhớ**, không so sánh nội dung chuỗi. | Dùng hàm `strcmp()` trong `<string.h>`. |
+| *Dangling else* | `else` bị gắn nhầm vào `if` gần nhất khi thiếu `{}` → gây lỗi logic. | Dùng `{}` rõ ràng để xác định phạm vi. |
+
+
+### **III. CÂU LỆNH SWITCH-CASE** 
+
+#### **3.1.Khái niệm**
+
+* `switch-case` là cấu trúc lựa chọn rẽ nhánh nhiều trường hợp, giúp thay thế chuỗi if-else dài, đặc biệt khi so sánh các giá trị rời rạc (số nguyên, ký tự).
+
+#### **3.2.Cú pháp**
+
+        switch (biểu_thức) {
+            case giá_trị_1:
+                // lệnh
+                break;
+            case giá_trị_2:
+                // lệnh
+                break;
+            default:
+                // lệnh mặc định
+        }
+        return 0;
+                }
+
+#### **3.3.Quy tắc**
+
+|  **Yêu cầu** |  **Mô tả chi tiết** |
+|----------------|------------------------|
+| **`biểu_thức`** | Phải là kiểu nguyên, bao gồm `int`, `char`, `short`, hoặc `enum`. (Không chấp nhận `float`, `double`, `string`.) |
+| **`case`** | Phải là hằng số hoặc biểu thức hằng, không được là biến. Ví dụ `case 5:` hợp lệ, nhưng `case x:` là **sai**. |
+| **`break`** | Dùng để **thoát khỏi switch** sau khi thực thi một nhánh. Nếu thiếu `break`, chương trình **(fall-through)** sang case kế tiếp. |
+| **`default`** | Không bắt buộc, nhưng **nên có** để xử lý tình huống không khớp case nào. |
+| **`scope`** | Không được định nghĩa biến trùng tên trong các `case` khác nhau nếu không có khối `{}` bao quanh. |
+| **Trật tự** | Các `case` có thể viết theo bất kỳ thứ tự nào, nhưng giá trị phải **duy nhất** (không trùng nhau). |
+
+* **VD1:Xếp loại điểm** 
+
+        char grade = 'B';
+        switch (grade) {
+            case 'A':
+                printf("Xuất sắc (90-100)\n");
+                break;
+            case 'B':
+                printf("Tốt (80-89)\n");
+                break;
+            case 'C':
+                printf("Khá (70-79)\n");
+                break;
+            case 'D':
+                printf("Trung bình (60-69)\n");
+                break;
+            default:
+                printf("Cần cố gắng hơn!\n");
+        }
+
+* **VD2: Fall-through hợp lệ**
+
+        switch (grade) {
+            case 'A':
+            case 'B':
+            case 'C':
+                printf("ĐẠT\n");
+                break;
+            case 'D':
+            case 'F':
+                printf("KHÔNG ĐẠT\n");
+                break;
+            default:
+                printf("Điểm không hợp lệ\n");
+        }
+
+
+### **IV. CÂU LỆNH LỒNG NHAU (NESTED CONTROL STATEMENTS)** 
+
+#### **4.1.if lồng trong if**
+
+* **Cú pháp:**
+
+        if (điều_kiện_ngoài) {
+            if (điều_kiện_trong) {
+                // Cả hai đúng
+            } else {
+                // Ngoài đúng, trong sai
+            }
+        } else {
+            // Ngoài sai
+        }
+                        
+* **VD:Kiểm tra số nguyên dương chẵn/lẻ**
+
+        int n = 8;
+        if (n > 0) {
+            if (n % 2 == 0)
+                printf("Số chẵn dương\n");
+            else
+                printf("Số lẻ dương\n");
+        } else {
+            printf("Số không dương\n");
+        }
+
+#### **4.2.switch lồng trong switch**
+
+        switch (loai) {
+            case 1:
+                switch (muc_do) {
+                    case 'A': printf("Ưu tiên cao\n"); break;
+                    case 'B': printf("Ưu tiên trung bình\n"); break;
+                }
+                break;
+            case 2:
+                printf("Loại khác\n");
+                break;
+        }
+
+#### **4.3.if trong switch và ngược lại**
+
+        switch (choice) {
+            case 1:
+                if (x > 0) printf("Dương\n");
+                else printf("Không dương\n");
+                break;
+        }
+
+
+### **V. CÂU LỆNH GOTO** 
+
+#### **5.1.Cú pháp**
+
+* **Cú pháp:**
+
+        goto nhãn;
+
+        // ... (các lệnh)
+
+        nhãn:
+            // thực thi khi nhảy tới
+                        
+* **VD1:**
+
+        int i = 0;
+        loop_start:
+            printf("%d ", i);
+            i++;
+            if (i < 5) goto loop_start;
+
+* **VD2:**
+
+        for (int i = 0; i < 100; i++) {
+            for (int j = 0; j < 100; j++) {
+                if (error_detected())
+                    goto cleanup;
+            }
+        }
+        cleanup:
+            free(ptr1);
+            free(ptr2);
+            printf("Đã dọn dẹp tài nguyên\n");
+
+</details> 
