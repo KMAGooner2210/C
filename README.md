@@ -3701,3 +3701,458 @@
         Sao chép file thành công!
 
 </details> 
+<details>
+	<summary><strong>CHƯƠNG 3: CẤU TRÚC ĐIỀU KHIỂN</strong></summary>
+
+## **CHƯƠNG 3: CẤU TRÚC ĐIỀU KHIỂN**
+
+### **I. CÂU LỆNH ĐIỀU KIỆN IF-ELSE**
+
+#### **1.1.Giới thiệu if-else**
+
+##### **1.1.1.Định nghĩa**
+
+* Câu lệnh điều kiện if-else là cấu trúc điều khiển cơ bản cho phép chương trình thực thi các khối lệnh khác nhau dựa trên việc kiểm tra một hoặc nhiều điều kiện logic.
+
+##### **1.1.2.Mục đích**
+
+* Thực hiện các hành động khác nhau tùy theo điều kiện
+
+* Kiểm soát luồng thực thi của chương trình
+
+* Xử lý các tình huống đặc biệt và lỗi
+
+* Tạo ra các nhánh logic trong chương trình
+                   
+#### **1.2.Các dạng if-else**
+
+##### **1.2.1. IF đơn giản**
+
+* **Cú pháp:** 
+
+        if (điều_kiện) {
+            // Khối lệnh thực thi nếu điều_kiện đúng (true)
+        }
+
+* **Đặc điểm:**
+
+  ◦ Chỉ thực thi khối lệnh khi điều kiện đúng
+
+  ◦ Nếu điều kiện sai, bỏ qua khối lệnh
+
+
+        #include <stdio.h>
+
+        int main() {
+            int tuoi;
+            
+            printf("Nhập tuổi của bạn: ");
+            scanf("%d", &tuoi);
+            
+            // Kiểm tra điều kiện đơn giản
+            if (tuoi >= 18) {
+                printf("Bạn đã đủ tuổi trưởng thành.\n");
+            }
+            
+            printf("Chương trình kết thúc.\n");
+            return 0;
+        }
+
+##### **1.2.2. IF-ELSE**
+
+* **Cú pháp:** 
+
+        if (điều_kiện) {
+            // Khối lệnh thực thi nếu điều_kiện đúng
+        } else {
+            // Khối lệnh thực thi nếu điều_kiện sai
+        }
+
+* **Đặc điểm:**
+
+  ◦ Luôn có một trong hai khối lệnh được thực thi
+
+  ◦ Bao phủ mọi trường hợp có thể xảy ra
+
+
+        #include <stdio.h>
+
+        int main() {
+            int so;
+            
+            printf("Nhập một số nguyên: ");
+            scanf("%d", &so);
+            
+            if (so % 2 == 0) {
+                printf("%d là số chẵn.\n", so);
+            } else {
+                printf("%d là số lẻ.\n", so);
+            }
+            
+            return 0;
+        }
+
+##### **1.2.3. IF-ELSE IF-ELSE**
+
+* **Cú pháp:** 
+
+        if (điều_kiện_1) {
+            // Khối lệnh thực thi nếu điều_kiện_1 đúng
+        } else if (điều_kiện_2) {
+            // Khối lệnh thực thi nếu điều_kiện_2 đúng
+        } else if (điều_kiện_3) {
+            // Khối lệnh thực thi nếu điều_kiện_3 đúng
+        } else {
+            // Khối lệnh thực thi nếu tất cả điều kiện sai
+        }
+
+* **Đặc điểm:**
+
+  ◦ Kiểm tra tuần tự các điều kiện từ trên xuống
+
+  ◦ Chỉ thực thi khối lệnh đầu tiên có điều kiện đúng
+
+  ◦ Có thể có nhiều mệnh đề else if
+
+        #include <stdio.h>
+
+        int main() {
+            float diem;
+            
+            printf("Nhập điểm (0-10): ");
+            scanf("%f", &diem);
+            
+            if (diem >= 9.0) {
+                printf("Xếp loại: Xuất sắc\n");
+            } else if (diem >= 8.0) {
+                printf("Xếp loại: Giỏi\n");
+            } else if (diem >= 7.0) {
+                printf("Xếp loại: Khá\n");
+            } else if (diem >= 5.5) {
+                printf("Xếp loại: Trung bình\n");
+            } else if (diem >= 4.0) {
+                printf("Xếp loại: Yếu\n");
+            } else {
+                printf("Xếp loại: Kém\n");
+            }
+            
+            return 0;
+        }
+
+
+#### **1.3.Short-circuit Evaluation**
+
+##### **1.3.1.Khái niệm**
+
+* **Short-circuit evaluation** là cơ chế trong đó trình biên dịch dừng đánh giá biểu thức logic ngay khi kết quả cuối cùng đã được xác định.
+
+##### **1.3.2.Nguyên tắc hoạt động**
+
+* **Với toán tử AND (&&):** Nếu vế trái sai, không cần kiểm tra vế phải
+
+* **Với toán tử OR (||):** Nếu vế trái đúng, không cần kiểm tra vế phải
+
+        #include <stdio.h>
+
+        int main() {
+            int x = 10;
+            int *p1 = &x, *p2 = NULL;
+
+            // Short-circuit với AND
+            if (p1 && *p1 > 5) printf("p1 hợp lệ và > 5\n");
+            if (p2 && *p2 > 5) printf("Không in vì p2 NULL\n");
+            else printf("p2 không hợp lệ - an toàn\n");
+
+            // Short-circuit với OR
+            int a = 1, b = 0;
+            if (a == 1 || b == 1) printf("a bằng 1, không kiểm tra b\n");
+
+            return 0;
+        }
+
+#### **1.4.Nested if statements**
+
+##### **1.4.1.Khái niệm**
+
+* **Nested if** là cấu trúc if-else lồng bên trong nhau, cho phép kiểm tra các điều kiện phức tạp theo nhiều cấp độ.
+
+##### **1.4.2.Cú pháp**
+
+        if (điều_kiện_ngoài) {
+            // Khối lệnh ngoài
+            if (điều_kiện_trong) {
+                // Khối lệnh trong
+            } else {
+                // Khối lệnh else trong
+            }
+        } else {
+            // Khối lệnh else ngoài
+        }
+
+* **VD:**
+
+        #include <stdio.h>
+
+        int main() {
+            int x = 10, y = 5;
+
+            if (x > 0) {
+                if (y > 0)
+                    printf("Cả x và y đều dương\n");
+                else
+                    printf("x dương, y không dương\n");
+            } else {
+                printf("x không dương\n");
+            }
+
+            return 0;
+        }
+       
+
+### **II. SWITCH-CASE**
+
+#### **2.1.Tổng quan**
+
+##### **2.1.1.Định nghĩa**
+
+* Switch-case là cấu trúc điều khiển cho phép lựa chọn một trong nhiều khối lệnh để thực thi dựa trên giá trị của một biểu thức.
+
+##### **2.1.2.Đặc điểm**
+
+* Chỉ làm việc với kiểu dữ liệu nguyên (int, char, enum)
+
+* Hiệu quả hơn if-else khi có nhiều trường hợp
+
+* Sử dụng break để ngăn fall-through
+
+##### **2.1.3.Cú pháp**
+
+        switch (biểu_thức) {
+            case giá_trị_1:
+                // Khối lệnh 1
+                break;
+            case giá_trị_2:
+                // Khối lệnh 2
+                break;
+            // ...
+            default:
+                // Khối lệnh mặc định
+        }
+
+* **VD:**
+
+        #include <stdio.h>
+
+        int main() {
+            int day;
+            printf("Nhập số thứ tự ngày (1-7): ");
+            scanf("%d", &day);
+            
+            switch (day) {
+                case 1:
+                    printf("Chủ Nhật\n");
+                    break;
+                case 2:
+                    printf("Thứ Hai\n");
+                    break;
+                case 3:
+                    printf("Thứ Ba\n");
+                    break;
+                case 4:
+                    printf("Thứ Tư\n");
+                    break;
+                case 5:
+                    printf("Thứ Năm\n");
+                    break;
+                case 6:
+                    printf("Thứ Sáu\n");
+                    break;
+                case 7:
+                    printf("Thứ Bảy\n");
+                    break;
+                default:
+                    printf("Số không hợp lệ!\n");
+            }
+            return 0;
+            }
+
+#### **2.2.Break và Fall-through Behavior**
+
+##### **2.2.1.Khái niệma**
+
+* **Break:** Là lệnh dừng (exit) ngay lập tức khỏi khối switch. 
+
+  ◦ Khi gặp break, chương trình sẽ nhảy ra khỏi toàn bộ cấu trúc switch và tiếp tục thực thi lệnh tiếp theo bên ngoài (thường là sau khối switch).
+
+  ◦ Ngăn chặn việc thực thi các case tiếp theo một cách không mong muốn
+
+* **Fall-through:** Là hành vi fall through khi không có break ở cuối một case 
+
+  ◦ Code sẽ tiếp tục thực thi các lệnh của case tiếp theo, và cứ thế cho đến khi gặp break đầu tiên hoặc kết thúc toàn bộ switch.
+
+  ◦ Cho phép nhóm nhiều case có hành vi tương tự mà không cần lặp code.
+
+  ◦ Dễ gây nhầm lẫn và lỗi bảo trì, vì code có thể chạy nhiều khối lệnh không dự đoán
+
+##### **2.2.2.Lưu ý**
+
+* `switch` trong C không kiểm tra điều kiện cho các case sau; nó chỉ khớp giá trị ban đầu và thực thi tuyến tính từ case khớp đến break đầu tiên.
+
+* `default` cũng có thể fall-through nếu không có break, nhưng thường nên đặt break cho nó.
+
+* `Fall-through` chỉ xảy ra xuống dưới (không nhảy lên), và chỉ trong cùng một khối switch.
+
+##### **2.2.3.VD**
+
+* **Với break (ngăn fall-through):**
+
+        #include <stdio.h>
+
+        int main() {
+            int grade = 2;
+            
+            switch (grade) {
+                case 1:
+                    printf("Xuất sắc\n");
+                    break;
+                case 2:
+                    printf("Giỏi\n");
+                    break;  // Dừng tại đây
+                case 3:
+                    printf("Khá\n");
+                    break;
+                default:
+                    printf("Trung bình\n");
+            }
+            // Kết quả: "Giỏi"
+            
+            return 0;
+        }
+
+* **Không có break (fall-through):**
+
+        #include <stdio.h>
+
+        int main() {
+            int month;
+            printf("Nhập tháng (1-12): ");
+            scanf("%d", &month);
+            
+            switch (month) {
+                case 1: case 3: case 5: case 7: case 8: case 10: case 12:
+                    printf("Tháng có 31 ngày\n");
+                    break;
+                case 4: case 6: case 9: case 11:
+                    printf("Tháng có 30 ngày\n");
+                    break;
+                case 2:
+                    printf("Tháng có 28 hoặc 29 ngày\n");
+                    break;
+                default:
+                    printf("Tháng không hợp lệ\n");
+            }
+            
+            return 0;
+        }
+
+
+### **III. TOÁN TỬ ĐIỀU KIỆN**
+
+#### **3.1.Giới thiệu**
+
+##### **3.1.1.Định nghĩa**
+
+* Toán tử điều kiện (ternary operator) là toán tử ba ngôi cho phép viết câu lệnh điều kiện ngắn gọn trong một dòng.
+
+##### **3.1.2.Cú pháp**
+
+        biểu_thức_điều_kiện ? biểu_thức_1 : biểu_thức_2
+
+* **biểu_thức_điều_kiện:** Phải trả về giá trị bool (non-zero = true).
+
+* **biểu_thức_1:** Thực thi nếu điều kiện đúng (true).
+
+* **biểu_thức_2:** Thực thi nếu điều kiện sai (false).
+
+        #include <stdio.h>
+
+        int main() {
+            int number;
+            printf("Nhập một số: ");
+            scanf("%d", &number);
+            
+            printf("Số %d là số %s\n", 
+                number, 
+                (number % 2 == 0) ? "chẵn" : "lẻ");
+            
+            printf("Số %d là %s\n",
+                number,
+                (number > 0) ? "dương" : (number < 0) ? "âm" : "bằng 0");
+            
+            return 0;
+        }
+
+#### **3.2.Nested ternary operators**
+
+##### **3.2.1.Khái niệm**
+
+* **Nested ternary** là việc lồng ghép nhiều toán tử ternary bên trong nhau, tương tự if-else if-else chain.
+
+##### **3.2.2.Cách hoạt động**
+
+* Mỗi ternary là một biểu thức độc lập, nhưng nested làm chúng phụ thuộc.
+
+* Ưu tiên: Dùng ngoặc để rõ ràng, tránh ambiguity (ví dụ: `(cond1 ? expr1 : cond2) ? expr2 : expr3)`.
+
+        #include <stdio.h>
+
+        int main() {
+            int score;
+            printf("Nhập điểm (0-100): ");
+            scanf("%d", &score);
+            
+            // Nested ternary: Right-associative, kiểm tra từ trên xuống
+            char *grade = (score >= 90) ? "A" :
+                        (score >= 80) ? "B" :
+                        (score >= 70) ? "C" :
+                        (score >= 60) ? "D" : "F";
+            
+            printf("Điểm %d -> Xếp loại %s\n", score, grade);
+            
+            return 0;
+        }
+
+
+##### **3.2.3.Ứng dụng trong macro**
+
+* Ternary rất phù hợp cho macro vì macro là text replacement (preprocessor), không có scope hay type checking.
+
+* Nó cho phép tạo hàm-like macro ngắn gọn mà không cần function thực (tiết kiệm stack)
+
+* Tuy nhiên, cần ngoặc đơn đầy đủ để tránh side effects
+
+* Vấn đề side effects:
+
+  ◦ `#define MAX(a,b) a > b ? a : b` → `MAX(i++, j++)` có thể ++ hai lần.
+
+  ◦ Giải pháp: `#define MAX(a,b) ((a)>(b)?(a):(b))` – evaluate mỗi arg chỉ một lần.
+
+        #include <stdio.h>
+
+        #define MAX(a, b) ((a) > (b) ? (a) : (b))
+        #define MIN(a, b) ((a) < (b) ? (a) : (b))
+        #define ABS(x) ((x) >= 0 ? (x) : -(x))
+
+        int main() {
+            int x = -10, y = 20;
+            
+            printf("Max(%d, %d) = %d\n", x, y, MAX(x, y));
+            printf("Min(%d, %d) = %d\n", x, y, MIN(x, y));
+            printf("Abs(%d) = %d\n", x, ABS(x));
+            printf("Abs(%d) = %d\n", y, ABS(y));
+            
+            return 0;
+        }
+
+
+</details> 
