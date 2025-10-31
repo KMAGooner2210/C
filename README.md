@@ -4156,3 +4156,540 @@
 
 
 </details> 
+<details>
+	<summary><strong>CHƯƠNG 4: VÒNG LẶP</strong></summary>
+
+## **CHƯƠNG 4: VÒNG LẶP**
+
+### **I. VÒNG LẶP FOR**
+
+#### **1.1.Giới thiệu**
+
+##### **1.1.1.Định nghĩa**
+
+* Vòng lặp for là một cấu trúc điều khiển lặp trong ngôn ngữ C, được thiết kế để thực thi một khối lệnh lặp lại một số lần xác định trước, thường dựa trên một biến đếm (counter variable)
+
+* Nó là loại vòng lặp **entry-controlled** (kiểm soát trước khi vào), nơi toàn bộ logic lặp (khởi tạo, kiểm tra điều kiện, cập nhật) được đặt gọn gàng trong một dòng cú pháp duy nhất.
+
+##### **1.1.2.Mục đích**
+
+* Thực thi lặp với số lần cố định hoặc dựa trên điều kiện đếm tăng/giảm dần.
+
+* Xử lý mảng, chuỗi, hoặc các cấu trúc dữ liệu tuyến tính.
+
+* Tối ưu hóa code bằng cách tích hợp khởi tạo, kiểm tra, và cập nhật trong một cấu trúc.
+
+
+##### **1.1.3.Cách hoạt động tổng quát**
+
+* **1.Khởi tạo (initialization):** Thực thi một lần trước khi kiểm tra điều kiện (ví dụ: i = 0).
+
+* **2.Kiểm tra điều kiện (condition):** Đánh giá trước mỗi lần lặp; nếu false, thoát vòng.
+
+* **3.Thực thi khối lệnh (body):** Chạy code bên trong nếu điều kiện true.
+
+* **4.Cập nhật (update/increment):** Thực thi sau mỗi lần lặp (ví dụ: i++).
+
+* **5.Lặp lại từ bước 2** 
+
+##### **1.1.4.Cú pháp**
+
+        for (khởi_tạo; điều_kiện; cập_nhật) {
+            // Khối lệnh được lặp
+        }
+
+* **Khởi_tạo:** Biểu thức gán hoặc khai báo biến (có thể nhiều, phân cách bằng dấu phẩy).
+
+* **Điều_kiện:** Biểu thức bool (non-zero = true); mặc định true nếu rỗng.
+
+* **Cập_nhật:** Biểu thức tăng/giảm (có thể phức tạp như i += 2, j--).
+
+* Các phần có thể rỗng (ví dụ: `for (;;)` cho vô hạn).
+
+* Scope: Biến khởi tạo (C99+) chỉ tồn tại trong vòng lặp.
+
+        #include <stdio.h>
+
+        int main() {
+            // In các số từ 1 đến 10
+            for (int i = 1; i <= 10; i++) {
+                printf("%d ", i);
+            }
+            printf("\n");
+            
+            return 0;
+        }
+
+#### **1.2.Multiple Initialization**
+
+##### **1.2.1.Khái niệm**
+
+* Từ C99, vòng lặp for hỗ trợ khởi tạo và cập nhật nhiều biến trong cùng một phần (phân cách bằng dấu phẩy).
+
+* Điều kiện có thể dùng toán tử logic cho nhiều biến.
+
+##### **1.2.2.VD**
+
+        #include <stdio.h>
+
+        int main() {
+            // Multiple initialization
+            for (int i = 0, j = 10; i <= 10 && j >= 0; i++, j--) {
+                printf("i = %d, j = %d\n", i, j);
+            }
+            
+            // Vòng lặp với nhiều biến phức tạp
+            for (int i = 0, count = 0, sum = 0; i < 5; i++, count++) {
+                sum += i;
+                printf("Lần %d: i=%d, count=%d, sum=%d\n", i+1, i, count, sum);
+            }
+            
+            return 0;
+        }
+
+#### **1.3.Vòng lặp vô hạn**
+
+##### **1.3.1.Khái niệm**
+
+* Khi điều kiện luôn true (rỗng hoặc hằng true), vòng lặp chạy mãi trừ khi dùng `break`.
+
+* Thường dùng cho event loops (server, game) hoặc simulation.
+
+##### **1.3.2.VD**
+
+        #include <stdio.h>
+
+        int main() {
+            int count = 0;
+            
+            // Vòng lặp vô hạn với break condition
+            for (;;) {
+                printf("Lần lặp thứ %d\n", ++count);
+                
+                if (count >= 5) {
+                    printf("Đã đủ 5 lần, thoát vòng lặp.\n");
+                    break;
+                }
+            }
+            
+            // Ứng dụng: Server listening
+            int request_count = 0;
+            for (;;) {
+                printf("Đang chờ request... (Request số %d)\n", ++request_count);
+                
+                // Giả lập xử lý request
+                if (request_count >= 3) {
+                    printf("Server dừng sau 3 request.\n");
+                    break;
+                }
+            }
+            
+            return 0;
+        }
+
+
+#### **1.4.Optimization Considerations**
+
+##### **1.4.1.Khái niệm**
+
+* Tối ưu vòng lặp nhằm giảm thời gian chạy, đặc biệt với dữ liệu lớn.
+
+* Các kỹ thuật bao gồm loop-invariant hoisting (chuyển tính toán ra ngoài), unrolling (mở rộng vòng lặp), và tránh function calls trong điều kiện.
+
+##### **1.4.2.Lý thuyết tối ưu**
+
+* **Loop-invariant:** Tính toán không đổi (như strlen) chỉ gọi một lần.
+
+        #include <stdio.h>
+        #include <string.h>
+
+        int main() {
+            char str[] = "Hello";
+            int len = strlen(str); // loop-invariant: tính strlen 1 lần
+
+            for (int i = 0; i < len; i++) {
+                printf("%c ", str[i]);
+            }
+            return 0;
+        }
+
+
+* **Loop unrolling:** Giảm số lần kiểm tra điều kiện bằng cách lặp nhiều bước (compiler tự động, hoặc thủ công).
+
+        #include <stdio.h>
+
+        int main() {
+            int array[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+            int sum = 0;
+            
+            // Cách thông thường
+            for (int i = 0; i < 10; i++) {
+                sum += array[i];
+            }
+            printf("Tổng (thông thường): %d\n", sum);
+            
+            // Loop unrolling - giảm số lần lặp
+            sum = 0;
+            for (int i = 0; i < 10; i += 2) {
+                sum += array[i];
+                if (i + 1 < 10) {  // Tránh truy cập ngoài phạm vi
+                    sum += array[i + 1];
+                }
+            }
+            printf("Tổng (unrolled): %d\n", sum);
+            
+            return 0;
+        }
+
+### **II. VÒNG LẶP WHILE**
+
+#### **2.1.Giới thiệu**
+
+##### **2.1.1.Định nghĩa**
+
+* Vòng lặp while là cấu trúc lặp pre-test (kiểm tra điều kiện trước khi thực thi khối lệnh)
+
+* Phù hợp khi số lần lặp không xác định trước hoặc phụ thuộc vào điều kiện động (như input người dùng hoặc dữ liệu file).
+
+##### **2.1.2.Mục đích**
+
+* Lặp dựa trên điều kiện thay đổi (ví dụ: đọc file đến EOF).
+
+* Input validation hoặc simulation (game loop).
+
+
+##### **2.1.3.Cách hoạt động tổng quát**
+
+* **1.Kiểm tra điều kiện (true/false).**
+
+* **2.Nếu true, thực thi khối lệnh.** 
+
+* **3.Cập nhật (thủ công, thường trong body).** 
+
+* **4.Lặp lại từ bước 1.** 
+
+
+##### **2.1.4.Cú pháp**
+
+        while (điều_kiện) {
+            // Khối lệnh được lặp
+        }
+
+* **điều_kiện:** iều kiện là biểu thức bool; body phải có code cập nhật để tránh vô hạn. Thường dùng với biến flag hoặc counter.
+
+        #include <stdio.h>
+
+        int main() {
+            int count = 1;
+            
+            // In các số từ 1 đến 5
+            while (count <= 5) {
+                printf("Số thứ %d\n", count);
+                count++;
+            }
+            
+            return 0;
+        }
+
+#### **2.2.Pre-test Loop Characteristic**
+
+##### **2.2.1.Khái niệm**
+
+* Pre-test Loop Characteristic là zero-iteration loop có thể (không chạy nếu điều kiện false ban đầu).
+
+* Điều này khác với do-while (luôn chạy ít nhất một lần).
+
+##### **2.2.2.VD**
+
+        #include <stdio.h>
+
+        int main() {
+            int number;
+            
+            // Pre-test: có thể không chạy lần nào
+            printf("Nhập số âm để bắt đầu: ");
+            scanf("%d", &number);
+            
+            while (number < 0) {
+                printf("Số bạn nhập: %d (số âm)\n", number);
+                printf("Nhập số tiếp theo (số dương để dừng): ");
+                scanf("%d", &number);
+            }
+            
+            printf("Đã thoát vòng lặp với số: %d\n", number);
+            
+            return 0;
+        }
+
+        Nhập số âm để bắt đầu: -5
+        Số bạn nhập: -5 (số âm)
+        Nhập số tiếp theo (số dương để dừng): -2
+        Số bạn nhập: -2 (số âm)
+        Nhập số tiếp theo (số dương để dừng): 3
+        Đã thoát vòng lặp với số: 3
+
+### **III. VÒNG LẶP DO-WHILE**
+
+#### **3.1.Giới thiệu**
+
+##### **3.1.1.Định nghĩa**
+
+* Vòng lặp do-while là cấu trúc post-test (thực thi khối lệnh trước, kiểm tra điều kiện sau), đảm bảo ít nhất một lần thực thi dù điều kiện false.
+
+##### **3.1.2.Cách hoạt động tổng quát**
+
+* **1.Thực thi khối lệnh.**
+
+* **2.Kiểm tra điều kiện.** 
+
+* **3.Nếu true, lặp lại từ 1; nếu false, thoát.**
+
+* **Lưu ý:** Dấu chấm phẩy ; sau while bắt buộc. 
+
+
+##### **3.1.3.Cú pháp**
+
+        do {
+            // Khối lệnh được lặp
+        } while (điều_kiện);
+
+#### **3.2.Ứng dụng**
+
+##### **3.2.1.Hệ thống menu đơn giản**
+
+        #include <stdio.h>
+
+        int main() {
+            int choice;
+            
+            do {
+                printf("\n=== HỆ THỐNG QUẢN LÝ SINH VIÊN ===\n");
+                printf("1. Thêm sinh viên\n");
+                printf("2. Xóa sinh viên\n");
+                printf("3. Hiển thị danh sách\n");
+                printf("4. Tìm kiếm sinh viên\n");
+                printf("0. Thoát\n");
+                printf("Chọn chức năng: ");
+                scanf("%d", &choice);
+                
+                switch (choice) {
+                    case 1:
+                        printf("Đang thêm sinh viên...\n");
+                        break;
+                    case 2:
+                        printf("Đang xóa sinh viên...\n");
+                        break;
+                    case 3:
+                        printf("Đang hiển thị danh sách...\n");
+                        break;
+                    case 4:
+                        printf("Đang tìm kiếm sinh viên...\n");
+                        break;
+                    case 0:
+                        printf("Thoát chương trình.\n");
+                        break;
+                    default:
+                        printf("Lựa chọn không hợp lệ!\n");
+                }
+            } while (choice != 0);
+            
+            return 0;
+        }
+
+
+##### **3.2.2.Chơi trò đoán số**
+
+        #include <stdio.h>
+        #include <stdlib.h>
+        #include <time.h>
+
+        int main() {
+            srand(time(0));
+            int secret = rand() % 10 + 1;
+            int guess;
+            do {
+                printf("Đoán số (1-10): ");
+                scanf("%d", &guess);
+                if(guess < secret) printf("Nhỏ quá!\n");
+                else if(guess > secret) printf("Lớn quá!\n");
+            } while(guess != secret);
+
+            printf("Chính xác! Số là %d\n", secret);
+            return 0;
+        }
+
+### **IV. ĐIỀU KHIỂN VÒNG LẶP**
+
+#### **4.1.Break Statement**
+
+##### **4.1.1.Tác dụng**
+
+* `break` chấm dứt vòng lặp gần nhất (hoặc switch), chuyển đến lệnh sau vòng.
+
+* Hữu ích cho early termination (tìm kiếm, error handling).
+
+* **Scope:** Chỉ ảnh hưởng vòng lặp/switch chứa nó; không thoát nested loops trừ khi flag.
+
+##### **4.1.2.VD**
+
+        #include <stdio.h>
+
+        int main() {
+            // Tìm số đầu tiên chia hết cho 7
+            for (int i = 1; i <= 100; i++) {
+                if (i % 7 == 0) {
+                    printf("Số đầu tiên chia hết cho 7 là: %d\n", i);
+                    break;  // Thoát vòng lặp ngay
+                }
+            }
+            
+            // Tìm kiếm trong mảng
+            int numbers[] = {2, 4, 6, 8, 10, 12};
+            int target = 8;
+            int found = 0;
+            
+            for (int i = 0; i < 6; i++) {
+                if (numbers[i] == target) {
+                    printf("Tìm thấy %d tại vị trí %d\n", target, i);
+                    found = 1;
+                    break;
+                }
+            }
+            
+            if (!found) {
+                printf("Không tìm thấy %d trong mảng\n", target);
+            }
+            
+            return 0;
+        }
+
+#### **4.2.Continue Statement**
+
+##### **4.2.1.Tác dụng**
+
+* `continue` bỏ qua phần còn lại của body hiện tại, nhảy đến update/điều kiện cho lần lặp sau.
+
+* Hữu ích để skip cases (filter data).
+
+* **Scope:** Chỉ vòng lặp gần nhất.
+
+##### **4.2.2.VD**
+
+        #include <stdio.h>
+
+        int main() {
+            // In các số lẻ từ 1 đến 10
+            printf("Các số lẻ từ 1 đến 10: ");
+            for (int i = 1; i <= 10; i++) {
+                if (i % 2 == 0) {
+                    continue;  // Bỏ qua số chẵn
+                }
+                printf("%d ", i);
+            }
+            printf("\n");
+            
+            // Xử lý dữ liệu, bỏ qua giá trị không hợp lệ
+            int data[] = {5, -2, 8, -1, 10, 0, 7};
+            int sum = 0;
+            int count = 0;
+            
+            for (int i = 0; i < 7; i++) {
+                if (data[i] <= 0) {
+                    continue;  // Bỏ qua số không dương
+                }
+                sum += data[i];
+                count++;
+            }
+            
+            printf("Tổng các số dương: %d\n", sum);
+            printf("Số lượng số dương: %d\n", count);
+            if (count > 0) {
+                printf("Trung bình: %.2f\n", (double)sum / count);
+            }
+            
+            return 0;
+        }
+
+#### **4.3.Goto Statement**
+
+##### **4.3.1.Khái niệm**
+
+* `goto` nhảy đến label (được định nghĩa bằng `label:`), cho phép control flow tùy ý.
+
+* Tránh dùng vì spaghetti code (khó theo dõi). Chỉ dùng cho error handling (cleanup) hoặc state machines phức tạp.
+
+* Ưu tiên `break/continue/flags`.
+
+##### **4.3.2.Cú pháp**
+
+        // Định nghĩa label
+        label_name:
+
+        // Sử dụng goto
+        goto label_name;
+
+* **VD:**
+
+        #include <stdio.h>
+
+        int main() {
+            int i, j;
+            
+            // Ví dụ sử dụng goto để thoát khỏi nhiều vòng lặp lồng nhau
+            for (i = 0; i < 5; i++) {
+                for (j = 0; j < 5; j++) {
+                    printf("(%d, %d) ", i, j);
+                    
+                    if (i == 2 && j == 2) {
+                        printf("\nTìm thấy điểm (2,2), thoát vòng lặp.\n");
+                        goto end_loops;  // Nhảy đến label
+                    }
+                }
+                printf("\n");
+            }
+            
+        end_loops:
+            printf("Đã thoát vòng lặp tại (%d, %d)\n", i, j);
+            
+            return 0;
+        }
+
+
+### **V.VÒNG LẶP LỒNG NHAU**
+
+#### **5.1.Giới thiệu**
+
+##### **5.1.1.Khái niệm**
+
+* Vòng lặp lồng nhau (nested loops) là khi body của vòng ngoài chứa một hoặc nhiều vòng trong, tạo không gian đa chiều (2D, 3D,...).
+
+* Tổng số lần lặp = tích số lần mỗi vòng.
+
+
+##### **5.1.2.Cú pháp**
+
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < m; j++) {
+                // Khối lệnh
+            }
+        }
+
+* **VD:**
+
+        #include <stdio.h>
+
+        int main() {
+            int rows = 3, cols = 4;
+            
+            printf("Ma trận %dx%d:\n", rows, cols);
+            for (int i = 0; i < rows; i++) {
+                for (int j = 0; j < cols; j++) {
+                    printf("(%d,%d) ", i, j);
+                }
+                printf("\n");
+            }
+            
+            return 0;
+        }
+        
+</details> 
