@@ -4693,3 +4693,720 @@
         }
         
 </details> 
+
+<details>
+
+<summary><strong>CHƯƠNG 5: CON TRỎ CƠ BẢN</strong></summary>
+
+## **CHƯƠNG 5: CON TRỎ CƠ BẢN**
+
+### **I. TỔNG QUAN**
+
+#### **1.1.Khái niệm**
+
+##### **1.1.1.Định nghĩa**
+
+* Con trỏ (pointer) là một biến đặc biệt dùng để lưu trữ địa chỉ bộ nhớ của một biến khác hoặc của vùng bộ nhớ nào đó
+
+	* Biến thông thường lưu giá trị 
+	
+	* Con trỏ lưu địa chỉ (address) nơi giá trị đó được lưu giữ
+	
+* VD:
+
+		int x = 2025;   // x là biến thường, chứa giá trị 2025
+		
+		-> Máy tính sẽ cấp phát một ô nhớ (thường 4 byte trên hệ 32-bit hoặc 8 byte trên hệ 64-bit) để lưu số 2025, và ô nhớ đó có một địa chỉ duy nhất (ví dụ: 0x7ffd5b2e4a1c). 
+
+		int *ptr;		// ptr là con trỏ kiểu int
+		ptr = &x; 	// ptr lưu địa chỉ của x
+		
+		-> Sau lệnh này, ptr không chứa số 2025, mà chứa địa chỉ của biến x 
+
+##### **1.1.2.Vai trò**
+
+* **Quản lý bộ nhớ động:**
+
+	* Cấp phát và giải phóng bộ nhớ trong lúc chạy chương trình (`malloc`, `calloc`,`realloc`,`free`)
+	
+	* Tạo mảng động, linked list, tree, graph,...
+	
+* **Truyền tham chiếu (pass-by-reference)**
+
+	* C chỉ hỗ trợ truyền tham trị (pass-by-value)
+	
+	* Muốn thay đổi giá trị của biến trong hàm, ta phải truyền địa chỉ của biến đó - dùng con trỏ
+	
+	 *  VD1: Hàm hoán đổi hai số mà không dùng con trỏ sẽ không hoạt động 	
+	 
+			void swap(int a, int b) {    // sai – chỉ đổi bản sao
+			    int temp = a;
+			    a = b;
+			    b = temp;
+			}
+
+	 *  VD2: Dùng con trỏ đúng
+	 
+			void swap (int *a, int *b){
+				int temp = *a;
+				*a = *b;
+				*b = temp;
+			}
+			
+			// Gọi hàm 
+			int x = 10, y = 20;
+			swap(&x, &y);		// x = 20, y = 10
+			
+								
+*   Truy cập mảng, chuỗi hiệu quả 
+
+
+
+
+#### **1.2.Địa chỉ bộ nhớ và mô hình lưu trữ**
+
+##### **1.2.1.Không gian địa chỉ**
+
+* Mỗi chương trình khi chạy sẽ được hệ điều hành cấp phát một không gian địa chỉ ảo (virtual address space)
+
+*  Trên hệ thống 64 bit hiện đại, không gian này lên đến 2⁶⁴ byte
+
+##### **1.2.2.Biểu diễn địa chỉ trong hệ thập lục phân**
+
+* Địa chỉ bộ nhớ luôn được biểu diễn dưới dạng hexadecimal khi in bằng `%p`
+
+		#include <stdio.h>
+
+		int main() {
+		    int a = 10;
+		    printf("Gia tri cua a: %d\n", a);
+		    printf("Dia chi cua a: %p\n", (void*)&a);
+		    return 0;
+		}
+		// Output:
+		Gia tri cua a: 10
+		Dia chi cua a: 0x7ffd5b2e4a1c
+
+* Để in địa chỉ an toàn, luôn ép kiểu về `void*` khi dùng `%p`
+
+##### **1.2.3.Kiểu dữ liệu uintptr_t**
+
+* từ C99, `uintptr_t` (trong `<stdint.h>`) cung cấp kiểu số nguyên không dấu đủ lớn để chứa toàn bộ địa chỉ hiện tại 
+
+		#include <stdio.h>
+		#include <stdint.h>
+
+		int main() {
+		    int x = 2025;
+		    uintptr_t addr = (uintptr_t)&x;
+		    printf("Dia chi duoi dang so nguyen: 0x%lx\n", addr);
+		    return 0;
+		}
+
+#### **1.3.Khai báo và khởi tạo**
+
+##### **1.3.1.Cú pháp**
+
+		kiểu_dữ_liệu *tên_con_trỏ;
+
+* `kiểu_dữ_liệu` là kiểu của giá trị mà con trỏ trỏ tới (không phải kiểu của con trỏ)
+
+*  Dấu `*` gắn liền với tên con trỏ, không gắn với kiểu 
+
+		int *ptr;
+		int* ptr;
+		int * ptr
+
+* VD:
+
+		int *iptr;          // con trỏ tới int
+		float *fptr;        // con trỏ tới float
+		char *cptr;         // con trỏ tới char (thường dùng cho chuỗi)
+		double *dptr;
+		void *vptr;         // con trỏ tổng quát (sẽ học sau)
+
+##### **1.3.2.Khởi tạo con trỏ với địa chỉ hợp lệ**
+
+* Con trỏ không tự động trỏ đến đâu cả -> phải khởi tạo trước khi dùng 
+
+	* Cách đúng: 
+
+			int x = 100;
+			int *ptr = &x;
+			
+			// hoặc 
+			int *ptr;
+			ptr = &x;
+
+	* Cách sai:
+	
+			int *ptr;               // wild pointer – giá trị rác
+			*ptr = 500;             // → undefined behavior (crash hoặc lỗi ngẫu nhiên)
+
+#### **1.4.Toán tử con trỏ**
+
+##### **1.4.1.Đặc điểm**
+
+* **&:** Address-of
+ 
+	* Lấy địa chỉ của biến
+			
+			&x
+	
+* **`*`:** Dereference (giải tham chiếu)
+
+	* Lấy giá trị tại địa chỉ mà con trỏ đang trỏ tới 
+	
+			*ptr 
+
+##### **1.4.2.VD**
+
+		#include <stdio.h>
+
+		int main() {
+		    int x = 2025;
+		    int *ptr = &x;
+
+		    printf("Gia tri cua x:          %d\n", x);
+		    printf("Dia chi cua x:          %p\n", (void*)&x);
+		    printf("Gia tri ma ptr luu:     %p\n", (void*)ptr);
+		    printf("Gia tri tai dia chi ptr tro toi: %d\n", *ptr);
+
+		    // Thay doi gia tri thong qua con tro
+		    *ptr = 2026;
+		    printf("\nSau khi doi:\n");
+		    printf("Gia tri cua x bay gio:  %d\n", x);
+		    printf("Gia tri qua *ptr:       %d\n", *ptr);
+
+		    return 0;
+		}
+
+	// Output:
+
+	Gia tri cua x:          2025
+	Dia chi cua x:          0x7ffd5b2e4a1c
+	Gia tri ma ptr luu:     0x7ffd5b2e4a1c
+	Gia tri tai dia chi ptr tro toi: 2025
+
+	Sau khi doi:
+	Gia tri cua x bay gio:  2026
+	Gia tri qua *ptr:       2026
+	
+	//
+	-> ptr và &x có cùng giá trị (cùng địa chỉ)
+	
+	-> *ptr và x có cùng giá trị (cùng nội dung)
+
+### **II. CON TRỎ VÀ KIỂU DỮ LIỆU**
+
+#### **2.1.Con trỏ theo từng kiểu dữ liệu**
+
+* Mỗi kiểu con trỏ (`int*`. `char*`, `double*`,...) được thiết kế để trỏ đến dữ liệu kiểu tương ứng
+
+* VD khai báo:
+	
+		int    *iptr;     // trỏ đến int (thường 4 byte)
+		char   *cptr;     // trỏ đến char (1 byte)
+		double *dptr;     // trỏ đến double (thường 8 byte)
+		float  *fptr;     // trỏ đến float (thường 4 byte)
+
+* Sự phụ thuộc giữa kiểu con trỏ và kích thước bước nhảy bộ nhớ 
+
+	* 	Khi thực hiện phép toán tăng/giảm con trỏ (`ptr++`, `ptr + n`)
+	
+		* Số byte dịch chuyển không phải là +1 byte
+		
+		* Mà là +sizeof(kiểu mà ptr trỏ tới) byte
+
+* VD:
+
+		#include <stdio.h>
+
+		int main() {
+		    int arr[5] = {10, 20, 30, 40, 50};
+		    int *ip = arr;
+		    char *cp = (char *)arr;     // ép kiểu để minh họa
+
+		    printf("Dia chi ip ban dau:   %p\n", (void*)ip);
+		    ip++;
+		    printf("Sau ip++:             %p  (tang %zu byte)\n", (void*)ip, sizeof(int));
+
+		    printf("\nDia chi cp ban dau:   %p\n", (void*)cp);
+		    cp++;
+		    printf("Sau cp++:             %p  (tang %zu byte)\n", (void*)cp, sizeof(char));
+
+		    return 0;
+		}
+
+		// Output:
+		Dia chi ip ban dau:   0x7ffd12345678
+		Sau ip++:             0x7ffd1234567c  (tang 4 byte)
+
+		Dia chi cp ban dau:   0x7ffd12345678
+		Sau cp++:             0x7ffd12345679  (tang 1 byte)
+		
+#### **2.2.Con trỏ void**
+
+* `void*` là con trỏ tổng 	quát (generic pointer) 
+
+	* Có thể trỏ đến bất kỳ kiểu dữ liệu nào 
+	
+	* Không thể giải tham chiếu trực tiếp 
+
+* Ứng dụng:
+
+	* Tham số của các hàm cấp phát bộ nhớ: `malloc`, `calloc`, `realloc`
+	
+	* Tham số của các hàm sao chép bộ nhớ: `memcpy`, `memmove`, `memset`
+	
+	* Làm trung gian khi cần truyền con trỏ giữa các hàm có kiểu khác nhau
+	
+* VD:
+
+		#include <stdio.h>
+		#include <stdlib.h>
+		int main(){
+			int n = 1000;
+			int *p = malloc(n * sizeof(int));
+			
+			if (p == NULL){
+				printf("Cap phat that bai!\n");
+				return 1;
+			}
+			
+			// void* tự động ép kiểu về int* trong C
+			// Có thể viết rõ ràng như sau:
+			// int *p = (int *)malloc(n * sizeof(int));
+			
+			*p = 2025;
+			printf("Gia tri: %d\n", *p);
+			free(p);
+			return 0;
+		}
+
+* **Ép kiểu khi giải tham chiếu:**
+
+	* Để lấy giá trị từ `void*`, bắt buộc phải ép kiểu trước:
+	
+			void *vp; 
+			int x = 999;
+			vp = &x;
+			printf("%d\n", *(int *)vp); // phải ép về int* rồi mới *
+
+#### **2.3.Con trỏ NULL**
+
+* `NULL` là một macro thường được định nghĩa là `(void*)0` hoặc `0`, biểu thị con trỏ không đến đâu cả (không hợp lệ)
+
+		#include <stdio.h>
+
+		int main() {
+		    int *ptr = NULL;
+
+		    if (ptr == NULL) {
+		        printf("Con tro chua duoc khoi tao hop le.\n");
+		    }
+
+		    // *ptr = 10;   // NGUY HIỂM – dereference NULL → undefined behavior
+		    return 0;
+		}
+	
+* Quy tắc kiểm tra:
+
+			if (ptr != NULL) {
+			    *ptr = 500;
+			    printf("%d\n", *ptr);
+			} else {
+			    printf("Loi: con tro la NULL!\n");
+			}
+
+* Sau khi `free(ptr)`, nên gán lại `ptr = NULL;` để tránh double free
+
+#### **2.4.Con trỏ chưa khởi tạo (Wild Pointer)**
+
+* `Wild pointer` là con trỏ chưa được khởi tạo hoặc được khởi tạo với giá trị rác
+
+	* Nó sẽ trỏ đến một địa chỉ ngẫu nhiên trong bộ nhớ
+	
+* Nguyên nhân phổ biến:
+		
+		int *ptr;		 // không khởi tạo → wild pointer
+		*ptr = 100;  // → undefined behavior (có thể crash, ghi đè dữ liệu khác)
+	
+* Hoặc:
+  
+		int *ptr = malloc(sizeof(int));
+		free(ptr);
+		*ptr = 200
+
+* Gây ra:
+
+	* Undefined behavior: Crash, dữ liệu sai, treo máy
+	
+	* Ghi đè lên vùng nhớ chương trình khác
+
+* Phòng tránh:
+
+	* Luôn khởi tạo khi khai báo
+		
+			int *ptr = NULL;           // an toàn nhất
+			// hoặc
+			int x = 0;
+			int *ptr = &x;
+	
+	*  Sau `free(ptr)` -> gán lại NULL:
+	
+			free(ptr);
+			ptr = NULL;
+
+	* Kiểm tra `NULL` trước mọi thao tác giải tham chiếu
+	
+	* Sử dụng công cụ debug:
+	
+		* Valgrind
+		* VS debugger
+
+### **III. PHÉP TOÁN TRÊN CON TRỎ (POINTER ARITHMETIC)**
+
+#### **3.1.Cơ sở**
+
+* Mối liên hệ giữa con trỏ và mảng
+
+	* Trong C, mảng hoạt động như một con trỏ hằng trỏ đến phần tử đầu tiên của mảng
+	
+		int arr[5] = {10, 20, 30}
+		
+		// Tương đương
+		arr ≡ &arr[0]
+		arr + 1 ≡ &arr[1]
+		*(arr + 2)  ≡ arr[2]
+		arr[i] ≡ *(arr + i) ≡ *(i + arr) (vì phép cộng có tính giao hoán)
+		
+* 	Cách tính địa chỉ phần tử tiếp theo
+
+	* Khi bạn thực hiện ptr + n, C *tự động nhân n với sizeof(ptr) để tính số byte cần dịch chuyển.
+	
+	* Công thức:  
+		
+			địa chỉ mới = địa chỉ hiện tại + n × sizeof(kiểu mà ptr trỏ tới)
+			
+	* VD:  
+		
+			int* ptr -> ptr + 1 tăng 4 byte (hoặc 8 byte)
+			char* ptr -> ptr + 1 tăng 1 byte
+			double* ptr -> ptr + 1 tăng 8 byte
+
+#### **3.2.Các phép toán tăng giảm**
+
+* **ptr++**:
+
+	* Tăng con trỏ lên 1 phần tử 
+	
+	* + sizeof(*ptr)byte
+	
+* **ptr--**:
+
+	* Giảm con trỏ xuống 1 phần tử
+	
+	* -sizeof(*ptr)byte
+
+* **ptr + n**:
+
+	* Di chuyển tiến n phần tử 
+	
+	* VD: ptr + 3 -> + 3 × sizeof(*ptr) byte
+	
+* **ptr - n**:
+
+	* Di chuyển lùi n phần tử
+	
+	* VD: ptr - 2 -> -2 × sizeof(*ptr) byte
+
+* **Lưu ý:**
+
+	*  Không được thực hiện `ptr + ptr`, `ptr * n`, `ptr / n`, `ptr % n` → lỗi biên dịch.
+
+	*  Chỉ cộng/trừ với số nguyên (int, size_t, …).
+	
+* **VD:**
+
+			#include <stdio.h>
+
+			int main() {
+			    int arr[5] = {10, 20, 30, 40, 50};
+			    int *p = arr;               // p trỏ đến arr[0]
+
+			    printf("Duyet bang chi so:\n");
+			    for(int i = 0; i < 5; i++) {
+			        printf("%d ", arr[i]);
+			    }
+
+			    printf("\n\nDuyet bang con tro:\n");
+			    for(int i = 0; i < 5; i++) {
+			        printf("%d ", *p);
+			        p++;                    // hoặc p = p + 1;
+			    }
+			    printf("\n");
+
+			    return 0;
+			}	
+
+#### **3.3.So sánh con trỏ**
+
+* Các toán tử so sánh hợp lệ: `==`, `!=`,` <`, `>`, `<=`, `>=`
+
+* Hai con trỏ phải trỏ vào cùng một đối tượng (thường là cùng một mảng hoặc cùng một khối bộ nhớ liên tục).
+	
+* So sánh với NULL luôn hợp lệ.
+
+* **VD1:**
+
+			int arr[10];
+			int *p1 = &arr[2];
+			int *p2 = &arr[7];
+
+			if (p1 < p2) {          // hợp lệ → true
+			    printf("p1 nam truoc p2 trong mang\n");
+			}
+
+			if (p1 == &arr[2]) {    // hợp lệ
+			    // ...
+			}								  
+
+* **VD2:**
+
+		int a, b;
+		int *pa = &a;
+		int *pb = &b;
+
+		if (pa < pb) {          // KHÔNG ĐƯỢC – hai biến cục bộ không đảm bảo thứ tự
+		    // undefined behavior
+		}
+
+#### **3.4.Phép trừ hai con trỏ**
+
+* Chỉ hợp lệ khi hai con trỏ trỏ vào cùng một mảng (hoặc cùng một khối bộ nhớ cấp phát liên tục).
+
+* Số phần tử chênh lệch giữa hai vị trí (kiểu `ptrdiff_t` – thường là `long` hoặc `long long`).		
+
+* Công thức:
+	
+		khoảng cách = ptr2 - ptr1;    // số phần tử ptr2 đứng sau ptr1
+		
+* Ví dụ:
+
+		#include <stdio.h>
+
+		int main() {
+		    int arr[8] = {0};
+		    int *p_start = &arr[1];
+		    int *p_end   = &arr[6];
+
+		    ptrdiff_t distance = p_end - p_start;
+
+		    printf("Khoang cach: %td phan tu\n", distance);     // in ra: 5
+		    printf("So byte: %td byte\n", (char*)p_end - (char*)p_start);  // thường 20 nếu int=4 byte
+
+		    return 0;
+		}
+
+### **IV. TÍNH BẤT BIẾN VÀ CON TRỎ (CONST VÀ POINTER)**
+
+#### **4.1.Con trỏ tới hằng số (Pointer to const)**
+
+* Khai báo:
+
+		const int *ptr;
+		// hoặc tương đương
+		int const *ptr;
+
+* Giá trị tại địa chỉ mà ptr trỏ tới không thể thay đổi thông qua con trỏ này (*ptr = ... → lỗi biên dịch).
+
+* Bản thân con trỏ (ptr) có thể thay đổi để trỏ sang địa chỉ khác.
+
+* VD:
+
+			#include <stdio.h>
+
+			int main() {
+			    int a = 10;
+			    int b = 20;
+
+			    const int *ptr = &a;
+
+			    // *ptr = 100;          // LỖI biên dịch: không thể gán cho dữ liệu const
+
+			    printf("Gia tri ban dau: %d\n", *ptr);   // 10
+
+			    ptr = &b;               // HỢP LỆ: thay đổi địa chỉ con trỏ trỏ tới
+			    printf("Gia tri sau khi doi: %d\n", *ptr);   // 20
+
+			    // Nhưng vẫn không thể thay đổi giá trị qua ptr
+			    // *ptr = 30;           // vẫn lỗi
+
+			    // Có thể thay đổi giá trị gốc nếu dùng biến gốc
+			    b = 30;
+			    printf("Gia tri goc thay doi: %d\n", *ptr);  // 30
+
+			    return 0;
+			}
+
+#### **4.2.Con trỏ hằng (Const pointer)**
+
+* Khai báo:
+
+		int * const ptr;
+
+* Địa chỉ mà ptr lưu trữ không thể thay đổi sau khi khởi tạo (ptr = ... → lỗi biên dịch).
+
+* Giá trị tại địa chỉ đó có thể thay đổi thông qua con trỏ (*ptr = ... → hợp lệ).
+
+* VD:
+
+		 #include <stdio.h>
+
+		int main() {
+		    int x = 100;
+		    int y = 200;
+
+		    int * const ptr = &x;     // phải khởi tạo ngay khi khai báo
+
+		    *ptr = 150;               // HỢP LỆ
+		    printf("x sau khi doi: %d\n", x);   // 150
+
+		    // ptr = &y;              // LỖI biên dịch: không thể thay đổi địa chỉ
+
+		    return 0;
+		}		
+
+#### **4.3.Con trỏ hằng tới hằng số (Const pointer to const)**
+
+* Khai báo:
+
+		const int * const ptr;
+		// hoặc 
+		int const * const ptr;
+
+* Cả địa chỉ lẫn giá trị tại địa chỉ đó đều không thể thay đổi
+
+* VD:
+
+		#include <stdio.h>
+
+		int main() {
+		    int x = 2025;
+
+		    const int * const ptr = &x;
+
+		    printf("Gia tri: %d\n", *ptr);   // 2025
+
+		    // *ptr = 2026;         // LỖI
+		    // ptr = &y;            // LỖI (nếu có biến y khác)
+
+		    // Nhưng vẫn có thể thay đổi giá trị gốc nếu truy cập trực tiếp
+		    x = 2026;
+		    printf("Gia tri sau khi doi goc: %d\n", *ptr);   // 2026
+
+		    return 0;
+		}
+
+#### **4.4.Quy tắc đọc khai báo con trỏ có const**
+
+*  Đọc từ phải sang trái, bắt đầu từ tên biến, rồi xoay vòng theo chiều kim đồng hồ (spiral rule).
+
+* `const int * ptr`: ptr là con trỏ -> trỏ tới -> int const
+
+* `int * const ptr`: ptr là const -> con trỏ -> trỏ tới int
+
+*  `const int * const ptr`:  ptr là con trỏ → trỏ tới → const int
+
+*  `const int * const * ptr`:  ptr là con trỏ → trỏ tới → (const pointer to const int)   
+
+### **V. CÁC LỖI THƯỜNG GẶP**
+
+#### **5.1.Error**
+
+##### **5.1.1.Dereference con trỏ NULL**
+
+* (Truy cập giá trị tại địa chỉ 0x0)
+
+		int *ptr = NULL;
+		*ptr = 100;             // → segmentation fault (thường gặp nhất)
+		// Nguyên nhân: quên kiểm tra ptr != NULL trước khi dùng *ptr hoặc ptr->.
+
+##### **5.1.2.Truy cập bộ nhớ ngoài phạm vi**
+
+		int arr[5] = {1,2,3,4,5};
+		int *p = arr;
+		*(p + 10) = 999;        // ghi đè vùng nhớ ngoài mảng 
+
+→ ghi đè lên biến khác, stack frame, return address.
+
+##### **5.1.3.Dangling pointer**
+
+* Con trỏ vẫn giữ địa chỉ cũ sau khi vùng nhớ đã bị giải phóng hoặc biến cục bộ đã ra khỏi phạm vi.
+
+		int *getNumber() {
+		    int x = 2025;
+		    return &x;              // NGUY HIỂM – x là biến cục bộ
+		}
+
+		// hoặc
+		int *ptr = malloc(sizeof(int));
+		free(ptr);
+		*ptr = 500;             // use-after-free → dangling pointer
+
+##### **5.1.4.Double free / Invalid free**
+
+		int *p = malloc(100);
+		free(p);
+		free(p);                // double free → UB, thường crash heap
+
+##### **5.1.5.Sai kiểu ép con trỏ**
+
+		int x = 0x12345678;
+		float *pf = (float *)&x;   // vi phạm strict aliasing rule → UB
+
+#### **5.2.Nguyên tắc thực hành**
+
+##### **5.2.1.Luôn khởi tạo con trỏ ngay khi khai báo**
+
+		int *p = NULL; hoặc int *p = &x;
+
+##### **5.2.2.Kiểm tra NULL trước mọi thao tác giải tham chiếu và pointer arithmetic**
+
+	if (p != NULL) { 
+		*p = 10; 
+	}
+
+##### **5.2.3.Sau free(ptr) → gán lại ptr = NULL;**
+
+		free(p); p = NULL;
+
+##### **5.2.4.Không thực hiện pointer arithmetic ra ngoài giới hạn mảng**
+
+		Dùng p < arr + SIZE thay vì p < &arr[SIZE]
+
+##### **5.2.5.Khi truyền mảng/chuỗi vào hàm → dùng const nếu chỉ đọc**
+
+		void print(const char *s);
+
+##### **5.2.6.Không trả về địa chỉ của biến cục bộ từ hàm**
+
+		Trả về giá trị hoặc cấp phát động
+
+##### **5.2.7.Sử dụng size_t cho kích thước và chỉ số (không dùng int âm)**
+
+		size_t len = end - start;
+
+##### **5.2.8.Kiểm tra kết quả của malloc / calloc / realloc**
+
+		if (!p) { 
+		exit(1); 
+		}
+
+##### **5.2.9.Khi cần truy cập byte-level → dùng unsigned char* hoặc uint8_t***
+
+		unsigned char *bytes = (unsigned char*)&data;
+													 
+</details>
+
