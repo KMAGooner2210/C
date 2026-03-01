@@ -5943,3 +5943,506 @@
 													 
 </details>
 
+
+<details>
+
+<summary><strong>CHƯƠNG 7: BỘ TIỀN XỬ LÝ (C PREPROCESSOR)</strong></summary>
+
+## **CHƯƠNG 7: BỘ TIỀN XỬ LÝ (C PREPROCESSOR)**
+
+### **I. TỔNG QUAN**
+
+#### **1.1.Định nghĩa**
+
+* Bộ tiền xử lý (preprocessor) là giai đoạn đầu tiên trong quá trình biên dịch chương trình C.
+
+* Nó xử lý các chỉ thị đặc biệt (bắt đầu bằng #) để biến đổi mã nguồn thành một dạng mở rộng, dễ biên dịch hơn.
+
+#### **1.2.Vị trí**
+
+* Quá trình biên dịch C bao gồm bốn giai đoạn chính (thường gọi là "compilation pipeline"). Preprocessor nằm ở vị trí đầu tiên:
+
+	* Preprocessing (Tiền xử lý): 
+
+		* Xử lý các chỉ thị # (như #include, #define, #if).
+		
+		* Thay thế macro, chèn file header, loại bỏ comment.
+
+		* Kết quả: Tệp nguồn mở rộng (thường có đuôi .i) – vẫn là code C nhưng đã được biến đổi.
+	
+	* Compilation (Biên dịch):
+
+		* Chuyển code C đã tiền xử lý thành assembly (mã máy thấp cấp, đuôi .s).
+		
+		* Kiểm tra cú pháp, kiểu dữ liệu, và tạo mã trung gian.
+
+	* Assembly (Hợp ngữ):
+
+		* Chuyển assembly thành object code (mã máy, đuôi .o hoặc .obj).
+
+	* Linking (Liên kết):
+	
+		* Kết hợp các object file và thư viện thành file thực thi (executable, như .exe trên Windows).
+	
+#### **1.3.Sơ đồ**
+	 
+		Mã nguồn (.c / .h) → Preprocessor (#include, #define, #if) → Tệp mở rộng (.i)
+		↓
+		Compiler (check syntax, generate assembly) → Assembly code (.s)
+		↓
+		Assembler → Object code (.o)
+		↓
+		Linker (link libraries) → Executable (.exe / a.out)
+
+* Để xem kết quả preprocessing, dùng lệnh: gcc -E source.c -o output.i (GCC)
+
+* Kết quả sau tiền xử lý: tệp nguồn mở rộng (.i):
+
+	*  Chèn toàn bộ nội dung header (như stdio.h → code thực sự của printf).
+	
+	*  Thay thế macro (như MAX(a,b) → ((a) > (b) ? (a) : (b))).
+	
+	*  Loại bỏ comment và xử lý conditional (#if → chỉ giữ code phù hợp).
+	
+	*  Compiler sẽ biên dịch tệp .i này, nên lỗi preprocessor thường xuất hiện gián tiếp ở giai đoạn compile.
+			
+								
+
+
+			
+
+### **II. CÁC CHỈ THỊ CƠ BẢN**
+
+#### **2.1.Chỉ thị #include**
+
+* Chèn toàn bộ nội dung của một tệp khác (thường là header file .h) vào vị trí chỉ thị #include tại thời điểm tiền xử lý.
+
+	* Giúp tái sử dụng khai báo hàm, macro, kiểu dữ liệu mà không cần copy-paste code.
+	
+	* Tất cả thư viện chuẩn C (stdio.h, stdlib.h, string.h…) đều được chèn qua #include.
+	
+* Hai hình thức cú pháp:
+
+		#include <tên_tệp>          // Dùng cho header hệ thống (system headers)
+		#include "tên_tệp"          // Dùng cho header do người dùng viết (user headers)
+
+* Cơ chế tìm kiếm header file :
+
+	* Với `< >` (system headers):
+	
+		* 	Tìm trong các thư mục hệ thống chuẩn (ví dụ: /usr/include, /usr/local/include).
+		
+		*  Thường dùng cho thư viện chuẩn: #include
+
+	* Với `" "` (user headers):
+	
+		* 	Tìm trước trong thư mục hiện tại (nơi chứa file .c).
+		
+		*  Sau đó tìm trong các thư mục hệ thống (tương tự < >).
+		
+		*  Thường dùng cho header tự viết: #include "myutils.h".
+
+* Nếu một header được include nhiều lần (trực tiếp hoặc gián tiếp) → lỗi biên dịch "redefinition" (định nghĩa lại).
+
+	*   Include Guard (truyền thống) là cách ngăn chặn:
+
+				// myheader.h
+				#ifndef MYHEADER_H          // Nếu MYHEADER_H chưa được định nghĩa
+				#define MYHEADER_H          // Định nghĩa nó ngay lập tức
+
+				// Nội dung header thật sự
+				int add(int a, int b);
+
+				#endif                      // Kết thúc guard
+
+		*   Lần include đầu tiên: #ifndef đúng → định nghĩa và xử lý nội dung.
+	
+		*   Lần include sau: #ifndef sai → bỏ qua toàn bộ nội dung đến #endif.
+	
+#### **2.2.Chỉ thị #define**
+
+* Định nghĩa macro – thay thế một định danh (identifier) bằng chuỗi văn bản khác trong toàn bộ code sau đó.
+
+* Cú pháp:
+
+			#define ĐỊNH_DANH replacement_text
+	
+* VD:
+
+		#define PI          3.14159265359
+		#define BUFFER_SIZE 1024
+		#define MAX_USERS   100
+		#define DEBUG_MODE  1		
+
+
+#### **2.3.Chỉ thị #undef**
+
+* Hủy bỏ (undefine) một macro đã được định nghĩa trước đó.
+
+* Cú pháp:
+
+		#undef ĐỊNH_DANH
+
+* VD:
+
+
+			#define DEBUG 1
+
+			#ifdef DEBUG
+			    printf("Debug mode ON\n");
+			#endif
+
+			#undef DEBUG           // hủy định nghĩa
+
+			#ifdef DEBUG
+			    // code này sẽ KHÔNG được compile
+			#endif
+
+
+
+### **III. Macro Hàm**
+
+#### **3.1.Định nghĩa Macro Hàm**
+
+* **Cú pháp:**
+
+			#define TÊN_MACRO(tham_số1, tham_số2, ...) replacement_text
+
+	* VD:
+
+			#define MAX(a, b)       ((a) > (b) ? (a) : (b))
+			#define SQUARE(x)       ((x) * (x))
+			#define MIN(a, b)       ((a) < (b) ? (a) : (b))
+			#define ABS(x)          ((x) >= 0 ? (x) : -(x))
+
+* **Cơ chế thay thế văn bản:**
+
+	* Preprocessor thay thế nguyên văn mà không hiểu ngữ nghĩa.
+	
+	*  Không kiểm tra kiểu dữ liệu → có thể dùng với int, float, double, thậm chí struct (nếu hợp lệ).
+	
+	*  Không tạo stack frame → không có overhead gọi hàm → nhanh hơn hàm thông thường.
+	
+	* VD:
+
+			#define SWAP(a, b, type)    do { type temp = (a); (a) = (b); (b) = temp; } while(0)
+			
+			int p = 5, q = 10;
+			SWAP(p, q, int);            // an toàn vì dùng do-while(0)
+				
+#### **3.2.Nguyên tắc**
+
+* **Luôn bao tham số trong ngoặc đơn**
+
+	* **Sai:**
+
+			#define SQUARE(x)   x * x
+			int result = SQUARE(3 + 2);     // thay thành 3 + 2 * 3 + 2 = 11 (sai!)
+
+	*  **Đúng**
+
+			#define SQUARE(x)   ((x) * (x))
+
+* **Bao toàn bộ biểu thức trong ngoặc**
+
+	* **Sai:**
+
+			#define MAX(a, b)   (a) > (b) ? (a) : (b)
+			int larger = MAX(x, y) + 5;     // có thể sai ưu tiên
+
+	*  **Đúng**
+
+			#define MAX(a, b)   (((a) > (b)) ? (a) : (b))
+	
+* **Tránh side effects trong tham số**
+
+			int i = 5;
+		int max_val = MAX(i++, 10);     // i++ được đánh giá 2 lần → undefined behavior
+	
+* **Dùng do-while(0) cho macro nhiều câu lệnh**
+
+		#define PRINT_DEBUG(msg)    do { printf("DEBUG: %s\n", msg); } while(0)
+			
+### **IV. CONDITIONAL COMPILATION**
+
+#### **4.1.Các chỉ thị điều kiện**
+
+* Các chỉ thị chính dùng để kiểm soát biên dịch có điều kiện:
+
+	* **#if biểu_thức**
+
+	* **#ifdef ĐỊNH_DANH**  (tương đương `#if defined(ĐỊNH_DANH)`)
+	
+	* **#ifndef ĐỊNH_DANH**  (tương đương `#if !defined(ĐỊNH_DANH)`) 
+
+	* **#else**
+
+	* **#elif biểu_thức**  (else if)
+	
+	* **#endif**  (bắt buộc kết thúc mỗi khối điều kiện) 
+
+* Cú pháp:
+
+		#if điều_kiện
+		    // code chỉ biên dịch nếu điều kiện đúng
+		#elif điều_kiện_khác
+		    // code thay thế
+		#else
+		    // code mặc định
+		#endif
+
+* VD:
+
+		#define DEBUG 1
+
+		#ifdef DEBUG
+		    printf("Debug mode: Biến x = %d\n", x);
+		#endif
+
+* Ví dụ với #if / #elif / #else:
+
+		#if __STDC_VERSION__ >= 201112L
+		    // Code dùng tính năng C11 (ví dụ: _Generic, _Static_assert)
+		    _Static_assert(sizeof(int) == 4, "int phải 4 byte");
+		#elif __STDC_VERSION__ >= 199901L
+		    // Code dùng C99
+		    printf("Dùng C99\n");
+		#else
+		    // Code legacy (C89/ANSI C)
+		    printf("Dùng chuẩn cũ\n");
+		#endif
+
+#### **4.2.Platform Detection**
+
+* **_WIN32:** Windows (32/64-bit)
+
+* **__linux__:** Linux
+
+* **__APPLE__:** macOS / iOS
+
+* **__GNUC__:** GCC compiler
+	
+* **__arm__ / __aarch64__:** ARM architecture
+
+* **__x86_64__:** x86-64 (Intel/AMD 64-bit)
+	
+### **V. KỸ THUẬT XỬ LÝ**
+
+#### **5.1.Token Pasting (##)**
+
+* Token pasting (ghép token) dùng toán tử ## để nối hai token thành một định danh mới tại thời điểm tiền xử lý.
+
+* **Cú pháp:** 
+
+		#define CONCAT(a, b)    a##b
+
+* **VD:**
+
+		#define CONCAT(a, b)    a##b
+
+		int CONCAT(var, 1) = 100;       // trở thành int var1 = 100;
+		int CONCAT(test, Number) = 200; // trở thành int testNumber = 200;
+
+#### **5.2.Stringizing (#)**
+
+* Toán tử # chuyển tham số macro thành **chuỗi ký tự** (string literal).
+
+**Cú pháp**:
+
+* **Cú pháp:** 
+
+		#define TO_STRING(x)    #x
+
+* **VD:**
+
+			#define TO_STRING(x)    #x
+
+			printf("Gia tri PI: %s\n", TO_STRING(3.14159));     // in: Gia tri PI: 3.14159
+			printf("Ten bien: %s\n", TO_STRING(myVar));         // in: Ten bien: myVar
+
+#### **5.3.Variadic Macros**
+
+* Từ C99, preprocessor hỗ trợ macro nhận số lượng tham số bất kỳ bằng ... và __VA_ARGS__.
+
+* **Cú pháp:**
+
+		#define TÊN_MACRO(fmt, ...)     replacement sử dụng __VA_ARGS__
+
+* **VD:**
+
+		#define LOG(fmt, ...)           printf(fmt "\n", ##__VA_ARGS__)
+		LOG("Xin chao");                    // chỉ fmt
+		LOG("Gia tri: %d", 42);             // 1 tham số bổ sung
+		LOG("Ten: %s, tuoi: %d", "An", 25); // nhiều tham số		
+
+#### **5.4.Chỉ thị #pragma**
+
+* `#pragma` là chỉ thị phụ thuộc trình biên dịch, dùng để điều khiển hành vi compiler cụ thể.
+
+* **Cú pháp:**
+
+		#pragma directive [arguments]
+
+* **Một số pragma phổ biến:**
+
+	* **#pragma once:**	
+	
+		*  Ngăn include lặp (thay thế include guard truyền thống)		
+
+	* **#pragma pack(push, n):**	
+	
+		*  Đặt alignment của struct = n byte (thường 1 để dữ liệu nhị phân)	
+
+	* **#pragma pack(pop):**	
+	
+		*  Khôi phục alignment cũ
+
+	* **#pragma warning(disable: n):**	
+	
+		*  Tắt cảnh báo cụ thể (ví dụ: 4996 cho deprecated)
+
+	* **#pragma GCC diagnostic ignored "-Wunused-variable":**	
+	
+		*  Tắt warning GCC cụ thể
+
+	* **#pragma message("text"):**	
+	
+		*  In thông báo tại thời điểm compile
+
+* VD:
+
+			#pragma pack(push, 1)      // alignment 1 byte – không padding
+
+			struct PacketHeader {
+			    uint16_t id;
+			    uint32_t length;
+			    uint8_t  type;
+			};
+
+			#pragma pack(pop)          // khôi phục alignment mặc định
+
+### **VI. PREDEFINED MACROS**
+
+#### **6.1.Định nghĩa**
+
+* Macro tiền định (predefined macros) là các macro được trình biên dịch tự động định nghĩa trước khi bắt đầu tiền xử lý. Chúng cung cấp thông tin về:
+
+	*  Vị trí mã nguồn
+	
+	*  Thời gian biên dịch
+	
+	*   Phiên bản chuẩn C 
+	
+	*   Tên hàm hiện tại
+	
+	*  Compiler và nền tảng
+	
+
+
+#### **6.2.Macro thông tin vị trí mã nguồn**
+
+* `__FILE__:`
+
+	*  Tên tệp nguồn hiện tại (bao gồm đường dẫn nếu compiler cung cấp)
+
+* `__LINE__:`
+
+	*  Số dòng hiện tại trong tệp nguồn
+
+* `__func__:`
+
+	*  Tên hàm hiện tại (từ C99, là identifier, không phải chuỗi)
+	
+* **VD:** 
+
+			#include <stdio.h>
+
+			#define LOG_ERROR(msg) \
+			    fprintf(stderr, "[ERROR] %s:%d: %s(): %s\n", __FILE__, __LINE__, __func__, msg)
+
+			int main() {
+			    LOG_ERROR("Gia tri khong hop le");
+			    return 0;
+			}
+			
+			// Output:
+			[ERROR] main.c:10: main(): Gia tri khong hop le
+
+#### **6.3.Macro thời gian biên dịch**
+
+* `__DATE__:`
+
+	*  Ngày biên dịch (định dạng: "Mmm dd yyyy")
+
+* `__TIME__:`
+
+	*  Giờ biên dịch (định dạng: "hh:mm:ss")
+
+* **VD:** 
+
+		#include <stdio.h>
+
+		int main() {
+		    printf("Chuong trinh duoc build vao: %s %s\n", __DATE__, __TIME__);
+		    return 0;
+		}
+		//Output:
+		Chuong trinh duoc build vao: Mar  1 2026 17:26:45
+
+### **VII. INCLUDE GUARD**
+
+#### **7.1.Cơ chế hoạt động**
+
+* Sử dụng `#ifndef` + `#define` + `#endif` để tạo một "lá chắn" (guard) dựa trên một định danh duy nhất.
+
+*  Cú pháp chuẩn:
+	
+			// myheader.h
+			#ifndef MYHEADER_H                  // Nếu MYHEADER_H chưa được định nghĩa
+			#define MYHEADER_H                  // Định nghĩa nó ngay lập tức
+
+			// Nội dung header thật sự
+			#include <stdio.h>
+
+			#define MAX_BUFFER 1024
+
+			typedef struct {
+			    int id;
+			    char name[50];
+			} Person;
+
+			void printPerson(const Person *p);
+
+			#endif /* MYHEADER_H */             // Kết thúc guard (có thể ghi chú tên để dễ đọc)		
+
+#### **7.2.Thiết kế header file chuẩn**
+
+* **Bảo vệ include lặp** → luôn có #pragma once hoặc include guard.
+
+* Sắp xếp thứ tự include:
+
+	* Header dự án trước
+	
+	* Header hệ thống sau
+	
+	* VD:
+
+			#pragma once
+
+			#include "mytypes.h"        // header dự án
+			#include <stdio.h>          // hệ thống
+			#include <stdlib.h>	  
+
+* Dùng extern "C" cho tương thích C++.
+
+* Không đặt định nghĩa (definition) trong header (trừ inline, static, macro).
+
+	* Chỉ khai báo (declaration): prototype hàm, extern biến, typedef, struct khai báo.
+	
+	* Định nghĩa (implementation) → đặt trong .c file.
+
+* Hạn chế #include không cần thiết
+
+   												 
+</details>
+
