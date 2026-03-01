@@ -5410,3 +5410,536 @@
 													 
 </details>
 
+
+<details>
+
+<summary><strong>CHƯƠNG 6: HÀM VÀ PHẠM VI BIẾN</strong></summary>
+
+## **CHƯƠNG 6: HÀM VÀ PHẠM VI BIẾN**
+
+### **I. TỔNG QUAN**
+
+#### **1.1.Khái niệm**
+
+##### **1.1.1.Định nghĩa**
+
+* Hàm (function) là một đơn vị chương trình độc lập bao gồm một tập hợp các lệnh thực hiện một nhiệm vụ cụ thể
+
+* Mỗi hàm có tên riêng, có thể nhận đầu vào (tham số), xử lý dữ liệu và trả về kết quả (nếu có) 
+
+	* Hàm giống như một black box:
+	
+		* Chỉ cần biết cách gọi nó (input/output), không cần quan tâm chi tiết bên trong
+		
+		* Mọi chương trình C đều phải có ít nhất một hàm: `main()` - điểm bắt đầu thực thi  
+	
+
+##### **1.1.2.Vai trò**
+
+* Hàm giúp cấu trúc chương trình theo modular, thay vì viết tất cả code trong một hàm duy nhất (monolithic)
+
+* Các vai trò chính: 
+
+	* **Phân chia nhiệm vụ:** Mỗi hàm chịu trách nhiệm một chức năng nhỏ, dễ quản lý.
+	
+	* **Tái sử dụng code:** Gọi hàm nhiều lần mà không lặp code.
+
+	* **Dễ debug và bảo trì:** Lỗi chỉ ảnh hưởng cục bộ, dễ sửa.
+	
+	* **Tích hợp thư viện:** Sử dụng hàm từ thư viện chuẩn (stdio.h, stdlib.h) hoặc tự viết.
+	
+* Nguyên tắc chia nhỏ chức năng (Modular Programming)
+
+	* Modular Programming là cách tiếp cận chia chương trình thành các module (hàm hoặc file) nhỏ, độc lập
+	
+* Nguyên tắc: Single Responsibility Principle (SRP) – Mỗi hàm chỉ làm một việc duy nhất.
+	
+	 *  VD1: Không moduler
+	 
+			// Tất cả trong main – khó đọc
+			int main() {
+			    int a = 10, b = 20;
+			    int sum = a + b;
+			    printf("Tong: %d\n", sum);
+			    // ... thêm code khác
+			    return 0;
+			}
+
+	 *  VD2: Modular
+	 
+			int add(int a, int b);     // prototype
+
+			int main() {
+			    int sum = add(10, 20);  // gọi hàm độc lập
+			    printf("Tong: %d\n", sum);
+			    return 0;
+			}
+
+			int add(int a, int b) {     // hàm nhỏ, chỉ cộng
+			    return a + b;
+			}
+			
+								
+
+#### **1.2.Cú pháp và khai báo**
+
+##### **1.2.1.Khai báo nguyên mẫu (Function Prototype)**
+
+*  Prototype (nguyên mẫu hàm) là khai báo ngắn gọn về hàm, cho compiler biết về kiểu trả về, tên hàm và tham số - trước khi định nghĩa đầy đủ
+
+*  Cú pháp:
+		
+		kiểu_trả_về tên_hàm(danh_sách_tham_số);
+
+*  VD:
+
+		int add(int a, int b);
+		void printHello(void);
+		double tinhBinhPhuong(float x);
+
+##### **1.2.2.Định nghĩa hàm (Function Definition)**
+
+* Definition là phần triển khai đầy đủ của hàm, bao gồm thân hàm
+
+* Cú pháp: 
+
+		kiểu_trả_về tên_hàm(danh_sách_tham_số) {
+		    // thân hàm: các lệnh
+		    return giá_trị;  // nếu có kiểu trả về
+		}
+
+* VD:
+
+		int add(int a, int b) {     // định nghĩa
+		    int sum = a + b;        // thân hàm
+		    return sum;             // trả về
+		}
+
+#### **1.3.Tham số và đối số**
+
+* **Parameters (tham số hình thức):** 
+
+	* Biến trong khai báo hàm (ví dụ: int a, int b trong add(int a, int b)).
+
+*  **Arguments (đối số thực tế):** 
+
+	* Giá trị thực tế truyền vào khi gọi hàm (ví dụ: add(10, 20); – 10 và 20 là arguments).
+
+*  **Sự tương thích kiểu dữ liệu:** 
+
+	* Arguments phải khớp kiểu parameters (compiler tự ép kiểu nếu có thể, ví dụ int → float, nhưng không ngược lại).
+
+*  **Cơ chế truyền dữ liệu khi gọi hàm:** 
+
+	* Mặc định là call by value (sao chép giá trị)
+
+			int multiply(int x, int y);  // parameters: x, y
+
+			int main() {
+			    int result = multiply(5, 3);  // arguments: 5, 3
+			    return 0;
+			}
+
+#### **1.4.Câu lệnh return**
+
+* **Ý nghĩa và vai trò:** Kết thúc hàm và trả giá trị về nơi gọi (nếu hàm có kiểu trả về non-void).
+
+* **Trả về giá trị:** return biểu_thức; – biểu thức phải khớp kiểu trả về.
+
+* **Trả về sớm (early return):** Dùng để thoát hàm sớm nếu điều kiện thỏa mãn
+
+			int checkEven(int num) {
+			    if (num % 2 == 0) {
+			        return 1;           // early return nếu chẵn
+			    }
+			    return 0;               // nếu lẻ
+			}
+
+* **Hàm không trả về giá trị (void):** Không cần return, hoặc chỉ return; để kết thúc sớm.
+
+		void printMessage() {
+		    printf("Xin chao!\n");
+		    // không cần return
+		}
+			
+
+### **II. CƠ CHẾ GỌI HÀM VÀ HOẠT ĐỘNG**
+
+#### **2.1.Call by value - Truyền tham trị**
+
+* C mặc định sử dụng **call by value** (truyền tham trị):
+
+	* Khi gọi hàm, giá trị của đối số được sao chép vào tham số hình thức 
+	
+	* Tham số trong hàm là bản sao của đối số
+	
+	* Thay đổi giá trị tham số không ảnh hưởng đến biến gốc ở nơi gọi  
+
+* VD :
+	
+			#include <stdio.h>
+
+			void swap(int a, int b) {
+			    int temp = a;
+			    a = b;
+			    b = temp;
+			    printf("Trong ham swap: a = %d, b = %d\n", a, b);
+			}
+
+			int main() {
+			    int x = 10, y = 20;
+			    printf("Truoc khi goi: x = %d, y = %d\n", x, y);
+
+			    swap(x, y);
+
+			    printf("Sau khi goi: x = %d, y = %d\n", x, y);
+			    return 0;
+			}
+			// Output:
+			Truoc khi goi: x = 10, y = 20
+			Trong ham swap: a = 20, b = 10
+			Sau khi goi: x = 10, y = 20	
+			
+			-> Biến x và y không thay đổi, vì a và b chỉ là bản sao.	
+	
+#### **2.2.Call by reference - Truyền tham chiếu**
+
+* C không có cơ chế call by reference thật sự như C++ (dùng `&`).
+
+* Tuy nhiên, ta có thể mô phỏng bằng cách truyền địa chỉ (con trỏ) → gọi là call by reference qua pointer.
+	
+* Đặc điểm:
+
+	* Truyền địa chỉ của biến gốc.
+	
+	* Thay đổi *tham_so → thay đổi trực tiếp giá trị tại địa chỉ → ảnh hưởng biến gốc.
+
+* VD:
+
+			#include <stdio.h>
+
+			void swap(int *a, int *b) {
+			    int temp = *a;
+			    *a = *b;
+			    *b = temp;
+			    printf("Trong ham swap: *a = %d, *b = %d\n", *a, *b);
+			}
+
+			int main() {
+			    int x = 10, y = 20;
+			    printf("Truoc khi goi: x = %d, y = %d\n", x, y);
+
+			    swap(&x, &y);           // truyền địa chỉ
+
+			    printf("Sau khi goi: x = %d, y = %d\n", x, y);
+			    return 0;
+			}
+			// Output:
+			Truoc khi goi: x = 10, y = 20
+			Trong ham swap: *a = 20, *b = 10
+			Sau khi goi: x = 20, y = 10			
+
+
+#### **2.3.Stack Frame**
+
+* Call Stack (ngăn xếp gọi hàm) là vùng bộ nhớ đặc biệt (stack segment) dùng để quản lý các lần gọi hàm lồng nhau
+
+* Mỗi lần gọi hàm -> hệ thống tạo một stack frame (khung ngăn xếp) mới
+
+* Thành phần chính của một stack frame:
+
+	* **Tham số** (arguments/parameters – sao chép hoặc địa chỉ)   
+
+	* **Biến cục bộ** (local variables – automatic storage)
+	
+	* **Return address** (địa chỉ lệnh tiếp theo trong hàm gọi)
+
+	* **Saved registers** (giá trị thanh ghi bị thay đổi, được lưu để khôi phục)
+	
+	* **Frame pointer (FP)** và **Stack pointer (SP)** - quản lý frame 
+
+* Qúa trình thực thi:
+
+	* Trước khi gọi hàm -> push các đối số lên stack  (theo thứ tự ngược trong một số kiến trúc).
+	
+	* Push return address
+	
+	* Tạo frame mới -> cấp phát không gian cho biến cục bộ 
+	
+	*  Thực thi thân hàm 
+	
+	*  Khi gặp return  → pop frame → khôi phục thanh ghi → nhảy về return address.
+
+	* Frame bị hủy → biến cục bộ mất giá trị.
+
+			Giả sử main() gọi funcA() → funcA() gọi funcB()
+
+			Stack (địa chỉ cao → thấp):
+			+---------------------+
+			| main's frame        |  ← Frame Pointer (FP) của main
+			| biến cục bộ main    |
+			| return addr (hệ thống)|
+			+---------------------+
+			          ↓ push khi gọi funcA
+			+---------------------+
+			| funcA's frame       |  ← FP hiện tại
+			| tham số của funcA   |
+			| biến cục bộ funcA   |
+			| return addr → main  |
+			+---------------------+
+			          ↓ push khi gọi funcB
+			+---------------------+
+			| funcB's frame       |  ← FP hiện tại
+			| tham số của funcB   |
+			| biến cục bộ funcB   |
+			| return addr → funcA |
+			+---------------------+
+			          ↓ funcB return → pop frame
+			          ↓ funcA return → pop frame
+			          ↓ quay về main
+
+
+
+### **III. PHẠM VI VÀ VÒNG ĐỜI**
+
+#### **3.1.Scope và Storage Duration**
+
+* **Scope (phạm vi):**
+
+	* Vùng code mà tại đó tên biến có thể được sử dụng 
+
+* **Lifetime (thời gian sống / storage duration):**
+
+	* Khoảng thời gian biến tồn tại trong bộ nhớ (từ lúc được cấp phát đến khi bị hủy)
+	
+* **Các loại phạm vi:**
+
+	* **Block scope (phạm vi khối)** – từ { đến }
+	
+	*  **Function scope** – chỉ áp dụng cho nhãn (label) của goto
+		
+	* **Function prototype scope** – tham số trong prototype
+	
+	*  **File scope (global scope)** – ngoài mọi hàm
+
+
+#### **3.2.Local Variables**
+
+* **Khai báo:** Trong thân hàm hoặc trong khối { } (block).
+
+* **Phạm vi:** Chỉ trong khối chứa nó (block scope).
+	
+* **Lifetime:** Tồn tại chỉ khi khối đang thực thi (automatic storage duration).
+	
+* **Lưu trữ:** Trên stack (trong stack frame của hàm).
+	
+* **Khởi tạo mặc định:** Giá trị rác (garbage) nếu không khởi tạo.
+
+* Biến cục bộ bị hủy tự động khi ra khỏi khối → giá trị mất.
+
+* Mỗi lần gọi hàm → stack frame mới → biến cục bộ được cấp phát lại.
+	
+* **VD:**
+
+		#include <stdio.h>
+
+		void test() {
+		    int x = 100;            // block scope, lifetime = suốt hàm test()
+		    
+		    {
+		        int y = 200;        // block scope nhỏ hơn
+		        printf("y = %d\n", y);
+		    }
+		    
+		    // printf("%d", y);     // LỖI biên dịch: y ngoài scope
+		    
+		    printf("x = %d\n", x);  // hợp lệ
+		}
+
+		int main() {
+		    test();
+		    // printf("%d", x);     // LỖI: x không tồn tại ở main
+		    return 0;
+		}
+
+#### **3.3.Global Variables**
+
+* **Khai báo:** Ngoài mọi hàm (file scope).
+
+* **Phạm vi:** Toàn bộ file (và các file khác nếu dùng extern).
+	
+* **Lifetime:** Suốt thời gian chương trình chạy (static storage duration).
+	
+* **Lưu trữ:** Trong vùng Data (nếu có khởi tạo) hoặc BSS (nếu không khởi tạo).
+	
+* **Khởi tạo mặc định:** 0 (zero-initialized) nếu không gán giá trị.
+
+
+		#include <stdio.h>
+
+		int globalVar = 500;        // global, file scope, lifetime = toàn chương trình
+
+		void func() {
+		    globalVar += 100;
+		    printf("Trong func: globalVar = %d\n", globalVar);
+		}
+
+		int main() {
+		    printf("Ban dau: globalVar = %d\n", globalVar);
+		    func();
+		    printf("Sau func: globalVar = %d\n", globalVar);
+		    return 0;
+		}
+		
+		// Output:
+		Ban dau: globalVar = 500
+		Trong func: globalVar = 600
+		Sau func: globalVar = 600		
+
+#### **3.4.Từ khóa extern**
+
+* `extern` dùng để khai báo (không định nghĩa) một biến toàn cục đã được định nghĩa ở file khác
+
+	* Cho phép chia sẻ biến giữa các file 
+
+* Quy tắc:
+
+	* Chỉ một file định nghĩa biến (có giá trị khởi tạo hoặc không)
+	
+	* Các file khác khai báo extern để sử dụng  	
+
+	
+* Ví dụ:
+
+	* **globals.h** (header file - khai báo) 
+
+			#ifndef GLOBALS_H
+			#define GLOBALS_H
+
+			extern int sharedCounter;   // khai báo, không định nghĩa
+
+			#endif
+
+	* **main.c** (định nghĩa biến)
+
+			#include <stdio.h>
+			#include "globals.h"
+
+			int sharedCounter = 0;      // định nghĩa thực sự
+
+			void increment();
+
+			int main() {
+			    printf("Ban dau: %d\n", sharedCounter);
+			    increment();
+			    printf("Sau: %d\n", sharedCounter);
+			    return 0;
+			}
+
+	* **utils.c** (sử dụng extern)
+
+			#include "globals.h"
+
+			void increment() {
+			    sharedCounter++;
+			    printf("Trong utils: %d\n", sharedCounter);
+			}
+
+	* **Kết quả** khi biên dịch & chạy (gcc main.c utils.c -o program):
+
+
+			Ban dau: 0
+			Trong utils: 1
+			Sau: 1		
+			
+### **IV. STATIC VARIABLE VÀ SCOPE**
+
+#### **4.1.Static variable**
+
+##### **4.1.1.Static Local Variable**
+
+* **Khai báo:** `static` trước biến cục bộ trong hàm hoặc khối 
+
+* **Đặc điểm:**
+
+	* **Khởi tạo chỉ một lần duy nhất**  (khi chương trình bắt đầu hoặc lần đầu hàm được gọi).
+	
+	* **Giữ giá trị giữa các lần gọi hàm**  (không bị reset như biến cục bộ thông thường) 
+
+	* **Vòng đời:** Suốt thời gian chương trình chạy
+	
+	* **Vị trí lưu trữ:** Vùng Data (nếu có khởi tạo) hoặc BSS (nếu không khởi tạo)
+
+	* **Phạm vi:**  Vẫn chỉ trong hàm/khối (block scope) – không thể truy cập từ ngoài.
+
+* VD:
+
+			#include <stdio.h>
+
+			void counter() {
+			    static int count = 0;       // khởi tạo chỉ 1 lần
+			    count++;
+			    printf("Ham counter duoc goi lan thu: %d\n", count);
+			}
+
+			int main() {
+			    counter();      // lần 1 → count = 1
+			    counter();      // lần 2 → count = 2
+			    counter();      // lần 3 → count = 3
+			    
+			    // count vẫn giữ giá trị 3 ở lần gọi tiếp theo
+			    counter();      // lần 4 → count = 4
+			    return 0;
+			}
+			
+			// Output:
+			Ham counter duoc goi lan thu: 1
+			Ham counter duoc goi lan thu: 2
+			Ham counter duoc goi lan thu: 3
+			Ham counter duoc goi lan thu: 4			
+
+#### **4.2.Static Global Variable**
+
+* **Khai báo:** `static` trước biến khai báo ngoài mọi hàm
+
+* **Đặc điểm:**
+
+	* **Phạm vi (scope/linkage):**  Chỉ giới hạn trong file hiện tại (internal linkage).
+	
+	* Không thể truy cập từ file khác (ngay cả khi dùng extern).
+
+	* **Vòng đời:** Suốt chương trình (static storage duration).
+	
+	* **Khởi tạo mặc định:** 0 nếu không gán.
+
+	* **Lưu trữ:**  Vùng Data/BSS.
+
+* VD:
+
+	* **file1.c**
+
+			#include <stdio.h>
+
+			static int filePrivateVar = 100;    // chỉ dùng được trong file1.c
+
+			void showPrivate() {
+			    printf("Gia tri private: %d\n", filePrivateVar);
+			}
+
+			int main() {
+			    showPrivate();
+			    filePrivateVar += 50;
+			    showPrivate();
+			    return 0;
+			}
+			
+	* **file2.c** 
+
+			// extern int filePrivateVar;   // LỖI linker: undefined reference
+
+
+
+
+													 
+</details>
+
