@@ -6473,7 +6473,7 @@
 
 
  
-#### **1.2. Synchronous và Asynchronous **
+#### **1.2. Synchronous và Asynchronous**
  
 * 	**Synchronous Signals (Tín hiệu đồng bộ):**
 
