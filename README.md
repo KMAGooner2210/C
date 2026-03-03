@@ -6447,6 +6447,7 @@
 </details>
 
 
+
 <details>
     <summary><strong>CHƯƠNG 14: XỬ LÝ TÍN HIỆU (SIGNAL HANDLING)</strong></summary>
 
@@ -6474,35 +6475,165 @@
 
  
 #### **1.2. Synchronous và Asynchronous**
- 
+
 * 	**Synchronous Signals (Tín hiệu đồng bộ):**
 
-	*  Do lỗi trong chính process
+	*  **Khái niệm:**
 	
-	*  Thời điểm diễn ra khi ngay lập tức lỗi xảy ra
-	
-	*  VD:
-	
-		* SIGSEGV (segmentation fault)
+		* Là các tín hiệu được sinh ra trực tiếp bởi chính luồng thực thi (thread/process) hiện tại do một lỗi xảy ra trong quá trình thực thi lệnh CPU
+
+	* **Đặc điểm:**
+	 
+		*  Do lỗi trong chính process
 		
-		* SIGFPE (chia 0)
+		*  Luôn gắn với một instruction cụ thể 
 		
-		* SIGILL (illegal instruction).     
+		*  Thời điểm diễn ra khi ngay lập tức lỗi xảy ra
+
+	* **Cơ chế hoạt động:**
+	 
+		*  Khi CPU thực thi một instruction gây lỗi
+		
+			* 1. CPU phát hiện exception 
+			* 2. CPU chuyển sang kernel mode
+			* 3. Kernel ánh xạ exception -> signal tương ứng
+			* 4. Kernel gửi signal về process
+			* 5. Nếu không có handler -> process bị terminate (core dump nếu bật) 
+		
+	*  **Các synchronous signals quan trọng**
+	
+		* **SIGSEGV (segmentation fault)**
+		
+			* Xảy ra khi:
+			
+				* Truy cập vùng nhớ không hợp lệ
+				
+				* Dereference con trỏ NULL
+				
+				* Truy cập memory đã free
+				
+			* VD:     
+
+					int *p = NULL;
+					*p = 10;   // gây SIGSEGV
+		
+		* **SIGFPE (floating point exception)**
+
+			* Xảy ra khi:
+			
+				* Chia số nguyên cho 0
+						
+			* VD:     
+
+					int a = 10;
+					int b = 0;
+					int c = a / b;   // SIGFPE
+							
+		* **SIGILL (illegal instruction)**.
+
+			* Xảy ra khi:
+			
+				* CPU gặp opcode không hợp lệ
+				* Nhảy vào vùng dữ liệu và thực thi như code
+				* Binary compile cho CPU khác kiến trúc
+						
+
 
 * 	**Asynchronous Signals (Tín hiệu bất đồng bộ):**
 
-	*  Do sự kiện bên ngoài (kernel, process khác, người dùng)
+	*  **Khái niệm:**
 	
-	*  Có thể xảy ra bất cứ lúc nào
+		* Là các tín hiệu được gửi đến process từ bên ngoài luồng thực thi hiện tại, không gắn với một instruction cụ thể 
 	
-	*  VD:
+	*  **Đặc điểm:**
 	
-		* SIGINT (Ctrl+C)
+		* Không do lỗi CPU của chính process gây ra
 		
-		* SIGTERM (kill command)
+		* Có thể đến bất kỳ thời điểm nào 
 		
-		* SIGCHLD (con process kết thúc).  
+		* Có thể interrupt code đang chạy
 
+	*  **Nguồn phát:**
+	
+		* **Từ người dùng:**
+		
+			* Nhấn `Ctrl+C` -> `SIGINT`
+			* Nhấn `Ctrl+Z` -> `SIGTSTP` 
+		
+		* **Từ process khác:**
+		
+			* Dùng lệnh:
+					
+					kill -TERM <pid>
+					
+			*  Sẽ gửi `SIGTERM`
+	
+		*  **Từ kernel:**
+		
+			* Con process kết thúc -> `SIGCHLD`
+			
+			* Hết thời gian timer -> `SIGALRM`
+			
+			* I/O async sẵn sàng -> `SIGIO`  
+
+	*  **Các asynchronous signals quan trọng**
+	
+		* **SIGINT**
+		
+			* Xảy ra khi nhấn `Ctrl+C` nhằm dừng chương trình
+				
+			* VD:     
+
+					#include <signal.h>
+					#include <stdio.h>
+
+					void handler(int sig) {
+					    printf("Interrupted!\n");
+					}
+
+					int main() {
+					    signal(SIGINT, handler);
+					    while (1);
+					}
+
+		* **SIGCHLD**
+		
+			* Gửi khi child process thay đổi trạng thái
+			
+			* Dùng với `fork()` + `wait()` 
+				
+			* VD:     
+
+					#include <sys/wait.h>
+					#include <unistd.h>
+					#include <signal.h>
+
+					void handler(int sig) {
+					    while (waitpid(-1, NULL, WNOHANG) > 0);
+					}
+
+					int main() {
+					    signal(SIGCHLD, handler);
+					    if (fork() == 0) {
+					        _exit(0);
+					    }
+					    while (1);
+					}
+
+	*  **Cách hoạt động**
+	
+		* Khi asynchronous signal được gửi:
+		
+			*  1. Kernel đánh dấu signal pending
+			*  2. Khi process trở về user mode
+			*  3. Kernel inject signal
+			* 	4. CPU chuyển sang handler
+		* Vì vậy signal có thể:
+		
+			* Interrupt `sleep()`
+			* Interrupt `read()`
+			* Interrupt system call
+			  									
 * 	**Bảng tín hiệu phổ biến:**
 
 	| Signal | Số | Default Action | Ý nghĩa / Nguyên nhân phổ biến | Loại |  
@@ -6583,9 +6714,9 @@
 			
 * **Giá trị trả về:**
 
-	* Trước đó: Handler cũ (hoặc SIG_DFL/SIG_IGN)
+	* Thành công: Handler cũ (hoặc SIG_DFL/SIG_IGN)
 	
-	* Nếu lỗi: Trả về `SIG_ERR` và set `errno`    
+	* Thất bại: Trả về `SIG_ERR` và set `errno`    
 		
 
 ####  **2.2. Các tín hiệu phổ biến khi xử lý cơ bản**
@@ -6685,30 +6816,59 @@
 
 		int sigaction(int signum, const struct sigaction *act, struct sigaction *oldact);
 
-	* **signum:** Số tín hiệu hoặc macro như `SIGINT`, `SIGTERM`
+	* **signum:** Số tín hiệu hoặc macro như `SIGINT`, `SIGTERM`,`SIGCHLD`,`SIGSEGV`
 	
-	* **act:** Con trỏ tới cấu trúc struct sigaction chứa thông tin handler mới (nếu NULL thì chỉ lấy thông tin cũ).
+	* **act:** Con trỏ tới cấu trúc `struct sigaction` chứa thông tin handler mới (nếu NULL thì chỉ lấy thông tin cũ).
 	
 	* **oldact:** Con trỏ để lưu handler  (nếu NULL thì không quan tâm).
+
+* **Giá trị trả về:**
+
+	* 0 -> Thành công
+	
+	* -1 -> Lỗi và set `errno` 
 		
-*  Cấu trúc struct sigaction:
+*  **Cấu trúc struct sigaction:**
 		
 		struct sigaction {
-		    void (*sa_handler)(int);               // Handler đơn giản (giống signal())
+		    void (*sa_handler)(int);               						// Handler đơn giản (giống signal())
 		    void (*sa_sigaction)(int, siginfo_t *, void *);  // Handler nâng cao (khi SA_SIGINFO)
-		    sigset_t sa_mask;                      // Tín hiệu bị block trong handler
-		    int sa_flags;                          // Cờ điều khiển hành vi (SA_RESTART, SA_SIGINFO...)
-		    void (*sa_restorer)(void);             // Không dùng nữa (deprecated)
+		    sigset_t sa_mask;                      					// Tín hiệu bị block trong handler
+		    int sa_flags;                          					// Cờ điều khiển hành vi (SA_RESTART, SA_SIGINFO...)
+		    void (*sa_restorer)(void);            					 // Không dùng nữa (deprecated)
 		};
-			
-* **Các cờ quan trọng trong sa_flags:**
+	
+	* **sa_handler:** Dùng khi không cần thông tin nâng cao
+	
+	* **sa_sigaction:** 
+	
+		* Handler nâng cao (khi bật `SA_SIGINFO`)
+		
+		* Cho phép truy cập:
+		
+			* PID sender
+			* UID sender
+			* Địa chỉ gây lỗi (SIGSEGV)
+			* Giá trị gửi kèm (sigqueue())     
 
-	| Cờ | Ý nghĩa | Khi nào dùng |  
-	|---------------|------------------------------------------------------------------------|------------------------------------------------------------------------------|  
-	| SA_RESTART | System call bị interrupt (như `read()`, `write()`, `accept()`) sẽ tự động restart | Tránh lỗi `EINTR` khi thao tác I/O chậm (socket, pipe, terminal input...) |  
-	| SA_SIGINFO | Dùng `sa_sigaction` thay vì `sa_handler`, nhận thêm `siginfo_t` | Khi cần thông tin chi tiết: sender PID, UID, fault address (`SIGSEGV`) |  
-	| SA_NOCLDSTOP | Không gửi `SIGCHLD` khi child bị `SIGSTOP` / `SIGTSTP` (chỉ khi terminate) | Tránh nhận `SIGCHLD` thừa trong process manager / shell-like program |  
-	| SA_NODEFER | Không tự động block signal hiện tại trong lúc handler đang chạy | Hiếm dùng; chỉ khi cần cho phép signal lồng nhau (cực kỳ cẩn thận) |
+	* **sa_mask:** 
+	
+		* Tập tín hiệu bị block tạm thời khi handler đang chạy
+		
+		* Mặc định:
+		
+			* Signal hiện tịa tự động bị block 
+			
+			* Có thể thêm signal khác vào  
+					
+	* **Các cờ quan trọng trong sa_flags:**
+
+		| Cờ | Ý nghĩa | Khi nào dùng |  
+		|---------------|------------------------------------------------------------------------|------------------------------------------------------------------------------|  
+		| SA_RESTART | System call bị interrupt (như `read()`, `write()`, `accept()`) sẽ tự động restart | Tránh lỗi `EINTR` khi thao tác I/O chậm (socket, pipe, terminal input...) |  
+		| SA_SIGINFO | Dùng `sa_sigaction` thay vì `sa_handler`, nhận thêm `siginfo_t` | Khi cần thông tin chi tiết: sender PID, UID, fault address (`SIGSEGV`) |  
+		| SA_NOCLDSTOP | Không gửi `SIGCHLD` khi child bị `SIGSTOP` / `SIGTSTP` (chỉ khi terminate) | Tránh nhận `SIGCHLD` thừa trong process manager / shell-like program |  
+		| SA_NODEFER | Không tự động block signal hiện tại trong lúc handler đang chạy | Hiếm dùng; chỉ khi cần cho phép signal lồng nhau (cực kỳ cẩn thận) |
 		
 
 ####  **3.2. VD**
@@ -6801,4 +6961,5 @@
 
 				
    </details> 
+   
    
