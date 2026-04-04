@@ -6447,6 +6447,731 @@
 </details>
 
 
+<details>
+    <summary><strong>CHƯƠNG 8: MẢNG VÀ CHUỖI KÝ TỰ</strong></summary>
+
+## **CHƯƠNG 8: MẢNG VÀ CHUỖI KÝ TỰ**
+
+### **I.  Mảng một chiều**
+
+#### **1.1. Bản chất và đặc điểm của mảng**
+
+##### **1.1.1. Khái niệm**
+
+* Mảng (array) là một tập hợp gồm nhiều phần tử có cùng kiểu dữ liệu, được cấp phát liên tiếp nhau trên bộ nhớ vật lý (contiguous memory).
+
+##### **1.1.2. Đặc điểm**
+	
+* Tất cả các phần tử phải có cùng kiểu dữ liệu (int, float, char, …).
+
+*  Các phần tử được lưu trữ ở các ô nhớ liên tiếp nhau về mặt vật lý.
+
+*  Chỉ số (index) của mảng luôn bắt đầu từ 0.
+
+*  Kích thước của mảng phải được xác định tại thời điểm biên dịch (trừ trường hợp VLA – sẽ trình bày sau).
+
+##### **1.1.3. Địa chỉ phần tử**
+
+* **Công thức:**
+	
+	* **Địa chỉ phần tử i** = **Địa chỉ cơ sở (Base address) + i × sizeof(kiểu dữ liệu)**
+	
+*  **Ví dụ:**
+
+	*  Giả sử khai báo `int arr[5]`; và địa chỉ cơ sở của `arr` là `0x1000`, kích thước của int là 4 byte:
+	
+		*  `arr[0]` nằm tại `0x1000`
+		
+		* `arr[1]` nằm tại `0x1004`
+		
+		* `arr[2]` nằm tại `0x1008`  
+	
+	 	 		
+#### **1.2. Khai báo và khởi tạo mảng một chiều**
+
+* **Cú pháp khai báo mảng một chiều:**
+
+			kiểu_dữ_liệu tên_mảng[kích_thước]; 
+
+* **VD:**
+	
+		int numbers[10];           // Mảng 10 phần tử kiểu int
+		float scores[50];          // Mảng 50 phần tử kiểu float
+		char name[30];             // Mảng 30 ký tự
+
+* **Khởi tạo mảng khi khai báo:**
+
+	* Khởi tạo toàn bộ giá trị:
+
+			int arr[5] = {10, 20, 30, 40, 50};
+	
+	* Khởi tạo một phần (các phần tử còn lại tự động được gán giá trị 0):
+
+			int arr[5] = {10, 20};     // arr[0]=10, arr[1]=20, arr[2..4]=0
+	
+	* Khởi tạo tất cả phần tử bằng 0 (cách viết phổ biến):
+
+			int arr[100] = {0};
+
+* **Lưu ý:**
+
+	*  Nếu không khởi tạo giá trị khi khai báo, các phần tử của mảng cục bộ (local array) sẽ chứa giá trị rác (undefined value).
+
+#### **1.3. Chỉ định phần tử khởi tạo**
+
+##### **1.3.1.Khái niệm**
+
+* Chuẩn C99 giới thiệu tính năng Designated Initializers, cho phép khởi tạo các phần tử mảng theo chỉ số cụ thể, không nhất thiết phải theo thứ tự.
+
+##### **1.3.2.Cú pháp**
+	
+		int arr[so_phan_tu] = {[chỉ_số] = giá_trị, ...};
+	
+* VD1:
+
+		int numbers[10] = {
+		    [0] = 5,
+		    [3] = 42,
+		    [9] = 100
+		};
+	
+	* `numbers[0] = 5`
+		
+	* `numbers[3] = 42`
+		
+	* `numbers[9] = 100`
+	
+	*  Các phần tử còn lại được tự động khởi tạo bằng 0.     
+
+* VD2:
+
+		int arr[100] = {
+		    [0 ... 9] = 1,      // GNU extension (range initializer)
+		    [10 ... 49] = 2,
+		    [50] = 999
+		};
+
+##### **1.3.3.Lưu ý**
+	
+* Chỉ số trong dấu ngoặc vuông phải là hằng số (constant expression).
+		
+* Tính năng range `[first ... last]` là mở rộng của GCC, không phải chuẩn C99 thuần túy.
+
+#### **1.4. Tính toán kích thước mảng**
+
+* Để xác định kích thước của mảng, ngôn ngữ C cung cấp toán tử `sizeof`.
+
+	*  `sizeof(tên_mảng)` → trả về tổng kích thước (theo byte) của toàn bộ mảng.
+	
+	*  `sizeof(tên_mảng[0])` → trả về kích thước của một phần tử.
+
+* **Công thức:**
+
+		size_t n = sizeof(arr) / sizeof(arr[0]);
+		
+* **Ví dụ:**
+
+		#include <stdio.h>
+
+		int main(void)
+		{
+		    int arr[] = {10, 20, 30, 40, 50};
+		    
+		    printf("Kich thuoc toan bo mang: %zu bytes\n", sizeof(arr));
+		    printf("Kich thuoc mot phan tu: %zu bytes\n", sizeof(arr[0]));
+		    printf("So luong phan tu: %zu\n", sizeof(arr) / sizeof(arr[0]));
+		    
+		    return 0;
+		}
+
+	
+#### **1.5. Buffer Overflow**
+
+* Một trong những đặc điểm nguy hiểm nhất của mảng trong C là ngôn ngữ không tự động kiểm tra ranh giới mảng tại thời điểm biên dịch lẫn thực thi.
+
+	* Truy cập hoặc ghi dữ liệu ngoài giới hạn mảng dẫn đến hành vi không xác định (Undefined Behavior).
+	
+	* Có thể gây ra:
+	
+		*  Ghi đè dữ liệu của các biến khác
+		
+		*  Làm sập chương trình (crash)
+		 
+* **VD:**
+
+		#include <stdio.h>
+
+		int main(void)
+		{
+		    int arr[5] = {1, 2, 3, 4, 5};
+		    int x = 999;
+		    
+		    arr[10] = 888;        // Vượt biên nghiêm trọng!
+		    
+		    printf("Gia tri x = %d\n", x);   // Kết quả không thể dự đoán
+		    
+		    return 0;
+		}
+
+### **II.  Mảng đa chiều**
+
+#### **2.1. Cấu trúc và cách khai báo**
+
+* Mảng đa chiều trong C được xây dựng theo nguyên tắc “mảng của các mảng”
+
+* **Cú pháp:**
+
+		kiểu_dữ_liệu tên_mảng[số_hàng][số_cột];
+
+* **Khai báo:**
+	
+		int matrix[3][4];        // Mảng 2 chiều: 3 hàng, 4 cột
+		float scores[5][10];     // Mảng 2 chiều: 5 hàng, 10 cột
+		int cube[2][3][4];       // Mảng 3 chiều
+	
+* **Khởi tạo mảng đa chiều khi khai báo:**
+	
+		int matrix[3][4] = {
+		    {1,  2,  3,  4},
+		    {5,  6,  7,  8},
+		    {9, 10, 11, 12}
+		};
+
+* **Khởi tạo một phần (các phần tử còn lại tự động bằng 0):**
+	
+		int matrix[3][4] = {
+		    {1, 2},           // Hàng 0
+		    {5},              // Hàng 1
+		    {9, 10, 11}       // Hàng 2
+		};
+
+* **Quy tắc:**
+
+	*  Khi khởi tạo ngay lúc khai báo, chỉ được phép bỏ trống kích thước của chiều ngoài cùng (chiều thứ nhất).
+	
+	*  Các chiều còn lại bắt buộc phải ghi rõ kích thước.
+	
+	*  VD đúng: 
+	
+			int arr[][3] = {{1,2,3}, {4,5,6}, {7,8,9}};   // Hợp lệ
+
+	*  VD sai: 
+	
+			int arr[3][] = ...;   // Sai – không được bỏ trống chiều trong
+					
+#### **2.2. Tổ chức bộ nhớ theo thứ tự Row-major Order**
+
+* Trong ngôn ngữ C, mảng đa chiều được lưu trữ theo thứ tự ưu tiên hàng
+
+* **Ý nghĩa:** 
+
+	* Các phần tử thuộc cùng một hàng được lưu trữ liền kề nhau trong bộ nhớ.
+	
+	* Chỉ sau khi hết một hàng, chương trình mới chuyển sang lưu trữ hàng tiếp theo.
+
+* **Minh họa:**
+
+	* Với mảng `int matrix[3][4]` được khởi tạo như sau:
+
+			int matrix[3][4] = {
+			    {10, 20, 30, 40},
+			    {50, 60, 70, 80},
+			    {90, 100, 110, 120}
+			};
+	
+	* Trong bộ nhớ vật lý, các phần tử được sắp xếp theo thứ tự tuyến tính như sau:
+
+			matrix[0][0]  matrix[0][1]  matrix[0][2]  matrix[0][3]
+			matrix[1][0]  matrix[1][1]  matrix[1][2]  matrix[1][3]
+			matrix[2][0]  matrix[2][1]  matrix[2][2]  matrix[2][3] 
+
+* **Ý nghĩa:**
+
+	* Duyệt mảng theo hàng (row-by-row) sẽ tận dụng tối đa bộ nhớ đệm (CPU Cache Locality), giúp chương trình chạy nhanh hơn.
+	
+	* Duyệt theo cột (column-by-column) thường chậm hơn do kém tận dụng cache. 
+
+* **VD:** 
+
+		// Duyệt theo hàng - hiệu năng tốt
+		for(int i = 0; i < 3; i++) {
+		    for(int j = 0; j < 4; j++) {
+		        printf("%d ", matrix[i][j]);
+		    }
+		    printf("\n");
+		}
+	
+	
+#### **2.3. Mảng có kích thước biến thiên**
+
+* Từ chuẩn C99, ngôn ngữ C cho phép khai báo mảng với kích thước là một biến số (được xác định tại thời điểm chạy chương trình).
+
+* **Cú pháp:**
+
+		int n;
+		scanf("%d", &n);
+		int arr[n];           // VLA - kích thước được xác định lúc chạy
+	
+
+* **Đặc điểm:**
+
+	*  Kích thước mảng được tính tại thời điểm thực thi (runtime), không phải lúc biên dịch.
+	
+	*  VLA chỉ có thể được khai báo trong phạm vi khối (block scope), thường là bên trong hàm.
+	
+	* VLA được cấp phát trên ngăn xếp (Stack), không phải trên Heap như `malloc()`. 
+	
+* **VD:**
+
+		 #include <stdio.h>
+
+		int main(void)
+		{
+		    int rows, cols;
+		    printf("Nhap so hang va so cot: ");
+		    scanf("%d %d", &rows, &cols);
+		    
+		    int matrix[rows][cols];   // VLA hai chiều
+		    
+		    // Gán giá trị
+		    for(int i = 0; i < rows; i++) {
+		        for(int j = 0; j < cols; j++) {
+		            matrix[i][j] = i * cols + j + 1;
+		        }
+		    }
+		    
+		    // In ra màn hình
+		    for(int i = 0; i < rows; i++) {
+		        for(int j = 0; j < cols; j++) {
+		            printf("%4d", matrix[i][j]);
+		        }
+		        printf("\n");
+		    }
+		    
+		    return 0;
+		}
+
+
+
+### **III.  Phân rã mảng thành con trỏ (Array Decay)**
+
+#### **3.1. Cơ chế**
+
+* Trong hầu hết các biểu thức, tên của mảng sẽ tự động được chuyển đổi thành một con trỏ trỏ đến phần tử đầu tiên của mảng đó.
+
+* Quá trình chuyển đổi này được gọi là Array Decay.
+
+	* Phân rã xảy ra ngầm định (implicit conversion), không cần biết toán tử nào.
+	
+	* Khi phân rã, mảng mất hoàn toàn thông tin về kích thước (dimension) và kiểu mảng. 
+	
+	*  Việc truyền mảng vào hàm thực chất là truyền bản sao của con trỏ trỏ đến phần tử đầu tiên (`&arr[0]`).
+	
+* **Ví dụ:**
+
+		 #include <stdio.h>
+
+		void printSize(int arr[])   // Tham số thực chất là int*
+		{
+		    printf("Kich thuoc ben trong ham: %zu\n", sizeof(arr));  // Kết quả là kích thước của con trỏ (thường 8 bytes)
+		}
+
+		int main(void)
+		{
+		    int numbers[10] = {0};
+		    
+		    printf("Kich thuoc ben ngoai ham: %zu\n", sizeof(numbers));  // Kết quả là 40 bytes (10 * 4)
+		    printSize(numbers);   // Mảng thoái hóa thành con trỏ khi truyền vào hàm
+		    
+		    return 0;
+		}
+	
+#### **3.2. Các trường hợp ngoại lệ không phân rã**
+
+* Khi tên mảng là toán hạng của toán tử `sizeof`.
+
+* Khi tên mảng là toán hạng của toán tử lấy địa chỉ `&` (unary &).
+
+*  Khi chuỗi hằng được sử dụng để khởi tạo mảng ký tự.
+
+* **VD:**
+
+		int arr[10];
+
+		sizeof(arr);           // Không thoái hóa → trả về kích thước toàn bộ mảng (40 bytes)
+
+		&arr;                  // Không thoái hóa → kiểu là "con trỏ trỏ đến mảng 10 phần tử int" (int (*)[10])
+
+		int arr2[] = "Hello";  // Chuỗi hằng khởi tạo mảng → không thoái hóa
+
+#### **3.3. Tương đương cú pháp giữa mảng và con trỏ**
+
+* Do cơ chế phân rã, trình biên dịch hiểu một số biểu thức mảng và con trỏ là tương đương.
+
+		arr[i]   ≡   *(arr + i)
+
+	* `arr[i]` là cú pháp truy cập phần tử (array subscript).
+
+	* `*(arr + i)` là phép toán con trỏ (pointer arithmetic).
+
+* VD:
+
+		int arr[5] = {10, 20, 30, 40, 50};
+		int *ptr = arr;        // ptr thoái hóa từ arr
+
+		printf("%d\n", arr[2]);     // In ra 30
+		printf("%d\n", *(arr + 2)); // Tương đương, cũng in ra 30
+		printf("%d\n", ptr[2]);     // Tương đương
+		printf("%d\n", *(ptr + 2)); // Tương đương
+
+* **Lưu ý:**
+	
+	* 	Mảng không thể gán giá trị mới cho tên mảng (`arr = ...` là sai).
+	
+	*   Con trỏ có thể thay đổi vị trí trỏ (`ptr = ptr + 1` là hợp lệ).
+
+#### **3.4. Phân biệt mảng con trỏ và con trỏ trỏ đến mảng**
+
+##### **3.4.1. Mảng con trỏ (Array of Pointers)**
+
+* Là một mảng, trong đó mỗi phần tử là một con trỏ.
+
+*  Cú pháp: `kiểu_dữ_liệu *tên_mảng[kích_thước]`;
+
+* Thường dùng để tạo ma trận răng cưa (jagged array) hoặc quản lý nhiều chuỗi ký tự.
+
+* VD:  
+
+		char *names[3] = {
+		    "Nguyen Van A",
+		    "Tran Thi B",
+		    "Le Van C"
+		};
+
+	* `names` là mảng chứa 3 con trỏ kiểu `char*`.
+	
+##### **3.4.2. Con trỏ trỏ đến mảng (Pointer to an Array)**
+
+* Là một con trỏ, trỏ đến toàn bộ một mảng.
+
+*  Cú pháp: `kiểu_dữ_liệu (*tên_con_trỏ)[kích_thước]`;
+
+* Dùng khi cần giữ nguyên thông tin kích thước của mảng.
+
+* VD:
+
+		int matrix[3][4];
+		int (*ptr)[4];     // Con trỏ trỏ đến mảng 4 phần tử int
+
+		ptr = matrix;      // ptr trỏ đến hàng đầu tiên của matrix 
+
+### **IV.  Chuỗi ký tự trong C**
+
+#### **4.1. Khái niệm chuỗi ký tự kết thúc null**
+
+* Chuỗi ký tự (string) trong C là một mảng ký tự một chiều được kết thúc bằng ký tự null (`'\0'`)
+
+* Ký tự null có giá trị ASCII bằng 0 và đóng vai trò là sentinel value (giá trị đánh dấu kết thúc).
+
+* **Đặc điểm:**
+	
+	* Chuỗi phải luôn kết thúc bằng  `'\0'`.
+	
+	*  Ký tự `'\0'` không được tính vào chiều dài logic của chuỗi.
+	
+	*  Tất cả các hàm thao tác chuỗi trong thư viện chuẩn (`<string.h>`) đều dựa vào ký tự `\0` để xác định điểm kết thúc chuỗi
+	
+* **Ví dụ:**
+
+		char str[6] = {'H', 'e', 'l', 'l', 'o', '\0'};   // Cách viết rõ ràng
+		// hoặc
+		char str[] = "Hello";     // Cách viết phổ biến và ngắn gọn hơn
+	
+#### **4.2. Phân biệt chuỗi hằng và mảng ký tự**
+
+##### **4.2.1. Chuỗi hằng (String Literal)**
+
+* Được viết dưới dạng ngoặc kép: `"Hello World"`
+
+* Được lưu trữ trong phân vùng bộ nhớ chỉ đọc (read-only section, thường là `.rodata`).
+
+*  Kiểu dữ liệu: `const char[]` (từ C99 trở đi).
+
+*  Không được phép sửa đổi nội dung. Việc cố tình sửa sẽ gây lỗi thời gian chạy (thường là Segmentation Fault).
+
+		char *str = "Hello";     // str trỏ đến chuỗi hằng
+		// str[0] = 'h';         // SAI – Undefined Behavior, có thể gây crash
+
+##### **4.2.2. Mảng ký tự (Character Array)**
+
+* Là mảng ký tự thông thường được khởi tạo từ chuỗi hằng.
+
+* Nội dung chuỗi hằng được sao chép vào mảng nằm trên Stack (hoặc vùng dữ liệu nếu là biến toàn cục).
+
+*  Có thể sửa đổi nội dung tự do.
+
+*  VD:
+
+		char str[] = "Hello";    // Mảng ký tự, có thể sửa đổi
+		str[0] = 'h';            // Hợp lệ → chuỗi trở thành "hello"
+
+##### **4.2.3. Chiều dài logic và dung lượng bộ nhớ của chuỗi**
+
+* **Chiều dài logic (Logical Length):**
+
+	*  Là số lượng ký tự in được (không tính ký tự `'\0'`).
+	
+	*  Được tính bằng hàm `strlen()` trong thư viện `<string.h>`
+
+* **Dung lượng bộ nhớ (Storage Size):**
+
+	*  Là kích thước thực tế của mảng ký tự, bao gồm cả ký tự `'\0'`.
+	
+	*  Phải luôn lớn hơn hoặc bằng chiều dài logic + 1 byte.
+
+			#include <stdio.h>
+			#include <string.h>
+
+			int main(void)
+			{
+			    char str[20] = "Hello";     // Dung lượng bộ nhớ = 20 bytes
+			    
+			    printf("Chuoi: %s\n", str);
+			    printf("Chieu dai logic (strlen): %zu\n", strlen(str));   // Kết quả: 5
+			    printf("Dung luong bo nho (sizeof): %zu\n", sizeof(str)); // Kết quả: 20
+			    
+			    return 0;
+			}
+
+### **V.  Thư viện chuẩn thao tác chuỗi**
+
+#### **5.1. Các hàm kiểm tra và tìm kiếm chuỗi**
+
+* Nhóm hàm này dùng để lấy thông tin về chuỗi hoặc tìm vị trí của ký tự/chuỗi con.
+
+* **Các hàm chính:**
+
+	* `strlen(const char *str)`
+	
+		* Trả về chiều dài logic của chuỗi (không tính ký tự `'\0'`).  
+
+	* `strchr(const char *str, int c)`
+	
+		* Tìm ký tự `c` đầu tiên xuất hiện trong chuỗi `str`.
+		
+		* Trả về con trỏ đến vị trí tìm thấy, hoặc `NULL` nếu không tìm thấy.
+		
+	* `strrchr(const char *str, int c)`
+	
+		* Tìm ký tự c cuối cùng xuất hiện trong chuỗi (tìm từ phải sang).
+	
+	*  `strstr(const char *haystack, const char *needle)`
+
+		* Tìm chuỗi con `needle` bên trong chuỗi `haystack`.
+		
+		*  Trả về con trỏ đến vị trí bắt đầu của chuỗi con, hoặc `NULL` nếu không tìm thấy.
+			
+* **Ví dụ:**
+
+			#include <stdio.h>
+			#include <string.h>
+
+			int main(void)
+			{
+			    char str[] = "Hello, World! Welcome to C programming.";
+			    
+			    printf("Chieu dai chuoi: %zu\n", strlen(str));
+			    
+			    char *pos1 = strchr(str, 'W');
+			    if (pos1) 
+			        printf("Tim thay 'W' tai vi tri: %ld\n", pos1 - str);
+			    
+			    char *pos2 = strstr(str, "Welcome");
+			    if (pos2) 
+			        printf("Tim thay \"Welcome\" tai vi tri: %ld\n", pos2 - str);
+			    
+			    return 0;
+			}
+	
+#### **5.2. Các hàm sao chép và nối chuỗi**
+
+* `strcpy(char *dest, const char *src)`
+
+	*  Sao chép chuỗi nguồn `src` (kể cả `'\0'`) vào vùng đích `dest`.
+
+* `strcat(char *dest, const char *src)`
+
+	*  Nối chuỗi nguồn `src` vào cuối chuỗi đích `dest`.
+
+* `strncpy(char *dest, const char *src, size_t n)`
+
+	*  Sao chép tối đa `n` ký tự từ `src` sang `dest`.
+
+* `strncat(char *dest, const char *src, size_t n))`
+
+	*  Nối tối đa `n` ký tự từ `src` vào `dest`.
+
+* **VD:**
+
+			#include <stdio.h>
+			#include <string.h>
+
+			int main(void)
+			{
+			    char dest[20] = "Hello";
+			    char src[] = " World";
+			    
+			    // Sử dụng hàm an toàn
+			    strncat(dest, src, sizeof(dest) - strlen(dest) - 1);
+			    
+			    printf("Sau khi noi: %s\n", dest);
+			    
+			    return 0;
+			}
+
+#### **5.3. Các hàm so sánh chuỗi**
+
+* **Các hàm chính:**
+
+	* `strcmp(const char *str1, const char *str2)`: So sánh toàn bộ hai chuỗi.
+	
+		*   Trả về 0 nếu hai chuỗi giống nhau.
+		
+		*   Trả về số âm nếu `str1` nhỏ hơn `str2`.
+		
+		*   Trả về số dương nếu `str1` lớn hơn `str2`. 
+
+	* `strncmp(const char *str1, const char *str2, size_t n)`: So sánh tối đa n ký tự đầu tiên của hai chuỗi.
+	
+
+		
+* **VD:**
+
+			#include <stdio.h>
+			#include <string.h>
+
+			int main(void)
+			{
+			    char s1[] = "Apple";
+			    char s2[] = "Banana";
+			    char s3[] = "Apple";
+			    
+			    printf("strcmp(s1, s3) = %d\n", strcmp(s1, s3));   // 0
+			    printf("strcmp(s1, s2) = %d\n", strcmp(s1, s2));   // số âm
+			    
+			    if (strncmp("HelloWorld", "Hello", 5) == 0)
+			        printf("5 ky tu dau tien giong nhau\n");
+			    
+			    return 0;
+			}
+
+#### **5.4. Tách chuỗi bằng hàm strtok (Tokenization)**
+
+* Hàm `strtok` được sử dụng để chia tách một chuỗi thành các phần nhỏ hơn (gọi là token) dựa trên một hoặc nhiều ký tự phân cách (delimiters).
+
+* Cú pháp:
+	
+		char *strtok(char *str, const char *delim);
+
+* **Đặc điểm:**
+
+	* Hàm `strtok` là hàm stateful (có nhớ trạng thái): nó sử dụng một biến tĩnh nội bộ để lưu vị trí cắt chuỗi ở lần gọi trước. 
+	
+	*  Lần gọi đầu tiên truyền vào chuỗi cần tách (`str`), các lần gọi sau truyền `NULL`.
+	
+	*  Hàm sẽ thay thế ký tự phân cách bằng ký tự `'\0'` trong chuỗi gốc.
+	
+	*  Sau khi tách xong, chuỗi gốc sẽ bị sửa đổi (không còn nguyên vẹn).
+	
+
+		
+* **VD:**
+
+			#include <stdio.h>
+			#include <string.h>
+
+			int main(void)
+			{
+			    char str[] = "Nguyen,Van,A;30;Ha Noi;Vietnam";
+			    char *token;
+			    
+			    printf("Chuoi goc: %s\n\n", str);
+			    
+			    // Lần gọi đầu tiên
+			    token = strtok(str, ",;");
+			    
+			    while (token != NULL) {
+			        printf("Token: %s\n", token);
+			        token = strtok(NULL, ",;");   // Các lần gọi sau
+			    }
+			    
+			    return 0;
+			}
+
+* **Output:**
+
+			Chuoi goc: Nguyen,Van,A;30;Ha Noi;Vietnam
+
+			Token: Nguyen
+			Token: Van
+			Token: A
+			Token: 30
+			Token: Ha Noi
+			Token: Vietnam							
+
+### **VI.  Ký tự mở rộng và hỗ trợ Unicode**
+
+#### **6.1. Hạn chế của bảng mã ASCII**
+
+* ASCII sử dụng 1 byte (8 bit), chỉ biểu diễn được 256 ký tự.
+
+* Không thể biểu diễn đầy đủ bảng chữ cái tiếng Việt (có dấu), chữ cái có dấu của các ngôn ngữ châu Âu, hay các ký tự Đông Á.
+
+*  Không hỗ trợ emoji và các ký tự biểu tượng hiện đại.
+
+#### **6.2. Ký tự rộng (Wide Characters) với wchar_t**
+
+* Để khắc phục hạn chế của ASCII, chuẩn C giới thiệu kiểu dữ liệu wide character (`wchar_t`) và thư viện `<wchar.h>`
+
+* **Đặc điểm:**
+	
+	* `wchar_t` thường chiếm 2 hoặc 4 byte tùy theo nền tảng và compiler
+
+	* Hằng chuỗi rộng sử dụng tiền tố `L`.
+	
+	* Thư viện `<wchar.h>` cung cấp các hàm tương đương `<string.h>` nhưng dành cho ký tự rộng
+		
+* **VD:**
+
+			#include <stdio.h>
+			#include <wchar.h>
+
+			int main(void)
+			{
+			    wchar_t str[] = L"Xin chào Việt Nam! Hello World! 你好";
+			    
+			    wprintf(L"Chuỗi rộng: %ls\n", str);
+			    wprintf(L"Chiều dài: %zu\n", wcslen(str));
+			    
+			    return 0;
+			}
+
+#### **6.3. Hỗ trợ Unicode hiện đại trong chuẩn C11**
+
+* Chuẩn C11 đã cải tiến đáng kể hỗ trợ Unicode bằng cách giới thiệu các kiểu dữ liệu mới và định dạng UTF-8.
+
+* **Các kiểu dữ liệu mới:**
+	
+	* `char16_t` : Dùng cho UTF-16 (thường 2 byte).
+
+	* `char32_t` : Dùng cho UTF-32 (thường 4 byte).
+	
+	* Thư viện hỗ trợ: `<uchar.h>`
+		
+
+			 										
+   </details> 
+   
 
 <details>
     <summary><strong>CHƯƠNG 14: XỬ LÝ TÍN HIỆU (SIGNAL HANDLING)</strong></summary>
