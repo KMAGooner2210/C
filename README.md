@@ -7174,6 +7174,685 @@
    
 
 <details>
+    <summary><strong>CHƯƠNG 9: KIỂU DỮ LIỆU TỰ ĐỊNH NGHĨA</strong></summary>
+
+## **CHƯƠNG 9: KIỂU DỮ LIỆU TỰ ĐỊNH NGHĨA**
+
+### **I.  Cấu trúc (Structure)**
+
+#### **1.1. Bản chất và cú pháp định nghĩa cấu trúc**
+
+##### **1.1.1. Khái niệm**
+
+* Cấu trúc là kiểu dữ liệu phức hợp (composite data type) do người dùng định nghĩa
+
+*  Nó cho phép đóng gói nhiều biến có kiểu dữ liệu khác nhau vào chung một khối dữ liệu dưới một tên chung.
+
+##### **1.1.2. Đặc điểm**
+	
+* Cấu trúc là kiểu dữ liệu do người lập trình tự tạo ra.
+
+*  Mỗi thành viên (member) bên trong cấu trúc có thể có kiểu dữ liệu khác nhau..
+
+*  Chỉ số (index) của mảng luôn bắt đầu từ 0.
+
+*  Việc khai báo cấu trúc chỉ tạo ra khuôn mẫu (template), không chiếm bộ nhớ.
+
+##### **1.1.3. Cú pháp**
+
+		struct Tên_Cấu_trúc {
+		    kiểu_dữ_liệu thành_viên_1;
+		    kiểu_dữ_liệu thành_viên_2;
+		    // ... các thành viên khác
+		};
+
+* **VD:**
+
+			// Định nghĩa khuôn mẫu cấu trúc
+			struct Date {
+			    int day;
+			    int month;
+			    int year;
+			};
+
+			struct Student {
+			    char name[50];
+			    int studentID;
+			    float gpa;
+			    struct Date birthDate;     // Thành viên là một cấu trúc khác
+			};
+
+
+
+#### **1.2. Truy xuất thành viên cấu trúc**
+
+##### **1.2.1.Khái niệm**
+
+* Để truy cập và thao tác với các thành viên bên trong một biến cấu trúc, C cung cấp hai toán tử chính:
+
+	*  **Toán tử dấu chấm (.) – Dot operator:** 
+	
+		* Dùng khi làm việc trực tiếp với biến cấu trúc.
+	
+	*  **Toán tử mũi tên (->) – Arrow operator:** 
+	
+		* Dùng khi làm việc thông qua con trỏ trỏ đến cấu trúc. 
+
+##### **1.2.2.VD**
+	
+		#include <stdio.h>
+
+		struct Student {
+		    char name[50];
+		    int studentID;
+		    float gpa;
+		};
+
+		int main(void)
+		{
+		    struct Student s1;
+		    struct Student *ptr = &s1;
+
+		    // Truy xuất bằng toán tử dấu chấm
+		    s1.studentID = 2023001;
+		    s1.gpa = 3.85;
+
+		    // Truy xuất bằng toán tử mũi tên
+		    ptr->gpa = 3.90;                    // Tương đương với (*ptr).gpa
+
+		    printf("Ma so sinh vien: %d\n", s1.studentID);
+		    printf("Diem GPA: %.2f\n", ptr->gpa);
+
+		    return 0;
+		}
+
+
+
+#### **1.3. Khởi tạo và phép gán cấu trúc**
+
+* Cấu trúc hỗ trợ nhiều cách khởi tạo và có thể được gán trực tiếp bằng toán tử `=`.
+
+*  **Khởi tạo theo thứ tự thành viên:**
+	
+		struct Date d1 = {25, 12, 2024};
+		struct Student s1 = {"Nguyen Van A", 2023001, 3.75, {15, 5, 2005}};
+
+*  **Khởi tạo chỉ định (Designated Initializers – C99):**
+
+	*  Cách này cho phép khởi tạo theo tên thành viên, không phụ thuộc thứ tự và chỉ khởi tạo một số thành viên.
+	
+			struct Student s2 = {
+			    .name = "Tran Thi B",
+			    .studentID = 2023002,
+			    .gpa = 3.68
+			    // birthDate sẽ tự động bằng 0
+			};
+		
+* **Phép gán cấu trúc:**
+
+	*  Trong C, hai biến cấu trúc cùng kiểu có thể gán trực tiếp cho nhau.
+	
+	*  Toán tử `=` sẽ sao chép toàn bộ nội dung (byte-by-byte). 
+
+			struct Student s3;
+			s3 = s1;        // Sao chép toàn bộ dữ liệu từ s1 sang s3
+		
+* **Ví dụ:**
+
+		#include <stdio.h>
+		#include <string.h>
+
+		struct Student {
+		    char name[50];
+		    int studentID;
+		    float gpa;
+		};
+
+		int main(void)
+		{
+		    struct Student s1 = {
+		        .name = "Le Van C",
+		        .studentID = 2023003,
+		        .gpa = 3.92
+		    };
+
+		    struct Student s2;
+		    s2 = s1;                         // Phép gán cấu trúc
+
+		    printf("Sinh vien: %s\n", s2.name);
+		    printf("Ma so: %d\n", s2.studentID);
+		    printf("GPA: %.2f\n", s2.gpa);
+
+		    return 0;
+		}
+
+* **Lưu ý:**
+
+	*  Phép gán cấu trúc chỉ hoạt động khi hai cấu trúc cùng kiểu.
+	
+	*   Nếu cấu trúc chứa con trỏ, phép gán chỉ sao chép địa chỉ (shallow copy), không sao chép vùng nhớ mà con trỏ trỏ tới.
+
+	
+
+### **II.  Tổ chức cấu trúc nâng cao**
+
+#### **2.1. Cấu trúc lồng nhau (Nested Structures)**
+
+* **Cú pháp:**
+
+		struct Cấu_trúc_con {
+		    // các thành viên của cấu trúc con
+		};
+
+		struct Cấu_trúc_cha {
+		    // các thành viên thông thường
+		    struct Cấu_trúc_con tên_thành_viên;   // Cấu trúc lồng nhau
+		};
+
+* **VD:**
+
+		struct Date {
+		    int day;
+		    int month;
+		    int year;
+		};
+
+		struct Employee {
+		    char name[50];
+		    int employeeID;
+		    struct Date birthDate;      // Cấu trúc Date được lồng vào
+		    struct Date joinDate;       // Cấu trúc Date được lồng vào
+		};
+
+		int main(void)
+		{
+		    struct Employee emp = {
+		        .name = "Nguyen Van An",
+		        .employeeID = 1001,
+		        .birthDate = {15, 5, 1998},
+		        .joinDate = {1, 3, 2023}
+		    };
+
+		    printf("Ngay sinh: %02d/%02d/%d\n", 
+		           emp.birthDate.day, emp.birthDate.month, emp.birthDate.year);
+
+		    return 0;
+		}
+					
+#### **2.2. Mảng của cấu trúc (Array of Structures)**
+
+* **Cú pháp:** 
+
+		struct Tên_Cấu_trúc tên_mảng[số_lượng];
+
+* **Minh họa:**
+
+			struct Student {
+			    char name[50];
+			    int studentID;
+			    float gpa;
+			};
+
+			int main(void)
+			{
+			    struct Student class[3] = {
+			        {"Nguyen Van A", 2023001, 3.75},
+			        {"Tran Thi B",   2023002, 3.68},
+			        {"Le Van C",     2023003, 3.92}
+			    };
+
+			    // Truy xuất phần tử
+			    for(int i = 0; i < 3; i++) {
+			        printf("SV %d: %s - GPA: %.2f\n", 
+			               class[i].studentID, class[i].name, class[i].gpa);
+			    }
+
+			    return 0;
+			}
+	
+	
+#### **2.3. Cấu trúc tự tham chiếu (Self-Referential Structures)**
+
+* Cấu trúc tự tham chiếu là cấu trúc chứa ít nhất một thành viên là con trỏ trỏ đến chính kiểu cấu trúc của nó.
+
+* **Cú pháp:**
+
+		struct Node {
+		    int data;
+		    struct Node *next;      // Con trỏ tự tham chiếu
+		};
+
+	
+* **VD:**
+
+		struct Node {
+		    int data;
+		    struct Node *next;
+		};
+
+		int main(void)
+		{
+		    struct Node n1 = {10, NULL};
+		    struct Node n2 = {20, NULL};
+		    struct Node n3 = {30, NULL};
+
+		    n1.next = &n2;
+		    n2.next = &n3;
+
+		    // Duyệt danh sách
+		    struct Node *current = &n1;
+		    while (current != NULL) {
+		        printf("%d -> ", current->data);
+		        current = current->next;
+		    }
+		    printf("NULL\n");
+
+		    return 0;
+		}
+
+#### **2.4. Thành viên mảng linh hoạt**
+
+* Flexible Array Member là tính năng được giới thiệu từ chuẩn C99, cho phép khai báo một mảng không xác định kích thước làm thành viên cuối cùng của cấu trúc.
+
+* **Cú pháp:**
+
+		struct Tên_Cấu_trúc {
+		    // các thành viên thông thường
+		    kiểu_dữ_liệu tên_mảng_linh_hoạt[];   // Phải là thành viên cuối cùng
+		};
+
+* **VD:**
+
+			#include <stdio.h>
+			#include <stdlib.h>
+
+			struct DynamicArray {
+			    int length;
+			    int data[];        // Flexible Array Member
+			};
+
+			int main(void)
+			{
+			    int size = 5;
+			    
+			    // Cấp phát động một khối nhớ đủ lớn
+			    struct DynamicArray *arr = malloc(sizeof(struct DynamicArray) + size * sizeof(int));
+			    
+			    arr->length = size;
+			    for(int i = 0; i < size; i++) {
+			        arr->data[i] = i * 10;
+			    }
+
+			    for(int i = 0; i < arr->length; i++) {
+			        printf("%d ", arr->data[i]);
+			    }
+			    
+			    free(arr);
+			    return 0;
+			}
+
+
+### **III.  Bí danh kiểu dữ liệu (typedef)**
+
+#### **3.1. Cơ chế**
+
+##### **3.1.1. Khái niệm**
+
+* `typedef` là từ khóa dùng để tạo bí danh (alias) cho một kiểu dữ liệu đã tồn tại.
+
+* `typedef` không tạo ra kiểu dữ liệu mới, mà chỉ tạo ra một tên gọi khác cho kiểu dữ liệu đó.
+
+##### **3.1.2. Cú pháp**
+
+
+		typedef kiểu_dữ_liệu_gốc tên_mới;
+
+##### **3.1.3. VD**
+
+			typedef unsigned int uint;        // Bí danh cho unsigned int
+			typedef float real;               // Bí danh cho float
+
+			uint count = 100;
+			real pi = 3.14159;
+	
+
+	
+#### **3.2. Sử dụng typedef với cấu trúc**
+
+* **Không dùng typedef:**
+
+		struct Student {
+		    char name[50];
+		    int studentID;
+		    float gpa;
+		};
+
+		struct Student s1;        // Phải viết "struct Student"
+
+* **Dùng typedef:**
+
+		typedef struct {
+		    char name[50];
+		    int studentID;
+		    float gpa;
+		} Student;                // Student giờ là tên kiểu dữ liệu
+
+		Student s1, s2;           // Không cần viết "struct" nữa
+
+* **Structure tag:**
+
+		typedef struct Student {     // Student là structure tag
+		    char name[50];
+		    int studentID;
+		    float gpa;
+		} Student;                   // Student cũng là tên kiểu sau typedef
+
+#### **3.3. Ứng dụng**
+
+* Thay vì dùng trực tiếp các kiểu dữ liệu phụ thuộc vào kiến trúc máy (như `int`, `long`), ta dùng typedef để định nghĩa tên kiểu có kích thước cố định.
+
+* Khi chuyển sang nền tảng mới, chỉ cần sửa định nghĩa `typedef` một lần.
+
+* VD:
+
+			// Định nghĩa các kiểu dữ liệu có kích thước cố định
+			typedef signed char        int8_t;
+			typedef unsigned char      uint8_t;
+			typedef signed short       int16_t;
+			typedef unsigned short     uint16_t;
+			typedef signed int         int32_t;
+			typedef unsigned int       uint32_t;
+			typedef long long          int64_t;
+			typedef unsigned long long uint64_t;
+
+
+
+#### **3.4. Định nghĩa bí danh cho con trỏ hàm**
+
+##### **3.4.1. Ví dụ không dùng typedef**
+
+		void sort(int arr[], int n, int (*compare)(int, int));
+
+##### **3.4.2. Ví dụ dùng typedef**
+
+		// Định nghĩa bí danh cho con trỏ hàm
+		typedef int (*CompareFunc)(int, int);
+
+		void sort(int arr[], int n, CompareFunc compare);
+
+##### **3.4.2. Ví dụ đầy đủ**
+
+			#include <stdio.h>
+
+			typedef int (*CompareFunc)(int a, int b);
+
+			int ascending(int a, int b) {
+			    return a - b;
+			}
+
+			int descending(int a, int b) {
+			    return b - a;
+			}
+
+			void bubbleSort(int arr[], int n, CompareFunc compare)
+			{
+			    for(int i = 0; i < n-1; i++) {
+			        for(int j = 0; j < n-i-1; j++) {
+			            if (compare(arr[j], arr[j+1]) > 0) {
+			                int temp = arr[j];
+			                arr[j] = arr[j+1];
+			                arr[j+1] = temp;
+			            }
+			        }
+			    }
+			}
+
+			int main(void)
+			{
+			    int numbers[] = {64, 34, 25, 12, 22, 11, 90};
+			    int n = sizeof(numbers)/sizeof(numbers[0]);
+
+			    bubbleSort(numbers, n, ascending);
+
+			    printf("Mang sau khi sap xep tang dan: ");
+			    for(int i = 0; i < n; i++) {
+			        printf("%d ", numbers[i]);
+			    }
+
+			    return 0;
+			}
+
+
+
+
+### **IV.  Union**
+
+#### **4.1. Bản chất và sự khác biệt với cấu trúc**
+
+* Về mặt cú pháp, union rất giống với struct, nhưng chúng hoàn toàn khác nhau về cách tổ chức bộ nhớ.
+
+
+* **Cú pháp định nghĩa union::**
+	
+			union Tên_Hợp_thể {
+			    kiểu_dữ_liệu thành_viên_1;
+			    kiểu_dữ_liệu thành_viên_2;
+			    // ... các thành viên khác
+			};
+	
+* **So sánh:**
+
+	| Tiêu chí                     | Structure (struct)                                   | Union (union)                                      |
+	|-----------------------------|------------------------------------------------------|----------------------------------------------------|
+	| Cấp phát bộ nhớ             | Cấp phát riêng cho từng thành viên                   | Chỉ cấp phát một khối nhớ đủ lớn nhất              |
+	| Kích thước (sizeof)         | Tổng kích thước tất cả thành viên + padding          | Kích thước của thành viên lớn nhất                 |
+	| Địa chỉ các thành viên      | Các thành viên nằm ở vị trí khác nhau                | Tất cả thành viên bắt đầu tại cùng một địa chỉ     |
+	| Sử dụng đồng thời           | Có thể dùng nhiều thành viên cùng lúc                | Chỉ nên dùng một thành viên tại một thời điểm      |
+
+* **VD:**
+	
+		union Data {
+		    int i;          // 4 bytes
+		    float f;        // 4 bytes
+		    char str[8];    // 8 bytes
+		};
+
+		union Data var;
+
+		printf("Kich thuoc cua union: %zu bytes\n", sizeof(var));   // Kết quả: 8 bytes
+			
+#### **4.2. Quy tắc sử dụng**
+
+* Tại bất kỳ thời điểm nào, union chỉ nên lưu trữ và sử dụng giá trị của một thành viên duy nhất.
+
+* Việc ghi dữ liệu vào một thành viên sẽ ghi đè (phá hủy) dữ liệu của các thành viên khác.
+
+* VD:
+
+			#include <stdio.h>
+
+			union Data {
+			    int i;
+			    float f;
+			};
+
+			int main(void)
+			{
+			    union Data var;
+			    
+			    var.i = 42;
+			    printf("Gia tri int: %d\n", var.i);
+			    
+			    var.f = 3.14;                    // Ghi đè lên vùng nhớ của int
+			    printf("Gia tri float: %.2f\n", var.f);
+			    printf("Gia tri int sau khi ghi float: %d\n", var.i);  // Kết quả không xác định
+			    
+			    return 0;
+			}
+
+
+
+### **V.  Trường bit (Bit-fields)**
+
+#### **5.1. Định nghĩa và cú pháp trường bit**
+
+* Trường bit được khai báo bên trong một cấu trúc (hoặc hợp thể) bằng cách thêm dấu hai chấm (`:`) và số bit sau tên thành viên.
+
+* **Cú pháp:**
+
+		struct Tên_Cấu_trúc {
+		    kiểu_dữ_liệu tên_thành_viên : số_bit;
+		};
+
+* **VD:**
+
+		struct Flags {
+		    unsigned int isActive   : 1;   // 1 bit
+		    unsigned int isAdmin    : 1;   // 1 bit
+		    unsigned int priority   : 3;   // 3 bit (giá trị từ 0 đến 7)
+		    unsigned int status     : 4;   // 4 bit (giá trị từ 0 đến 15)
+		    unsigned int reserved   : 23;  // Phần còn lại
+		};
+			
+* **Lưu ý:**
+
+	*  Kiểu dữ liệu của trường bit thường là `unsigned int` hoặc `int`.
+	
+	*  Tổng số bit của tất cả các trường bit trong một cấu trúc không nên vượt quá kích thước của kiểu dữ liệu cơ bản (thường là 32 hoặc 64 bit).
+	
+	*  Trường bit phải được khai báo liên tiếp nhau để trình biên dịch có thể đóng gói chúng vào cùng một đơn vị lưu trữ (storage unit).  
+
+
+		
+	
+#### **5.2. Giới hạn và hành vi**
+
+* **Các giới hạn quan trọng:**
+
+	*  Không thể lấy địa chỉ của một trường bit bằng toán tử `&` (vì trường bit thường không nằm trên ranh giới byte).
+
+	*  Không thể sử dụng mảng của trường bit.
+
+	*  Không thể sử dụng toán tử `sizeof` trực tiếp trên một trường bit riêng lẻ.
+
+	*  Không hỗ trợ khởi tạo trực tiếp bằng designated initializers cho từng trường bit một cách đơn giản.
+
+* **Hành vi phụ thuộc nền tảng:**
+
+	*  Thứ tự cấp phát bit:
+	
+		*  Từ trái sang phải hay từ phải sang trái phụ thuộc vào compiler và kiến trúc CPU (little-endian hay big-endian).
+
+	*  Cách đóng gói:
+	
+		*  Cách trình biên dịch nhóm các trường bit vào các đơn vị lưu trữ (storage unit) có thể khác nhau.
+
+	*  Kích thước và căn chỉnh của cấu trúc chứa bit-field có thể thay đổi giữa các nền tảng.
+		
+* **VD:**
+
+		struct Test {
+		    unsigned int a : 1;
+		    unsigned int b : 1;
+		    unsigned int c : 30;
+		};
+
+		printf("Size = %zu bytes\n", sizeof(struct Test));   // Kết quả có thể là 4 hoặc 8 tùy compiler
+
+
+### **VI.  Căn chỉnh bộ nhớ cấu trúc (Memory Alignment và Padding)**
+
+#### **6.1. Khái niệm căn chỉnh bộ nhớ và đệm (Padding)**
+
+* CPU không đọc và ghi dữ liệu từng byte một, mà thường đọc theo các khối có kích thước cố định gọi là word (thường là 4 byte hoặc 8 byte trên hệ thống 64-bit).
+
+* Để tăng tốc độ truy xuất, trình biên dịch tự động sắp xếp các thành viên trong cấu trúc sao cho địa chỉ của mỗi thành viên nằm ở vị trí chia hết cho kích thước của chính nó.
+
+* Quá trình trình biên dịch tự động chèn các byte rỗng (không chứa dữ liệu) giữa các thành viên được gọi là đệm (padding).
+
+		struct Example {
+		    char  a;      // 1 byte
+		    int   b;      // 4 bytes
+		    char  c;      // 1 byte
+		};
+
+		printf("Kich thuoc struct: %zu bytes\n", sizeof(struct Example));
+
+	* Mặc dù tổng kích thước các thành viên chỉ là 1 + 4 + 1 = 6 byte, nhưng sizeof(struct Example) thường trả về 8 byte hoặc 12 byte do trình biên dịch chèn byte đệm để đảm bảo căn chỉnh.
+	
+	*  Sau thành viên a (char), trình biên dịch chèn 3 byte padding để b (int) nằm ở địa chỉ chia hết cho 4.
+	
+	*  Sau thành viên c, có thể chèn thêm padding để kích thước toàn bộ cấu trúc là bội số của thành viên lớn nhất (thường là 4 hoặc 8).
+
+#### **6.2. Ảnh hưởng của thứ tự thành viên đến kích thước cấu trúc**
+
+* Thứ tự khai báo các thành viên trong cấu trúc ảnh hưởng rất lớn đến lượng bộ nhớ bị lãng phí do padding.
+
+* **VD:**
+	
+		// Cách khai báo kém tối ưu
+		struct Bad {
+		    char  a;   // 1 byte
+		    int   b;   // 4 bytes
+		    char  c;   // 1 byte
+		};             // Kích thước thực tế thường là 12 bytes
+
+		// Cách khai báo tối ưu hơn
+		struct Good {
+		    int   b;   // 4 bytes
+		    char  a;   // 1 byte
+		    char  c;   // 1 byte
+		};             // Kích thước thực tế thường là 8 bytes
+		
+* **Nguyên tắc sắp xếp tối ưu bộ nhớ:**
+
+	*  Sắp xếp các thành viên theo thứ tự kích thước giảm dần (từ lớn đến nhỏ).
+	
+	*  Đặt các thành viên có kích thước lớn (double, int64_t, int) trước.
+	
+	*  Đặt các thành viên nhỏ (char, bool, int8_t) sau cùng.   
+
+#### **6.3. Kiểm soát căn chỉnh bộ nhớ**
+
+* **Sử dụng #pragma pack:**
+
+			#pragma pack(push, 1)     // Tắt padding, đóng gói sát nhau
+			struct Packed {
+			    char  a;
+			    int   b;
+			    char  c;
+			};
+			#pragma pack(pop)         // Khôi phục cài đặt căn chỉnh cũ
+
+* **Sử dụng thuộc tính GCC/Clang (__attribute__((packed))):**
+
+		struct __attribute__((packed)) PackedStruct {
+		    char  a;
+		    int   b;
+		    char  c;
+		};
+
+* **Sử dụng _Alignas và _Alignof (Chuẩn C11):**
+
+		#include <stdalign.h>
+
+		struct Aligned {
+		    char a;
+		    _Alignas(8) int b;     // Buộc b được căn chỉnh theo 8 byte
+		    char c;
+		};
+
+* **Lưu ý:**
+
+	*  Việc tắt padding (`pack(1)`) làm tăng tốc độ truy xuất giảm, nhưng tiết kiệm bộ nhớ và phù hợp với giao thức mạng.
+	
+	*  Sử dụng `packed` có thể gây unaligned access, dẫn đến lỗi hoặc giảm hiệu năng trên một số kiến trúc CPU (đặc biệt ARM).
+	
+	*  Nên ưu tiên sắp xếp thành viên hợp lý trước khi dùng `#pragma pack` hoặc `packed` 
+					 										
+   </details> 
+   
+<details>
     <summary><strong>CHƯƠNG 14: XỬ LÝ TÍN HIỆU (SIGNAL HANDLING)</strong></summary>
 
 
