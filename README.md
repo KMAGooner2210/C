@@ -7851,7 +7851,398 @@
 	*  Nên ưu tiên sắp xếp thành viên hợp lý trước khi dùng `#pragma pack` hoặc `packed` 
 					 										
    </details> 
+
+
+
+<details>
+    <summary><strong>CHƯƠNG 11: BỐ CỤC BỘ NHỚ TIẾN TRÌNH</strong></summary>
+
+## **CHƯƠNG 11: BỐ CỤC BỘ NHỚ TIẾN TRÌNH**
+
+### **I.  Tổng quan về không gian địa chỉ ảo**
+
+#### **1.1. Không gian địa chỉ ảo (Virtual Address Space)**
+
+##### **1.1.1. Khái niệm**
+
+* Mỗi tiến trình (process) khi được hệ điều hành nạp vào RAM đều được cấp một không gian địa chỉ ảo riêng biệt.
+
+* Đây là không gian bộ nhớ tuyến tính, liền mạch về mặt logic mà lập trình viên và chương trình có thể nhìn thấy.
+
+##### **1.1.2. Đặc điểm**
+
+* **Độc lập giữa các tiến trình:**
+
+	*  Mỗi tiến trình có không gian địa chỉ ảo riêng, không thể trực tiếp truy cập bộ nhớ của tiến trình khác.
+
+* **Kích thước lớn:**
+
+	*  **Hệ 32-bit:** 4 GB (từ địa chỉ 0 đến 0xFFFFFFFF)
+	
+	*	**Hệ 64-bit:** Hàng terabyte (thực tế thường giới hạn ở mức vài trăm GB hoặc vài TB tùy hệ điều hành)
+	
+* **Ánh xạ bởi MMU:**
+
+	*  Không gian địa chỉ ảo được đơn vị quản lý bộ nhớ (Memory Management Unit) của CPU ánh xạ lên bộ nhớ vật lý (RAM) và có thể ánh xạ lên file trên đĩa (swap space).
+
+#### **1.2. Các phân vùng bộ nhớ logic của tiến trình**
+
+* Bộ nhớ của một tiến trình được tổ chức thành nhiều phân vùng (segments) có chức năng, quyền truy cập và đặc tính khác nhau.
+
+		Địa chỉ thấp
+		+-------------------+
+		|   Text Segment    |  ← Mã lệnh (chỉ đọc, thực thi được)
+		+-------------------+
+		|   .data Segment   |  ← Dữ liệu khởi tạo (đọc-ghi)
+		+-------------------+
+		|   .bss Segment    |  ← Dữ liệu chưa khởi tạo (đọc-ghi)
+		+-------------------+
+		|       Heap        |  ← Cấp phát động (tăng dần lên)
+		|       ↑           |
+		|                   |
+		|       ↓           |
+		|      Stack        |  ← Ngăn xếp (giảm dần xuống)
+		+-------------------+
+		Địa chỉ cao
+
+	* **Text Segment (Code Segment):**
+	
+		*  Chứa mã máy nhị phân (machine code) của chương trình đã được biên dịch.
+		
+		*  Thuộc tính: **Chỉ đọc (Read-only)** và **có thể thực thi (Executable)**.
+
+		*  Mọi cố gắng ghi dữ liệu vào vùng này sẽ gây ra Segmentation Fault.
+		
+		*  Thường được chia sẻ giữa các tiến trình chạy cùng chương trình để tiết kiệm bộ nhớ.
+
+	* **.data Segment (Initialized Data Segment):**
+	
+		*  Chứa các biến toàn cục (global) và biến tĩnh (static) được khởi tạo với giá trị khác 0
+		
+		*  Thuộc tính: Đọc-ghi (Read-Write).
+
+		*  Kích thước được xác định tại thời điểm biên dịch và được lưu trữ trong file thực thi.
+
+	* **.bss Segment (Uninitialized Data Segment):**
+	
+		*  Chứa các biến toàn cục và biến tĩnh chưa được khởi tạo hoặc được khởi tạo bằng 0.
+		
+		*  Hệ điều hành chỉ lưu kích thước của vùng này trong file thực thi, không lưu các giá trị 0.
+
+		*  Khi chương trình chạy, kernel sẽ tự động cấp phát và khởi tạo toàn bộ vùng về 0.
+
+	* **Heap Segment:**
+	
+		*  Vùng bộ nhớ dùng cho cấp phát động (`malloc`, `calloc`, `realloc`, `free`).
+		
+		*  Thuộc tính: Đọc-ghi, kích thước linh hoạt.
+
+		*  Vùng Heap phát triển từ địa chỉ thấp lên cao (tăng dần).
+
+	* **Stack Segment:**
+	
+		*  Vùng bộ nhớ quản lý biến cục bộ, tham số hàm, địa chỉ trả về và thông tin điều khiển hàm.
+		
+		*  Hoạt động theo cơ chế LIFO (Last-In, First-Out).
+
+		*  Vùng Stack phát triển từ địa chỉ cao xuống thấp (giảm dần).
+		
+		* Kích thước thường bị giới hạn (mặc định vài MB đến vài chục MB).  
+					
+
+
+
+### **II.  Các phân vùng bộ nhớ chính**
+
+#### **2.1. Phân vùng mã lệnh (Text Segment)**
+
+* Phân vùng mã lệnh (hay còn gọi là Code Segment) chứa toàn bộ mã máy nhị phân đã được biên dịch từ chương trình.
+
+* **Đặc điểm:** 
+
+	* Chứa các lệnh máy (machine instructions) của hàm `main()` và tất cả các hàm khác.
+
+	*  Có thuộc tính chỉ đọc và có thể thực thi (Read-only + Executable).
+
+	*  Không cho phép ghi dữ liệu vào vùng này.
+	
+	*  Thường được chia sẻ (shared) giữa các tiến trình chạy cùng một chương trình để tiết kiệm bộ nhớ vật lý. 
+
+
+* **VD:**
+
+			void myFunction() {
+			    // Mã của hàm này nằm trong Text Segment
+			}
+
+			int main(void) {
+			    // Cố tình ghi vào vùng mã lệnh → Segmentation Fault
+			    // char *p = (char*)main;
+			    // p[0] = 0x90;        // Sai
+			    return 0;
+			}
+					
+#### **2.2. Phân vùng dữ liệu khởi tạo (.data Segment)**
+
+* Phân vùng `.data` chứa các biến toàn cục và biến tĩnh được khởi tạo với giá trị khác không.
+
+* **Đặc điểm:**
+
+	* Chứa biến `global` và `static` có giá trị khởi tạo ban đầu khác 0. 
+
+	* Có thuộc tính đọc-ghi (Read-Write).
+
+	* Kích thước của phân vùng này được xác định tại thời điểm biên dịch và được lưu trữ trực tiếp trong file thực thi (.exe hoặc ELF).
+
+	* Nội dung của vùng này được nạp từ file thực thi vào bộ nhớ khi chương trình khởi chạy.
+
+* **VD:**
+
+			int globalVar = 100;                    // Nằm trong .data
+			static int staticVar = 500;             // Nằm trong .data
+
+			int main(void) {
+			    // globalVar và staticVar được khởi tạo giá trị trước khi main() chạy
+			    return 0;
+			}
+
+
+	
+#### **2.3. Phân vùng dữ liệu chưa khởi tạo (.bss Segment)**
+
+* Phân vùng `.bss` (Block Started by Symbol) chứa các biến toàn cục và biến tĩnh chưa được khởi tạo hoặc được khởi tạo bằng 0.
+
+	* Hệ điều hành chỉ lưu kích thước của vùng này trong file thực thi, không lưu các giá trị 0.
+	
+	*  Khi chương trình được nạp, kernel sẽ tự động cấp phát bộ nhớ và khởi tạo toàn bộ vùng `.bss` về 0.
+	
+	*  Giúp giảm đáng kể kích thước file thực thi so với việc lưu đầy đủ giá trị 0.
+
+* **VD:**
+
+			int globalUninit;                       // Nằm trong .bss
+			static int staticUninit = 0;            // Nằm trong .bss
+			static int staticZero = 0;              // Cũng nằm trong .bss
+
+			int main(void) {
+			    // globalUninit và staticUninit đều có giá trị 0 khi chương trình chạy
+			    printf("%d\n", globalUninit);       // In ra 0
+			    return 0;
+			}
+
+#### **2.4. Phân vùng ngăn xếp (Stack Segment)**
+
+* Phân vùng ngăn xếp dùng để quản lý các dữ liệu có thời gian sống ngắn, liên quan đến việc gọi hàm.
+
+	* Chứa biến cục bộ (`auto`), tham số hàm và thông tin điều khiển (địa chỉ trả về, frame pointer…).
+	
+	*  Hoạt động theo cơ chế LIFO (Last-In, First-Out).
+	
+	*  Bộ nhớ được cấp phát và thu hồi tự động bởi CPU khi hàm được gọi và kết thúc.
+	
+	*  Phát triển từ địa chỉ cao xuống thấp (giảm dần).
+	
+	*  Kích thước thường bị giới hạn (mặc định từ vài MB đến vài chục MB tùy hệ điều hành).   
+
+#### **2.5. Phân vùng cấp phát động (Heap Segment)**
+
+* Phân vùng Heap là vùng bộ nhớ dành cho việc cấp phát động do lập trình viên yêu cầu.
+
+	* Được sử dụng bởi các hàm `malloc()`, `calloc()`, `realloc()`, `free()`.
+	
+	*  Kích thước linh hoạt, có thể tăng trưởng trong quá trình chạy chương trình.
+	
+	*  Phát triển từ địa chỉ thấp lên cao (tăng dần), ngược chiều với Stack.
+	
+	*  Được quản lý thủ công bởi lập trình viên.
+	
+	*  Kích thước lớn nhất trong các phân vùng (có thể lên đến hàng GB tùy hệ thống).
+
+
+### **III.  Stack Frame**
+
+#### **3.1. Cơ chế gọi hàm và xây dựng khung ngăn xếp**
+
+##### **3.1.1. Khái niệm**
+
+* Khi một hàm được gọi, CPU và trình biên dịch phối hợp tạo ra một khung ngăn xếp mới trên Stack. 
+
+* Quá trình này tuân theo cơ chế LIFO (Last-In, First-Out).
+
+##### **3.1.2. Quá trình xây dựng khung ngăn xếp**
+
+* **Push tham số hàm** (nếu có) vào Stack.
+
+*  **Push địa chỉ trả về (Return Address)** – vị trí lệnh tiếp theo sau khi hàm kết thúc.
+
+*  **Push Frame Pointer cũ (nếu sử dụng FP)** để lưu lại khung của hàm gọi.
+
+* Cập nhật Frame Pointer mới cho khung hiện tại.
+
+* Cấp phát không gian cho biến cục bộ của hàm.
+
+*  Thực thi thân hàm.
+
+##### **3.1.3. Khi hàm kết thúc (gặp lệnh return)**
+
+* Giải phóng không gian biến cục bộ.
+
+* Khôi phục Frame Pointer cũ.
+
+* Pop địa chỉ trả về và nhảy về hàm gọi.
+
+* Giải phóng tham số (thường do hàm gọi thực hiện).     
+
+##### **3.1.4. VD**
+
+		void funcB(int x) {
+		    int local = x * 2;     // Biến cục bộ nằm trong Stack Frame của funcB
+		    // ...
+		}
+
+		void funcA() {
+		    int a = 10;
+		    funcB(a);              // Khi gọi funcB, một Stack Frame mới được tạo
+		}
+
+		int main(void) {
+		    funcA();               // main → funcA → funcB
+		    return 0;
+		}
+
+#### **3.2. Con trỏ ngăn xếp (SP) và con trỏ khung (FP/BP)**
+
+* **Stack Pointer (SP):**
+
+	*  Luôn trỏ đến đỉnh (top) của Stack hiện tại.
+	
+	*  Khi đẩy dữ liệu vào (push), SP giảm (trên hầu hết kiến trúc).
+	
+	*  Khi lấy dữ liệu ra (pop), SP tăng.
+	
+	*  SP thay đổi liên tục trong quá trình thực thi hàm.   
+
+* **Frame Pointer / Base Pointer (FP hoặc BP):**
+
+	*  Trỏ đến một vị trí cố định trong khung ngăn xếp hiện tại (thường là đáy của khung).
+	
+	*  Đóng vai trò là mốc tham chiếu ổn định để truy xuất tham số hàm và biến cục bộ.
+	
+	*  Giúp trình biên dịch sinh ra mã dễ dàng hơn khi truy cập biến, vì khoảng cách từ FP đến biến là cố định.  
+
+* **Sơ đồ Stack Frame điển hình:**
+
+		Địa chỉ cao
+		+-------------------------+  ← Frame Pointer (FP) cũ của hàm gọi
+		|   Saved FP (Base Pointer)|
+		+-------------------------+
+		|   Return Address        |
+		+-------------------------+
+		|   Tham số hàm           |  ← Các tham số được đẩy vào
+		+-------------------------+
+		|   Biến cục bộ           |  ← Không gian cho biến local
+		|   (local variables)     |
+		+-------------------------+  ← Stack Pointer (SP) hiện tại
+		Địa chỉ thấp
+		
+
+
+
+
+### **IV.  Quản trị phân vùng Heap**
+
+#### **4.1. Trình quản lý bộ nhớ Heap (Memory Allocator)**
+
+* Trình quản lý bộ nhớ Heap (thường gọi là Memory Allocator) là một thành phần nằm trong thư viện C chuẩn (libc) chịu trách nhiệm quản lý toàn bộ vùng Heap.
+
+* **Vai trò:**
+
+	*  Theo dõi các khối bộ nhớ đang trống và đã được cấp phát.
+
+	*  Tìm và cấp phát khối bộ nhớ phù hợp khi gọi `malloc()` hoặc `calloc()`.
+	
+	*  Giải phóng khối bộ nhớ khi gọi `free()` và cập nhật danh sách khối trống.
+	
+	*  Thực hiện hợp nhất (coalescing) các khối trống liền kề để giảm phân mảnh. 
+	
+* **Cấu trúc dữ liệu nội bộ phổ biến:**
+
+	*  **Free Lists:** Danh sách liên kết các khối nhớ trống.
+
+	*  **Boundary Tags:** Mỗi khối nhớ có metadata (kích thước, trạng thái đã cấp phát hay trống) ở đầu và cuối khối.
+	
+	* **Bins:** Nhiều danh sách riêng biệt theo kích thước khối (small bins, large bins…) để tăng tốc độ tìm kiếm.  
+
+
+* **Quy trình cấp phát điển hình:**
+
+	* Tìm khối trống đủ lớn trong Free List.
+	
+	*  Nếu tìm thấy → cắt khối nếu cần và trả về phần phù hợp cho người dùng.
+	
+	*  Nếu không tìm thấy → yêu cầu hệ điều hành cấp thêm bộ nhớ (qua brk() hoặc mmap() trên Linux).
+	
+	*  Trả về con trỏ đến vùng nhớ (sau khi đã trừ đi phần metadata).     
+	
+
+			
+#### **4.2. Hiện tượng phân mảnh bộ nhớ (Memory Fragmentation)**
+
+##### **4.2.1. Phân mảnh ngoài (External Fragmentation)**
+
+* Xảy ra khi tổng dung lượng bộ nhớ trống đủ lớn, nhưng các khối trống bị rời rạc, không có khối liền mạch nào đủ lớn để đáp ứng yêu cầu cấp phát mới.
+
+* Nguyên nhân: Việc cấp phát và giải phóng xen kẽ với nhiều kích thước khác nhau trong thời gian dài.
+
+* **Minh họa:**
+
+		[ Đã cấp phát ] [ Trống 8KB ] [ Đã cấp phát ] [ Trống 16KB ] [ Đã cấp phát ]
+		→ Tổng trống = 24KB, nhưng không thể cấp phát một khối 20KB 
+
+##### **4.2.2. Phân mảnh trong (Internal Fragmentation)**
+
+* Xảy ra khi trình quản lý cấp phát một khối nhớ lớn hơn so với yêu cầu thực tế của chương trình.
+
+* Nguyên nhân phổ biến: Làm tròn kích thước lên bội số của 8 hoặc 16 byte để dễ quản lý và căn chỉnh.
+
+* **VD:**
+
+	*  Yêu cầu cấp phát 30 byte → allocator trả về khối 32 byte hoặc 64 byte → 2 hoặc 34 byte bị lãng phí bên trong khối.
+
+##### **4.2.3. Kỹ thuật giảm thiểu phân mảnh bộ nhớ**
+
+* **Memory Pools / Object Pools**
+
+	*  Cấp phát trước một khối bộ nhớ lớn.
+	
+	*  Chia nhỏ khối đó thành nhiều đối tượng có kích thước cố định.
+	
+	*   Rất hiệu quả khi chương trình tạo/hủy một loại đối tượng thường xuyên (ví dụ: node của danh sách liên kết, packet mạng…). 
+
+* **Slab Allocation**
+
+	*  Kỹ thuật nâng cao được sử dụng trong kernel Linux.
+	
+	*  Tạo các Slab (khối lớn) chứa nhiều đối tượng cùng kích thước.
+	
+	*   Khi một đối tượng được giải phóng, nó được đưa trở lại Slab thay vì đưa vào Free List chung.
+
+* **Custom Allocators**
+
+	*  Viết trình cấp phát riêng phù hợp với đặc thù của ứng dụng.
+	
+	*  VD:
+	
+		*   **Arena Allocator:** Cấp phát từ một vùng nhớ lớn, chỉ giải phóng toàn bộ arena một lần.
+		
+		*   **Region Allocator:** Phân vùng Heap thành nhiều vùng nhỏ, mỗi vùng phục vụ một mục đích cụ thể.
+		
+		*   **Bump Allocator:** Cấp phát cực nhanh bằng cách chỉ di chuyển một con trỏ (thường dùng trong compiler hoặc game engine).
+
+					 										
+   </details> 
    
+
 <details>
     <summary><strong>CHƯƠNG 14: XỬ LÝ TÍN HIỆU (SIGNAL HANDLING)</strong></summary>
 
