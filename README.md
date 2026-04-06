@@ -8241,8 +8241,576 @@
 
 					 										
    </details> 
-   
 
+
+
+
+<details>
+    <summary><strong>CHƯƠNG 12: CON TRỎ NÂNG CAO</strong></summary>
+
+## **CHƯƠNG 12: CON TRỎ NÂNG CAO**
+
+### **I.  Con trỏ đa cấp (Multiple Indirection)**
+
+#### **1.1. Khái niệm và cú pháp con trỏ đa cấp**
+
+##### **1.1.1. Khái niệm**
+
+* Con trỏ đa cấp (multiple indirection) là con trỏ trỏ đến một con trỏ khác. 
+
+* Mỗi lần thêm một dấu `*` sẽ tăng thêm một mức gián tiếp.
+
+##### **1.1.2. Cú pháp**
+
+		kiểu_dữ_liệu **tên_con_trỏ;     // Con trỏ cấp 2
+		kiểu_dữ_liệu ***tên_con_trỏ;    // Con trỏ cấp 3
+
+##### **1.1.3. Ví dụ**
+
+		int value = 100;
+
+		int  *p1 = &value;      // Con trỏ cấp 1: trỏ đến value
+		int **p2 = &p1;         // Con trỏ cấp 2: trỏ đến p1
+		int ***p3 = &p2;        // Con trỏ cấp 3: trỏ đến p2
+
+##### **1.1.4. Giải tham chiếu**
+
+* Mỗi dấu `*` sẽ bóc một lớp con trỏ:
+
+		printf("%d\n", value);      // 100
+		printf("%d\n", *p1);        // 100
+		printf("%d\n", **p2);       // 100
+		printf("%d\n", ***p3);      // 100
+
+		***p3 = 999;                // Thay đổi giá trị gốc qua con trỏ cấp 3
+		printf("%d\n", value);      // Kết quả: 999
+				
+#### **1.2. Ứng dụng**
+
+##### **1.2.1. Sửa đổi con trỏ trong hàm (Output Pointers)**
+
+
+* Do ngôn ngữ C truyền tham số theo cơ chế pass-by-value, hàm không thể thay đổi giá trị của con trỏ gốc nếu chỉ truyền con trỏ cấp một.
+
+* Để hàm có thể thay đổi con trỏ của hàm gọi, ta phải truyền địa chỉ của con trỏ đó vào, biến tham số hàm thành con trỏ cấp hai. 
+
+* **VD:**
+
+		#include <stdio.h>
+		#include <stdlib.h>
+
+		// Hàm cấp phát mảng động và trả về qua tham số
+		void allocateArray(int **arr, int size)
+		{
+		    *arr = (int*)malloc(size * sizeof(int));
+		    if (*arr == NULL) {
+		        printf("Cap phat bo nho that bai!\n");
+		        return;
+		    }
+		    
+		    // Khởi tạo dữ liệu
+		    for(int i = 0; i < size; i++) {
+		        (*arr)[i] = i * 10;
+		    }
+		}
+
+		int main(void)
+		{
+		    int *myArray = NULL;                    // Con trỏ ban đầu là NULL
+		    
+		    allocateArray(&myArray, 5);             // Truyền địa chỉ của myArray
+		    
+		    // Kiểm tra kết quả
+		    for(int i = 0; i < 5; i++) {
+		        printf("%d ", myArray[i]);
+		    }
+		    
+		    free(myArray);                          // Giải phóng bộ nhớ
+		    myArray = NULL;
+		    
+		    return 0;
+		}
+
+##### **1.2.2. Cấp phát mảng hai chiều động và mảng răng cưa**
+
+
+* Con trỏ đa cấp cho phép tạo mảng hai chiều động một cách linh hoạt, đặc biệt là mảng răng cưa (jagged array) – nơi mỗi hàng có thể có số cột khác nhau.
+
+* Cấu trúc bộ nhớ:
+
+	* `matrix`  là con trỏ cấp hai: trỏ đến một mảng các con trỏ cấp một.
+	
+	* Mỗi `matrix[i]` là một con trỏ cấp một trỏ đến một hàng. 
+
+* **VD:**
+
+		#include <stdio.h>
+		#include <stdlib.h>
+
+		int main(void)
+		{
+		    int rows = 4;
+		    int *cols = (int[]){3, 5, 2, 4};        // Số cột của từng hàng
+		    
+		    // Cấp phát mảng con trỏ (mảng các hàng)
+		    int **matrix = (int**)malloc(rows * sizeof(int*));
+		    
+		    // Cấp phát từng hàng riêng lẻ
+		    for(int i = 0; i < rows; i++) {
+		        matrix[i] = (int*)malloc(cols[i] * sizeof(int));
+		        
+		        // Gán giá trị
+		        for(int j = 0; j < cols[i]; j++) {
+		            matrix[i][j] = i * 10 + j;
+		        }
+		    }
+		    
+		    // In mảng răng cưa
+		    for(int i = 0; i < rows; i++) {
+		        for(int j = 0; j < cols[i]; j++) {
+		            printf("%3d ", matrix[i][j]);
+		        }
+		        printf("\n");
+		    }
+		    
+		    // Giải phóng bộ nhớ (phải theo thứ tự ngược)
+		    for(int i = 0; i < rows; i++) {
+		        free(matrix[i]);
+		    }
+		    free(matrix);
+		    
+		    return 0;
+		}
+
+
+### **II.  Con trỏ hàm (Function Pointers)**
+
+#### **2.1. Bản chất và cú pháp khai báo con trỏ hàm**
+
+* Con trỏ hàm là một biến lưu trữ địa chỉ của vùng nhớ chứa mã máy (machine code) của một hàm. Nói cách khác, nó trỏ đến hàm thay vì trỏ đến dữ liệu.
+
+* **Cú pháp:** 
+
+		kiểu_trả_về (*tên_con_trỏ_hàm)(danh_sách_tham_số);
+
+
+* **VD1:**
+
+		int (*funcPtr1)(int, int);           // Con trỏ hàm nhận 2 int, trả về int
+		void (*funcPtr2)(const char*);       // Con trỏ hàm nhận chuỗi, không trả về
+		double (*funcPtr3)(double);          // Con trỏ hàm nhận double, trả về double
+
+* **VD2:**
+
+		int add(int a, int b) { return a + b; }
+		int subtract(int a, int b) { return a - b; }
+		int multiply(int a, int b) { return a * b; }
+
+		int main(void)
+		{
+		    int (*operation)(int, int);     // Khai báo con trỏ hàm
+		    
+		    // ... sau này sẽ gán hàm vào operation
+		    return 0;
+		}
+							
+#### **2.2. Gán giá trị và gọi hàm thông qua con trỏ**
+
+* **Cách gán giá trị cho con trỏ hàm:**
+
+		operation = add;           // Cách viết phổ biến (tên hàm tự thoái hóa thành con trỏ)
+		operation = &add;          // Cách viết tường minh (cũng hợp lệ)
+
+* **Cách gọi hàm thông qua con trỏ:**
+
+		int result1 = (*operation)(5, 3);     // Cú pháp tường minh
+		int result2 = operation(5, 3);        // Cú pháp rút gọn (khuyến nghị)
+
+* **VD:**
+
+		#include <stdio.h>
+
+		int add(int a, int b)      { return a + b; }
+		int subtract(int a, int b) { return a - b; }
+
+		int main(void)
+		{
+		    int (*op)(int, int) = NULL;
+		    
+		    op = add;
+		    printf("5 + 3 = %d\n", op(5, 3));        // 8
+		    
+		    op = subtract;
+		    printf("10 - 4 = %d\n", op(10, 4));      // 6
+		    
+		    return 0;
+		}
+
+
+	
+#### **2.3. Ứng dụng**
+
+##### **2.3.1. Hàm gọi lại (Callback Functions)**
+
+* Cho phép truyền một hàm vào hàm khác để hàm đó gọi lại sau.
+
+		void processArray(int arr[], int size, int (*callback)(int))
+		{
+		    for(int i = 0; i < size; i++) {
+		        arr[i] = callback(arr[i]);
+		    }
+		}
+
+		int square(int x) { return x * x; }
+
+		int main(void)
+		{
+		    int numbers[] = {1, 2, 3, 4, 5};
+		    processArray(numbers, 5, square);     // Truyền hàm square làm callback
+		    return 0;
+		}
+
+##### **2.3.2. Bảng phương thức ảo (Virtual Method Table)**
+
+* Mô phỏng lập trình hướng đối tượng trong C:
+
+		typedef struct {
+		    void (*draw)(void*);
+		    void (*move)(void*, int, int);
+		    void (*destroy)(void*);
+		} ShapeVTable;
+
+##### **2.3.3. Máy trạng thái (State Machine)**
+
+			typedef void (*StateHandler)(void);
+
+			StateHandler currentState = stateIdle;
+
+			void stateIdle(void) { /* ... */ currentState = stateRunning; }
+			void stateRunning(void) { /* ... */ currentState = stateIdle; }
+		
+
+
+### **III.  Mảng con trỏ hàm**
+
+#### **3.1. Cấu trúc và cú pháp khai báo mảng con trỏ hàm**
+
+##### **3.1.1. Khái niệm**
+
+* Mảng con trỏ hàm là một mảng mà mỗi phần tử là một con trỏ hàm có cùng kiểu trả về và danh sách tham số.
+
+
+##### **3.1.2. Cú pháp**
+
+		kiểu_trả_về (*tên_mảng[kích_thước])(danh_sách_tham_số);
+
+##### **3.1.3. Ví dụ**
+
+* **VD1:**
+
+		// Mảng chứa 10 con trỏ hàm: mỗi hàm nhận 2 int và trả về int
+		int (*operations[10])(int, int);
+
+		// Mảng chứa các hàm không trả về, nhận một chuỗi
+		void (*handlers[5])(const char*);     
+
+* **VD2:**
+
+		#include <stdio.h>
+
+		int add(int a, int b)      { return a + b; }
+		int subtract(int a, int b) { return a - b; }
+		int multiply(int a, int b) { return a * b; }
+		int divide(int a, int b)   { return (b != 0) ? a / b : 0; }
+
+		int main(void)
+		{
+		    // Khai báo và khởi tạo mảng con trỏ hàm
+		    int (*mathOps[4])(int, int) = {add, subtract, multiply, divide};
+
+		    printf("10 + 5 = %d\n", mathOps[0](10, 5));
+		    printf("10 - 5 = %d\n", mathOps[1](10, 5));
+		    printf("10 * 5 = %d\n", mathOps[2](10, 5));
+		    printf("10 / 5 = %d\n", mathOps[3](10, 5));
+
+		    return 0;
+		}
+
+
+
+#### **3.2. Ứng dụng**
+
+* **Bảng điều phối lệnh (Command Dispatch Table):**
+
+	*  Một trong những ứng dụng quan trọng và phổ biến nhất của mảng con trỏ hàm là xây dựng Command Dispatch Table (Bảng điều phối lệnh).
+	
+	*  Kỹ thuật này giúp thay thế chuỗi if-else hoặc switch-case dài dòng bằng một phép tra cứu nhanh O(1).
+	
+	* **VD:**
+
+				#include <stdio.h>
+				#include <string.h>
+
+				typedef void (*CommandFunc)(const char* args);
+
+				// Các hàm xử lý lệnh
+				void cmd_help(const char* args) {
+				    printf("Available commands: help, echo, clear, quit\n");
+				}
+
+				void cmd_echo(const char* args) {
+				    printf("Echo: %s\n", args);
+				}
+
+				void cmd_clear(const char* args) {
+				    printf("\033[2J\033[H");  // Clear screen (ANSI)
+				}
+
+				void cmd_quit(const char* args) {
+				    printf("Goodbye!\n");
+				    exit(0);
+				}
+
+				// Bảng điều phối lệnh
+				struct {
+				    const char* name;
+				    CommandFunc func;
+				} commandTable[] = {
+				    {"help",  cmd_help},
+				    {"echo",  cmd_echo},
+				    {"clear", cmd_clear},
+				    {"quit",  cmd_quit},
+				    {NULL,    NULL}               // Kết thúc bảng
+				};
+
+				void executeCommand(const char* cmd, const char* args)
+				{
+				    for(int i = 0; commandTable[i].name != NULL; i++) {
+				        if (strcmp(cmd, commandTable[i].name) == 0) {
+				            commandTable[i].func(args);   // Gọi hàm qua con trỏ
+				            return;
+				        }
+				    }
+				    printf("Unknown command: %s\n", cmd);
+				}
+
+				int main(void)
+				{
+				    executeCommand("echo", "Hello World!");
+				    executeCommand("help", "");
+				    executeCommand("clear", "");
+				    
+				    return 0;
+				}
+
+
+		
+
+
+
+
+### **IV.  Tối ưu với từ khóa restrict**
+
+#### **4.1. Pointer Allasing**
+
+* Pointer Aliasing xảy ra khi hai hoặc nhiều con trỏ khác nhau cùng trỏ đến (hoặc có thể trỏ đến) cùng một vùng nhớ, hoặc các vùng nhớ chồng lấn nhau.
+
+* **Vấn đề đối với trình biên dịch:**
+
+	*  Khi trình biên dịch nhìn thấy hai con trỏ, nó phải giả định rằng chúng có thể đang trỏ đến cùng một vùng nhớ.
+
+	*  Do đó, nó không dám thực hiện nhiều tối ưu hóa quan trọng như:
+	
+		*  Sắp xếp lại thứ tự các lệnh (instruction reordering)
+		
+		*  Giữ giá trị trong thanh ghi (register caching)
+
+		*  Vectorization (sử dụng lệnh SIMD)
+		
+		*  Loop unrolling
+		
+	* VD:
+
+				void copy(int *dst, int *src, int n)
+				{
+				    for(int i = 0; i < n; i++) {
+				        dst[i] = src[i];        // Trình biên dịch phải kiểm tra xem dst và src có chồng lấn không
+				    }
+				} 
+			
+
+			
+#### **4.2. Ý nghĩa và cách sử dụng từ khóa restrict**
+
+##### **4.2.1. Cú pháp**
+
+		kiểu_dữ_liệu *restrict tên_con_trỏ;
+
+##### **4.2.2. VD**
+
+		void memcpy(void *restrict dest, const void *restrict src, size_t n);
+
+		void addArrays(int *restrict a, int *restrict b, int *restrict result, int n)
+		{
+		    for(int i = 0; i < n; i++) {
+		        result[i] = a[i] + b[i];    // Trình biên dịch biết a, b, result không chồng lấn
+		    }
+		}
+
+##### **4.2.3. Quy tắc quan trọng khi sử dụng restrict**
+		
+* Chỉ được dùng `restrict` khi bạn chắc chắn tuyệt đối rằng các con trỏ không alias nhau.
+
+* Nếu vi phạm lời hứa (các con trỏ thực sự chồng lấn), chương trình sẽ gặp Undefined Behavior (hành vi không xác định).
+
+* `restrict` chỉ có ý nghĩa với con trỏ tham số của hàm hoặc con trỏ cục bộ.
+
+
+
+#### **4.3. Lợi ích**
+
+* Khi trình biên dịch tin vào lời hứa restrict, nó có thể thực hiện mạnh mẽ các tối ưu hóa sau:
+
+	*  Giữ dữ liệu trong thanh ghi lâu hơn
+	
+	*  Sắp xếp lại thứ tự lệnh một cách tự do 
+	
+	*  Thực hiện vectorization (sử dụng lệnh SIMD)
+	
+	*  Loại bỏ các kiểm tra chồng lấn không cần thiết
+	
+	*  Tăng tốc đáng kể các vòng lặp xử lý mảng lớn    
+
+
+			
+### **V.  Variadic Functions**
+
+#### **5.1. Khái niệm và ví dụ hàm khả biến**
+
+* Hàm khả biến là hàm có thể chấp nhận số lượng đối số thay đổi (zero or more) trong mỗi lần gọi.
+
+* **VD:**
+
+		printf("Hello %s, you are %d years old.\n", "Alice", 25);
+		// Hàm printf nhận 1 đối số cố định + nhiều đối số khả biến
+
+* **Cú pháp:**
+
+		kiểu_trả_về tên_hàm(kiểu_cố_định last_fixed_arg, ...);
+			
+#### **5.2. Thư viện <stdarg.h> và các macro cơ bản**
+
+* Để xử lý đối số khả biến, chúng ta sử dụng thư viện `<stdarg.h>` với bộ macro sau:
+
+	* **va_list:**
+	
+		* Kiểu dữ liệu lưu trữ danh sách đối số
+		
+		* VD: `va_list ap;`  
+
+	* **va_start:**
+	
+		* Khởi tạo danh sách đối số
+		
+		* VD: `va_start(ap, last_fixed_arg);`  
+
+	* **va_arg:**
+	
+		* Lấy đối số tiếp theo và ép kiểu
+		
+		* VD: `va_arg(ap, int);`  
+
+	* **va_end:**
+	
+		* Dọn dẹp, giải phóng tài nguyên
+		
+		* VD: `va_end(ap);`  
+
+	* **va_copy:**
+	
+		* Sao chép danh sách đối số
+		
+		* VD: `va_copy(dest, src);`  
+				
+* **VD:**
+
+			#include <stdio.h>
+			#include <stdarg.h>
+
+			int sum(int count, ...)
+			{
+			    va_list ap;
+			    int total = 0;
+
+			    va_start(ap, count);           // Khởi tạo, bắt đầu từ sau tham số count
+
+			    for(int i = 0; i < count; i++) {
+			        total += va_arg(ap, int);  // Lấy đối số kiểu int
+			    }
+
+			    va_end(ap);                    // Dọn dẹp
+			    return total;
+			}
+
+			int main(void)
+			{
+			    printf("Sum = %d\n", sum(5, 10, 20, 30, 40, 50));   // 150
+			    printf("Sum = %d\n", sum(3, 100, 200, 300));        // 600
+			    return 0;
+			}
+
+		
+	
+#### **5.3. Rủi ro**
+
+* **Mất an toàn kiểu (Type Safety):**
+
+	*  Trình biên dịch không kiểm tra kiểu của các đối số khả biến → dễ truyền sai kiểu.
+
+* **Không biết số lượng đối số:**
+
+	*  Hàm phải có cơ chế riêng để biết có bao nhiêu đối số (thường dùng tham số đếm hoặc chuỗi định dạng như `printf`).
+
+* **Undefined Behavior nếu sai:**
+
+	*  Truyền sai số lượng đối số
+	
+	*  Truyền sai kiểu dữ liệu 
+	
+	* Quên gọi `va_end()` 
+
+#### **5.4. Kỹ thuật nâng cao với va_copy**
+
+* **Cú pháp:**
+
+		va_list ap, ap_copy;
+
+		va_start(ap, last_arg);
+		va_copy(ap_copy, ap);        // Tạo bản sao
+
+* **VD:**
+
+		void printAll(const char* format, ...)
+		{
+		    va_list ap, ap_copy;
+		    
+		    va_start(ap, format);
+		    va_copy(ap_copy, ap);        // Tạo bản sao để dùng sau
+		    
+		    // Duyệt lần 1: đếm số đối số hoặc xử lý logic
+		    // ...
+		    
+		    // Duyệt lần 2: in ra
+		    va_list temp = ap_copy;
+		    // ... sử dụng temp
+		    
+		    va_end(ap);
+		    va_end(ap_copy);
+		}
+			 										
+   </details> 
+
+   
 <details>
     <summary><strong>CHƯƠNG 14: XỬ LÝ TÍN HIỆU (SIGNAL HANDLING)</strong></summary>
 
