@@ -7853,6 +7853,675 @@
    </details> 
 
 
+<details>
+    <summary><strong>CHƯƠNG 10: CẤP PHÁT BỘ NHỚ ĐỘNG</strong></summary>
+
+
+## **CHƯƠNG 10: CẤP PHÁT BỘ NHỚ ĐỘNG**
+
+### **I. GIAO DIỆN CẤP PHÁT BỘ NHỚ CHUẨN**
+
+#### **1.1.Hàm malloc (Memory Allocation)**
+
+##### **1.1.1.Khái niệm**
+
+*	Hàm malloc là hàm cơ bản nhất trong giao diện cấp phát bộ nhớ động (dynamic memory allocation) của thư viện chuẩn C, được khai báo trong header file `<stdlib.h>`
+
+##### **1.1.2.Cú pháp**
+ 
+			 void * malloc(size_t size);
+			 
+*  Tham số: 
+
+	*	`size`: Kiểu dữ liệu `size_t` (thường là unsigned int hoặc unsigned long tùy theo hệ thống), biểu diễn số byte cần cấp phát liên tục (contiguous block) trong vùng nhớ heap.
+  
+		*	Nếu size bằng 0, hành vi của malloc là do triển khai định nghĩa (implementation-defined).
+		
+		*  Một số hệ thống trả về con trỏ không NULL (nhưng không được sử dụng để truy cập bộ nhớ), một số khác trả về NULL
+	
+*  Giá trị trả về: 
+
+	* Thành công: 
+	
+		* Trả về một con trỏ void* trỏ đến vùng nhớ đã được cấp phát.
+		
+		* Vùng nhớ này là:
+		
+			* Thô
+			
+			* Chưa được khởi tạo, chứa giá trị rác 
+			
+			* Được căn chỉnh phù hợp để lưu bất kỳ kiểu dữ liệu nào      
+	
+	* Thất bại:   
+	
+		* Trả về NULL khi hệ thống không thể cấp phát đủ bộ nhớ yêu cầu (ví dụ: hết bộ nhớ heap, hoặc size quá lớn vượt quá giới hạn của hệ thống). 
+  
+##### **1.1.3.Đặc tính**
+			 
+*  Vùng nhớ nằm trong heap (vùng nhớ động).
+
+* Bộ nhớ được cấp phát có thể lớn hơn `size` một chút do cơ chế quản lý bộ nhớ của C
+
+* Vùng nhớ không được tự động khởi tạo về 0
+
+	* Nếu cần vùng nhớ chứa giá trị 0, phải sử dụng hàm `calloc` hoặc gọi `memset` sau khi cấp phát bằng `malloc`   
+
+*	Con trỏ trả về có thể được ép kiểu (cast) an toàn sang bất kỳ kiểu con trỏ nào
+
+##### **1.1.4.Cách sử dụng chuẩn**
+			 
+		#include <stdlib.h>
+
+		int *arr = (int*)malloc(10 * sizeof(int));
+		if (arr == NULL) {
+		    // Xử lý lỗi: thông báo, thoát chương trình hoặc phục hồi
+		    fprintf(stderr, "Khong du bo nho de cap phat!\n");
+		    exit(1);
+		}
+
+* Sử dụng sizeof(int) thay vì ghi cứng số byte (ví dụ: 40) để đảm bảo tính khả chuyển (portability) giữa các nền tảng (32-bit, 64-bit, các kiến trúc khác nhau).
+
+* Ép kiểu (int*) là cần thiết trong C++ và là thói quen tốt trong C (dù C cho phép gán void* trực tiếp cho con trỏ khác mà không cần cast).
+
+* Luôn kiểm tra con trỏ trả về trước khi sử dụng.
+
+* Cách sử dụng cho nhiều kiểu dữ liệu khác nhau:
+			
+			double *dptr = (double*)malloc(n * sizeof(double));
+			struct Student *students = (struct Student*)malloc(m * sizeof(struct Student));
+			char *buffer = (char*)malloc(1024);           // cấp phát 1KB 
+
+##### **1.1.5.Hành vi không xác định (Undefined Behavior) khi sử dụng sai**
+			 
+*  Truy cập vùng nhớ trước khi kiểm tra con trỏ `NULL`
+
+*  Sử dụng vùng nhớ sau khi đã `free()`
+
+*  Truy cập ngoài giới hạn vùng nhớ đã cấp phát (buffer overflow).
+
+* Giải phóng hai lần (double free).
+
+* Ép kiểu và sử dụng sai kích thước (ví dụ: cấp phát cho int nhưng lại truy cập như double). 
+
+#### **1.2.Hàm calloc (Cleared Allocation)**
+
+##### **1.2.1.Khái niệm**
+
+*	Hàm calloc là hàm cấp phát bộ nhớ động có khởi tạo giá trị, được khai báo trong thư viện chuẩn `<stdlib.h>`
+
+##### **1.2.2.Cú pháp**
+ 
+			 void * calloc(size_t nmemb, size_t size);
+			 
+*  Tham số: 
+
+	*  `nmemb`: Số lượng phần tử cần cấp phát
+
+	*	`size`: Kích thước byte của mỗi phần tử
+  
+		*	Tổng số byte bộ nhớ được cấp phát là `nmemb * size`.
+		
+		*  Nếu nmemb hoặc size bằng 0, hành vi của hàm là implementation-defined (tương tự malloc).
+		
+		*  Thông thường, hàm sẽ trả về một con trỏ hợp lệ nhưng không được sử dụng để truy cập bộ nhớ, hoặc trả về NULL. 
+	
+*  Giá trị trả về: 
+
+	* Thành công: 
+	
+		* Trả về con trỏ void* trỏ đến vùng nhớ đã được cấp phát liên tục trên heap
+		
+		* Vùng nhớ này là:
+		
+			* Được khởi tạo toàn bộ về 0 trên tất cả các bit (zero-initialized).
+			
+			* Được căn chỉnh phù hợp (suitably aligned) để lưu trữ bất kỳ kiểu dữ liệu nào.
+	
+	* Thất bại:   
+	
+		* Trả về NULL nếu không đủ bộ nhớ để cấp phát.
+  
+##### **1.2.3.Đặc tính**
+			 
+*  Khởi tạo về 0: 
+
+	* Đây là điểm khác biệt quan trọng nhất so với malloc. 
+	
+	* Toàn bộ vùng nhớ được đặt tất cả các byte về giá trị 0x00.
+
+
+##### **1.2.4.Cách sử dụng chuẩn**
+			 
+		#include <stdlib.h>
+
+		int *arr = (int*)calloc(10, sizeof(int));
+		if (arr == NULL) {
+		    fprintf(stderr, "Khong du bo nho de cap phat!\n");
+		    exit(1);
+		}
+
+* Cách sử dụng cho nhiều kiểu dữ liệu khác nhau:
+			
+		// Cấp phát mảng 100 số nguyên (đã khởi tạo = 0)
+		int *numbers = (int*)calloc(100, sizeof(int));
+
+		// Cấp phát mảng cấu trúc
+		struct Student {
+		    char name[50];
+		    int age;
+		    float gpa;
+		};
+		struct Student *class = (struct Student*)calloc(50, sizeof(struct Student));
+
+		// Cấp phát chuỗi ký tự
+		char *buffer = (char*)calloc(1024, sizeof(char));  // tương đương chuỗi rỗng
+
+##### **1.2.5.Lưu ý**
+			 
+*  Luôn kiểm tra con trỏ trả về trước khi sử dụng.
+
+*  Sử dụng `sizeof` để đảm bảo tính khả chuyển (portability) giữa các nền tảng.
+
+*  Ép kiểu `(type*)` là khuyến nghị tốt.
+
+*  Bộ nhớ phải được giải phóng bằng hàm `free()` khi không còn sử dụng.
+
+* Ép kiểu và sử dụng sai kích thước (ví dụ: cấp phát cho int nhưng lại truy cập như double). 
+
+#### **1.3.Hàm realloc (Re-allocation)**
+
+##### **1.3.1.Khái niệm**
+
+*	Hàm realloc là hàm cho phép thay đổi kích thước của một khối bộ nhớ đã được cấp phát động trước đó bằng malloc, calloc hoặc realloc.
+
+##### **1.3.2.Cú pháp**
+ 
+			 void* realloc(void* ptr, size_t size);
+			 
+*  Tham số: 
+
+	*  `ptr`: 
+	
+		* Con trỏ trỏ đến khối bộ nhớ đã được cấp phát trước đó (thường là kết quả trả về của malloc, calloc hoặc realloc trước đó).
+		
+		* Nếu ptr là NULL, hàm realloc hoạt động tương đương với malloc(size). 
+
+	*	`size`: Kích thước mới (theo byte) mà khối bộ nhớ cần thay đổi thành.
+	
+*  Giá trị trả về: 
+
+	* Thành công: 
+	
+		* Trả về con trỏ void* trỏ đến khối bộ nhớ có kích thước mới.
+		
+		* Con trỏ này có thể giống hoặc khác với con trỏ ptr ban đầu.
+	
+	* Thất bại:   
+	
+		* Trả về NULL.
+		
+		* Khi thất bại, hàm không giải phóng khối bộ nhớ cũ.
+		
+		* Khối nhớ ban đầu vẫn còn nguyên vẹn và vẫn phải được giải phóng bằng `free()` sau này.  
+  
+##### **1.3.3.Các kịch bản hoạt động**
+			 
+*  Hàm realloc xử lý theo nhiều trường hợp tùy theo khả năng của hệ thống quản lý bộ nhớ:
+
+	* Thu nhỏ kích thước:
+	
+		* Khối bộ nhớ được giữ nguyên vị trí.
+		
+		* Phần bộ nhớ thừa ở cuối khối sẽ bị cắt bỏ và giải phóng.
+		
+		* Nội dung phần dữ liệu còn lại được giữ nguyên 
+		
+		* Trả về cùng con trỏ cũ     
+
+
+	* Mở rộng tại chỗ:
+	
+		* Nếu có đủ không gian trống liền kề phía sau khối bộ nhớ hiện tại, hệ thống sẽ mở rộng khối đó ngay lập tức
+		
+		* Không cần sao chép dữ liệu.
+		
+		* Trả về cùng con trỏ cũ.
+		
+		* Phần bộ nhớ mới được thêm vào chưa được khởi tạo (chứa giá trị rác).
+
+	* Di chuyển đến vị trí mới (Move / Relocate):
+	
+		* Khi không thể mở rộng tại chỗ (không gian liền kề không đủ), realloc sẽ:
+		
+			* Cấp phát một khối bộ nhớ mới đủ lớn ở vị trí khác.
+			
+			* Sao chép toàn bộ nội dung của khối cũ sang khối mới (sao chép tối đa size byte).
+			
+			* Giải phóng khối bộ nhớ cũ.
+			
+			* Trả về con trỏ mới trỏ đến khối nhớ mới. 
+		
+##### **1.3.4.Cách sử dụng chuẩn**
+			 
+		#include <stdlib.h>
+
+		int *arr = (int*)malloc(10 * sizeof(int));
+		if (arr == NULL) { /* xử lý lỗi */ }
+
+		// Mở rộng mảng từ 10 lên 20 phần tử
+		int *new_arr = (int*)realloc(arr, 20 * sizeof(int));
+		if (new_arr == NULL) {
+		    // Thất bại → khối arr vẫn còn hiệu lực
+		    fprintf(stderr, "Khong the cap phat them bo nho!\n");
+		    free(arr);        // Phải tự giải phóng
+		    exit(1);
+		}
+
+		// Cập nhật con trỏ
+		arr = new_arr;
+
+* Lưu ý khi gán lại con trỏ:
+			
+		// Cách an toàn
+		int *temp = (int*)realloc(arr, new_size);
+		if (temp != NULL) {
+		    arr = temp;
+		} else {
+		    // Xử lý lỗi, arr vẫn hợp lệ
+		}
+
+##### **1.3.5.Lưu ý**
+			 
+*  Không được giải phóng con trỏ cũ nếu realloc trả về con trỏ , khối cũ đã được hàm tự động giải phóng 
+
+*  Khi realloc thất bại, phải giữ nguyên con trỏ cũ và giải phóng sau.
+
+*  Phần bộ nhớ mới khi mở rộng không được khởi tạo về 0. Nếu cần, phải dùng memset.
+
+*  Truyền size = 0 vào realloc(ptr, 0) có hành vi tương đương free(ptr) trên một số hệ thống, nhưng không được khuyến khích. Nên dùng free() trực tiếp.
+
+*  Luôn sử dụng sizeof để đảm bảo tính khả chuyển.
+
+*  Ép kiểu (type*) là thói quen tốt.  
+
+#### **1.4.Hàm free (De-allocation)**
+
+##### **1.4.1.Khái niệm**
+
+*	Hàm free là hàm giải phóng bộ nhớ động, đóng vai trò quan trọng cuối cùng trong chu trình quản lý bộ nhớ động của ngôn ngữ C
+
+##### **1.4.2.Cú pháp**
+ 
+			 void free(void* ptr);
+			 
+*  Tham số: 
+
+	*  `ptr`: 
+	
+		* Con trỏ trỏ đến khối bộ nhớ cần giải phóng.
+		
+		* Đây phải là con trỏ đã được trả về trước đó bởi:
+		
+			* `malloc()`
+			
+			* `calloc()`
+			
+			* `realloc()`   
+
+			*	Hoặc ptr có thể là NULL.
+
+  
+##### **1.4.3.Mục đích**
+			 
+*  Trả lại khối bộ nhớ đã cấp phát động cho Heap Manager (hệ thống quản lý bộ nhớ heap) của chương trình.
+
+* Cho phép hệ thống tái sử dụng vùng nhớ đó cho các lần cấp phát sau, giúp tránh tình trạng rò rỉ bộ nhớ (memory leak).
+
+		
+##### **1.4.4.Ràng buộc khi sử dụng**
+
+* Chỉ được phép truyền vào `free`:
+
+	*  Con trỏ nhận trực tiếp từ `malloc, calloc, hoặc realloc`.
+	
+	*  Con trỏ `NULL` (gọi `free(NULL)` là an toàn tuyệt đối và hàm sẽ không làm gì cả). 
+			 
+* Tuyệt đối không được phép:
+
+	*  Giải phóng con trỏ không được cấp phát bởi các hàm trên (con trỏ stack, con trỏ static, con trỏ hằng…).
+	
+	*  Giải phóng hai lần cùng một con trỏ (double free).
+	
+	*  Giải phóng con trỏ đã bị thay đổi (không còn trỏ đúng vào đầu khối nhớ)
+	
+	*  Giải phóng một phần của khối nhớ 
+	
+	*  Sử dụng con trỏ sau khi đã `free`  
+
+
+
+##### **1.4.5.Cách sử dụng đúng**
+			 
+		#include <stdlib.h>
+
+		int *arr = (int*)malloc(100 * sizeof(int));
+		if (arr == NULL) { /* xử lý lỗi */ }
+
+		// Sử dụng arr...
+
+		free(arr);      // Giải phóng đúng
+		arr = NULL;     // Khuyến nghị tốt: gán NULL sau khi free
+
+* 	Với realloc (trường hợp đặc biệt):
+		
+		int *arr = (int*)malloc(10 * sizeof(int));
+
+		// Mở rộng
+		int *temp = (int*)realloc(arr, 50 * sizeof(int));
+		if (temp != NULL) {
+		    arr = temp;
+		}
+
+		// Khi kết thúc
+		free(arr);
+		arr = NULL;
+	 
+
+ 		        
+### **II.  QUẢN LÝ VÒNG ĐỜI KHỐI NHỚ**
+
+####  **2.1. Vòng đời chuẩn: Allocate → Use → Free**
+
+* Một khối bộ nhớ cấp phát hợp lệ phải tuân theo 3 giai đoạn:
+
+	* **Alocate (Cấp phát):** Sử dụng `malloc`, `calloc`, `realloc` để xin cấp phát bộ nhớ từ heap
+	
+	* **Use (Sử dụng):** Truy cập, đọc.ghi dữ liệu vào vùng nhớ đã cấp phát
+	
+	* **Free (Giải phóng):** Trả bộ nhớ về cho hệ thống bằng hàm `free`   
+
+			
+* **Nguyên tắc sở hữu:**
+
+	* Trong các dự án trung bình và lớn, cần xác định rõ ràng ai là chủ sở hữu của khối bộ nhớ.
+	
+		* Module/hàm nào cấp phát bộ nhớ thì module/hàm đó có trách nhiệm giải phóng nó, trừ khi chủ sở hữu được chuyển giao một cách rõ ràng (ví dụ: qua tài liệu hàm hoặc tham số đầu ra).
+		
+		* Nguyên tắc này giúp tránh tình trạng “ai cũng nghĩ người khác sẽ free”, dẫn đến memory leak hoặc double free. 
+
+				// Hàm này sở hữu bộ nhớ và phải chịu trách nhiệm free
+				char* create_message(const char* text) {
+				    char* msg = (char*)malloc(strlen(text) + 1);
+				    if (msg == NULL) return NULL;
+				    strcpy(msg, text);
+				    return msg;        // Chuyển giao quyền sở hữu cho hàm gọi
+				}
+
+
+
+####  **2.2. Kiểm tra giá trị trả về bắt buộc**
+
+* Mọi lời gọi hàm cấp phát bộ nhớ (`malloc, calloc,realloc`) phải được kiểm tra ngay kết quả trả về.
+
+* Không kiểm tra là nguyên nhân hàng đầu gây ra segmentation fault hoặc crash chương trình.
+	 
+		int *arr = (int*)malloc(n * sizeof(int));
+		if (arr == NULL) {
+		    // Xử lý lỗi một cách graceful
+		    fprintf(stderr, "Loi cap phat bo nho: khong du RAM!\n");
+		    // Có thể: exit(1), return error_code, hoặc rollback các thao tác trước đó
+		    return NULL;   // hoặc xử lý phù hợp theo ngữ cảnh
+		}
+
+* Với realloc:
+
+		int *temp = (int*)realloc(arr, new_size * sizeof(int));
+		if (temp == NULL) {
+		    // arr vẫn hợp lệ, không được mất con trỏ cũ
+		    free(arr);
+		    return NULL;
+		}
+		arr = temp;   // chỉ gán khi thành công
+
+####  **2.3. Nguyên tắc đối xứng**
+
+* Mỗi lần cấp phát thành công phải tương ứng với đúng một lần giải phóng.
+
+	* Một lời gọi malloc/calloc thành công → phải có đúng một lời gọi free
+	
+	* Một lời gọi realloc thành công (kể cả khi di chuyển khối nhớ) cũng tuân theo nguyên tắc này.
+	
+	* Không được free nhiều lần (double free) và không được quên free (memory leak).
+	
+* tổng bộ nhớ cấp phát = tổng bộ nhớ được giải phóng khi chương trình kết thúc (không leak).    
+
+
+
+####  **2.4. Set to NULL after Free**
+
+* Biến Dangling Pointer (con trỏ treo – con trỏ vẫn giữ địa chỉ cũ nhưng bộ nhớ đã được trả lại) thành con trỏ NULL an toàn.
+
+* Nếu vô tình sử dụng lại con trỏ sau khi free, chương trình sẽ crash rõ ràng (NULL pointer dereference) thay vì hành vi không xác định (undefined behavior) khó debug.
+	
+* Dễ dàng kiểm tra: if (ptr != NULL) trước khi sử dụng hoặc free lại.
+
+		void cleanup(struct Data* d) {
+		    if (d->buffer) {
+		        free(d->buffer);
+		        d->buffer = NULL;     // An toàn
+		    }
+		    if (d->names) {
+		        free(d->names);
+		        d->names = NULL;
+		    }
+		}
+
+### **III. RISKS**
+
+####  **3.1. Memory Leaks**
+
+* Rò rỉ bộ nhớ xảy ra khi một khối bộ nhớ đã được cấp phát động nhưng không bao giờ được giải phóng bằng free(), dẫn đến bộ nhớ bị “bỏ hoang” cho đến khi chương trình kết thúc.
+
+* **Nguyên nhân:**
+
+	* Mất con trỏ duy nhất trỏ đến khối nhớ (con trỏ bị ghi đè, đi ra khỏi phạm vi, hoặc gán giá trị khác).
+	
+	* Quên gọi free() trong các nhánh xử lý lỗi hoặc đường thoát sớm của hàm.
+	
+	* Trong vòng lặp hoặc hàm được gọi lặp lại nhiều lần.
+	
+	* Không giải phóng bộ nhớ trong các cấu trúc dữ liệu phức tạp (danh sách liên kết, cây, đồ thị…).  
+					
+			void process_data(int n) {
+			    int *data = (int*)malloc(n * sizeof(int));
+			    if (data == NULL) return;   // Quên free khi cấp phát thất bại ở các chỗ khác
+			    // ... xử lý dữ liệu
+			    // Quên free(data);
+			}
+	
+####  **3.2. Dangling Pointers**
+
+* Con trỏ vẫn giữ địa chỉ của một vùng nhớ đã được giải phóng bằng `free()`.
+
+* **Nguyên nhân:**
+
+	* Sử dụng con trỏ sau khi đã gọi free().
+	
+	* Trả về địa chỉ của biến cục bộ (stack) từ hàm.
+		
+	* Hai con trỏ cùng trỏ vào một khối nhớ, một con được `free()` nhưng con kia vẫn được sử dụng.
+
+				
+			int *ptr = (int*)malloc(sizeof(int));
+			*ptr = 100;
+			free(ptr);
+
+			// Con trỏ lơ lửng
+			*ptr = 200;        // Undefined Behavior!
+			printf("%d\n", *ptr); 
+		
+
+####  **3.3. Double Free**
+
+* Gọi hàm `free()` hai lần (hoặc nhiều lần) trên cùng một con trỏ hợp lệ.
+
+* Nguyên nhân:
+
+	* Logic xử lý lỗi phức tạp dẫn đến free() được gọi ở nhiều nhánh.
+	
+	* Không gán NULL sau khi free, sau đó kiểm tra và free lại.
+	
+	* Hai hàm cùng giải phóng cùng một khối nhớ do nhầm lẫn về quyền sở hữu.
+
+* Hậu quả:
+
+	* Phá hủy cấu trúc quản lý nội bộ của Heap Manager.
+	
+	* Tạo ra lỗ hổng bảo mật nghiêm trọng (có thể bị khai thác để thực thi mã độc).
+	
+			char *buf = (char*)malloc(100);
+			// ... sử dụng
+			free(buf);
+			// ... một số logic
+			free(buf);   // Double Free → Undefined Behavior
+		
+
+
+####  **3.4. Tràn bộ đệm Heap**
+
+* Ghi dữ liệu vượt quá giới hạn kích thước của khối bộ nhớ đã được cấp phát trên heap.
+
+* Nguyên nhân:
+
+	* Sử dụng sai chỉ số mảng (arr[i] khi i vượt quá kích thước).
+	
+	* Sao chép chuỗi bằng strcpy mà không kiểm tra độ dài.
+	
+	* Hàm memcpy, memmove, sprintf không an toàn.
+
+* Hậu quả:
+
+	* Ghi đè lên metadata quản lý heap (kích thước khối, con trỏ next/prev…).
+	
+	* Gây hỏng các khối nhớ liền kề.
+	
+	* Dẫn đến double free, dangling pointer, hoặc ghi đè lên dữ liệu quan trọng.
+	
+			char *buf = (char*)malloc(16);
+			strcpy(buf, "This is a very long string");  // Tràn bộ đệm
+
+### **IV. CÔNG CỤ**
+
+####  **4.1. Dynamic Analysis với Valgrind**
+
+* Valgrind thực thi chương trình trên một CPU ảo (virtual CPU), mô phỏng và theo dõi từng byte bộ nhớ và từng thao tác truy cập bộ nhớ của chương trình.
+
+* Nhờ đó, nó có thể phát hiện lỗi thời gian chạy một cách chính xác mà không cần biên dịch lại chương trình.
+
+* Công cụ: `Memcheck` dùng để phát hiện
+
+	* Rò rỉ bộ nhớ (Memory Leaks) 
+
+	* Đọc/ghi bộ nhớ không hợp lệ (Invalid read/write)
+	
+	* Lỗi giải phóng bộ nhớ (double free, invalid free, mismatched alloc/free)
+	
+			valgrind --leak-check=full --show-leak-kinds=all ./program
+			valgrind --tool=memcheck --track-origins=yes ./program   
+
+####  **4.2. Sanitizers của trình biên dịch**
+
+* Sanitizers là bộ công cụ được tích hợp sẵn trong GCC và Clang, hoạt động dựa trên kỹ thuật chèn mã kiểm tra (instrumentation) vào chương trình ngay tại thời điểm biên dịch.
+
+	* AddressSanitizer (ASan): 
+	
+		* Phát hiện lỗi truy cập bộ nhớ 
+		
+		* Out-of-bounds, use-after-free, stack overflow, heap buffer overflow  
+	
+
+	* LeakSanitizer (LSan): 
+	
+		* Phát hiện rò rỉ bộ nhớ
+		
+		* Memory leaks (tự động báo cáo khi chương trình kết thúc)
+
+
+	* MemorySanitizer (MSan): 
+	
+		* Phát hiện sử dụng dữ liệu chưa khởi tạo
+		
+		* Use of uninitialized memory
+	
+
+	* UndefinedBehaviorSanitizer (UBSan): 
+	
+		* Phát hiện hành vi không xác định
+		
+		* Integer overflow, null dereference, v.v.
+			
+* **Cách biên dịch với Sanitizers:**
+
+		# ASan + LSan
+		gcc -fsanitize=address -g -O1 program.c -o program
+
+		# Kết hợp nhiều sanitizer
+		clang -fsanitize=address,leak,undefined -g -O1 program.c -o program
+
+####  **4.3. Custom Allocators / Debug Allocators**
+
+* Đây là kỹ thuật tự triển khai các hàm bao bọc (wrapper) xung quanh malloc/free nhằm mục đích gỡ lỗi.
+
+	* Mục đích:
+	
+		* Ghi log thông tin cấp phát (tên file, số dòng, hàm gọi) 
+		
+		* Thêm vùng đệm bảo vệ (guard bands) trước và sau khối nhớ để phát hiện tràn bộ đệm
+		
+		*  Theo dõi danh sách các khối nhớ đang được cấp phát
+		
+		* Phát hiện doublle free và memory leak tự động khi chương trình kết thúc   
+		
+	* VD:
+
+			void* debug_malloc(size_t size, const char* file, int line) {
+			    void* ptr = malloc(size + GUARD_SIZE*2);
+			    // Thêm canary, ghi log vào allocation map...
+			    return ptr + GUARD_SIZE;
+			}
+
+			#define malloc(size) debug_malloc(size, __FILE__, __LINE__) 
+
+####  **4.4. Static Analysis**
+
+* Phân tích tĩnh kiểm tra mã nguồn mà không cần chạy chương trình.
+
+	* Công cụ phổ biến:
+	
+		* clang-tidy
+		
+		* Cppcheck
+		
+		* Coverity, CodeSonar, PVS-Studio
+		
+		* Compiler : `-Wall -Wextra -Wpedantic`
+		
+	* Khả năng phát hiện:
+	
+		* Con trỏ có khả năng bị rò rỉ
+		
+		* Free không tương ứng với malloc
+		
+		* Mismatched allocation/deallocation.    
+
+	* Cách sử dụng:
+	
+			cppcheck --enable=all .
+			clang-tidy main.c -- -I.
+						
+   </details> 
+
 
 <details>
     <summary><strong>CHƯƠNG 11: BỐ CỤC BỘ NHỚ TIẾN TRÌNH</strong></summary>
