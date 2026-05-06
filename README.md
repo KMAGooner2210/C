@@ -9714,249 +9714,142 @@
 				
    </details> 
    
+
 <details>
     <summary><strong>CHƯƠNG 14: XỬ LÝ TÍN HIỆU (SIGNAL HANDLING)</strong></summary>
 
 
 ## **CHƯƠNG 14: XỬ LÝ TÍN HIỆU (SIGNAL HANDLING)**
 
-### **I. KHÁI NIỆM**
+### **I. KHÁI NIỆM VÀ PHÂN LOẠI TÍN HIỆU**
 
 #### **1.1.Software Interrupts**
 
-*	Tín hiệu trong hệ thống Unix là một dạng gián đoạn phần mềm (software interrupt) - một thông báo được gửi đến process để yêu cầu nó xử lý một sự kiện cụ thể
+*	Tín hiệu là một cơ chế thông báo ngắn gọn, không đồng bộ do hệ điều hành (kernel) hoặc tiến trình khác gửi đến một tiến trình để báo hiệu một sự kiện đã xảy ra.
   
-	*	Tín hiệu giống như một ngắt từ kernel hoặc process khác, buộc process tạm dừng công việc hiện tại để xử lý tín hiệu đó
+*  Cơ chế hoạt động: 
+
+	*	Khi một tín hiệu được gửi đi, hệ điều hành tạm dừng luồng thực thi bình thường của tiến trình, buộc nó phải xử lý tín hiệu đó.
   
-	*	Kernel gửi tín hiệu đến process thông qua `system call` như `kill()` hoặc tự động khi xảy ra lỗi (vd: chia cho 0)
+	*	Nếu tiến trình đã đăng ký một "Hàm xử lý tín hiệu" (Signal Handler), quyền điều khiển sẽ được chuyển đến hàm này.
 	
-	*  Tín hiệu có thể đến bất cứ lúc nào trừ khi bị block	
+	*  Sau khi hàm xử lý kết thúc, luồng thực thi chính có thể được tiếp tục (nếu không bị chấm dứt).
   
-*   **VD:**
  
-    ◦   Khi nhấn Ctrl+C trong terminal -> kernel gửi SIGINT đến foreground process
+#### **1.2. Nguồn gốc phát sinh tín hiệu**
 
-    ◦   Nếu process chia cho 0 -> kernel gửi SIGFPE
+* **Từ User:**
 
+	* 	Gõ tổ hợp phím trên terminal:
 
- 
-#### **1.2. Synchronous và Asynchronous**
+		*  `Ctrl+C` sinh ra **`SIGINT`** (Interrupt).
+		
+		*  `Ctrl+Z` sinh ra **`SIGTSTP`** (Terminal Stop).
+		
+		* `Ctrl+\` sinh ra **`SIGQUIT`** (Quit).
 
-* 	**Synchronous Signals (Tín hiệu đồng bộ):**
+* **Từ Hardware/Kernel:**
 
-	*  **Khái niệm:**
+	* 	Các ngoại lệ (exception) xảy ra trong chính tiến trình, được kernel ánh xạ thành tín hiệu:
+
+		*  Lỗi tính toán: chia cho 0 sinh ra **`SIGFPE`**.
+		
+		*  Truy cập bộ nhớ không hợp lệ sinh ra **`SIGSEGV`**.
+		
+		* Thực thi lệnh không hợp lệ sinh ra **`SIGILL`**.
+		
+		*  Hết giờ của `alarm()` sinh ra **`SIGALRM`**.
+		
+		*  Ghi vào pipe đã bị đóng ở đầu đọc sinh ra **`SIGPIPE`**.
+
+* **Từ Other Processes:**
+
+	* 	Sử dụng lời gọi hệ thống `kill()` hoặc lệnh `kill` trên shell.
+
+		*  `kill -TERM <pid>` gửi **`SIGTERM`**.
+		
+		* `kill -USR1 <pid>` gửi **`SIGUSR1`**.
+		
+#### **1.3. Hành động mặc định**
+
+* Mỗi tín hiệu đều có một hành động mặc định được quy định bởi kernel. Các hành động phổ biến bao gồm:
+
+	* 	Terminate: Chấm dứt tiến trình 
 	
-		* Là các tín hiệu được sinh ra trực tiếp bởi chính luồng thực thi (thread/process) hiện tại do một lỗi xảy ra trong quá trình thực thi lệnh CPU
-
-	* **Đặc điểm:**
-	 
-		*  Do lỗi trong chính process
-		
-		*  Luôn gắn với một instruction cụ thể 
-		
-		*  Thời điểm diễn ra khi ngay lập tức lỗi xảy ra
-
-	* **Cơ chế hoạt động:**
-	 
-		*  Khi CPU thực thi một instruction gây lỗi
-		
-			* 1. CPU phát hiện exception 
-			* 2. CPU chuyển sang kernel mode
-			* 3. Kernel ánh xạ exception -> signal tương ứng
-			* 4. Kernel gửi signal về process
-			* 5. Nếu không có handler -> process bị terminate (core dump nếu bật) 
-		
-	*  **Các synchronous signals quan trọng**
+	*  Core dump: Chấm dứt tiến trình và tạo tệp `core` để gỡ lỗi 
 	
-		* **SIGSEGV (segmentation fault)**
-		
-			* Xảy ra khi:
-			
-				* Truy cập vùng nhớ không hợp lệ
-				
-				* Dereference con trỏ NULL
-				
-				* Truy cập memory đã free
-				
-			* VD:     
-
-					int *p = NULL;
-					*p = 10;   // gây SIGSEGV
-		
-		* **SIGFPE (floating point exception)**
-
-			* Xảy ra khi:
-			
-				* Chia số nguyên cho 0
-						
-			* VD:     
-
-					int a = 10;
-					int b = 0;
-					int c = a / b;   // SIGFPE
-							
-		* **SIGILL (illegal instruction)**.
-
-			* Xảy ra khi:
-			
-				* CPU gặp opcode không hợp lệ
-				* Nhảy vào vùng dữ liệu và thực thi như code
-				* Binary compile cho CPU khác kiến trúc
-						
-
-
-* 	**Asynchronous Signals (Tín hiệu bất đồng bộ):**
-
-	*  **Khái niệm:**
+	*  Ignore: Bỏ qua tín hiệu, không làm gì cả 
 	
-		* Là các tín hiệu được gửi đến process từ bên ngoài luồng thực thi hiện tại, không gắn với một instruction cụ thể 
+	*  Stop: Tạm dừng tiến trình cho đến khi nhận được `SIGCONT` 
 	
-	*  **Đặc điểm:**
+	* Cont: Tiếp tục thực thi một tiến trình đã bị tạm dừng     
+
+#### **1.4. Tín hiệu đồng bộ và bất đồng bộ**
+
+##### **1.4.1. Tín hiệu đồng bộ (Synchronous Signals)**
+
+* Được sinh ra trực tiếp bởi chính luồng thực thi của tiến trình do lỗi trong quá trình thực thi lệnh CPU.
+
+* Luôn gắn với một chỉ thị cụ thể và xảy ra ngay lập tức.
+
+* Các tín hiệu tiêu biểu:  
+
+	* 	**`SIGSEGV`:** Truy cập bộ nhớ không hợp lệ, dereference con trỏ NULL
 	
-		* Không do lỗi CPU của chính process gây ra
-		
-		* Có thể đến bất kỳ thời điểm nào 
-		
-		* Có thể interrupt code đang chạy
-
-	*  **Nguồn phát:**
+	*  **`SIGFPE`:** Lỗi tính toán số học (chia cho 0, tràn số).
 	
-		* **Từ người dùng:**
-		
-			* Nhấn `Ctrl+C` -> `SIGINT`
-			* Nhấn `Ctrl+Z` -> `SIGTSTP` 
-		
-		* **Từ process khác:**
-		
-			* Dùng lệnh:
-					
-					kill -TERM <pid>
-					
-			*  Sẽ gửi `SIGTERM`
+	*  **`SIGILL`:** Thực thi một chỉ thị CPU không hợp lệ.
 	
-		*  **Từ kernel:**
-		
-			* Con process kết thúc -> `SIGCHLD`
-			
-			* Hết thời gian timer -> `SIGALRM`
-			
-			* I/O async sẵn sàng -> `SIGIO`  
-
-	*  **Các asynchronous signals quan trọng**
+	*  **`SIGPIPE`:** Ghi dữ liệu vào một pipe hoặc socket đã bị đóng ở đầu đọc.
 	
-		* **SIGINT**
-		
-			* Xảy ra khi nhấn `Ctrl+C` nhằm dừng chương trình
-				
-			* VD:     
+	* **`IGABRT`:** Được gửi bởi chính tiến trình khi gọi hàm `abort()`.     
 
-					#include <signal.h>
-					#include <stdio.h>
+##### **1.4.2. Tín hiệu bất đồng bộ (Asynchronous Signals)**
 
-					void handler(int sig) {
-					    printf("Interrupted!\n");
-					}
+* Được gửi đến tiến trình từ các sự kiện bên ngoài luồng thực thi hiện tại.
 
-					int main() {
-					    signal(SIGINT, handler);
-					    while (1);
-					}
+* Không gắn với một chỉ thị cụ thể và có thể đến bất kỳ lúc nào.
 
-		* **SIGCHLD**
-		
-			* Gửi khi child process thay đổi trạng thái
-			
-			* Dùng với `fork()` + `wait()` 
-				
-			* VD:     
+* Các tín hiệu tiêu biểu:  
 
-					#include <sys/wait.h>
-					#include <unistd.h>
-					#include <signal.h>
-
-					void handler(int sig) {
-					    while (waitpid(-1, NULL, WNOHANG) > 0);
-					}
-
-					int main() {
-					    signal(SIGCHLD, handler);
-					    if (fork() == 0) {
-					        _exit(0);
-					    }
-					    while (1);
-					}
-
-	*  **Cách hoạt động**
+	* 	**`SIGINT`:** Người dùng nhấn `Ctrl+C`
 	
-		* Khi asynchronous signal được gửi:
-		
-			*  1. Kernel đánh dấu signal pending
-			*  2. Khi process trở về user mode
-			*  3. Kernel inject signal
-			* 	4. CPU chuyển sang handler
-		* Vì vậy signal có thể:
-		
-			* Interrupt `sleep()`
-			* Interrupt `read()`
-			* Interrupt system call
-			  									
-* 	**Bảng tín hiệu phổ biến:**
-
-	| Signal | Số | Default Action | Ý nghĩa / Nguyên nhân phổ biến | Loại |  
-	|------------|-----|--------------------------|---------------------------------------------------------------------|------------|  
-	| SIGABRT | 6 | Core dump & terminate | Gọi `abort()` (lỗi `assert` hoặc tự gọi). | Sync |  
-	| SIGALRM | 14 | Terminate | Hết giờ từ `alarm()` hoặc `setitimer()`. | Async |  
-	| SIGCHLD | 17 | Ignore | Con process kết thúc hoặc thay đổi trạng thái. | Async |  
-	| SIGFPE | 8 | Core dump & terminate | Floating point exception (chia 0, overflow). | Sync |  
-	| SIGHUP | 1 | Terminate | Terminal đóng hoặc controlling process chết. | Async |  
-	| SIGILL | 4 | Core dump & terminate | Illegal instruction (lỗi opcode). | Sync |  
-	| SIGINT | 2 | Terminate | Interrupt từ keyboard (`Ctrl+C`). | Async |  
-	| SIGKILL | 9 | Forced terminate | Không thể catch/block/ignore (`kill -9`). | Async |  
-	| SIGPIPE | 13 | Terminate | Ghi vào pipe bị đóng ở đầu kia. | Sync |  
-	| SIGQUIT | 3 | Core dump & terminate | Quit từ keyboard (`Ctrl+\`). | Async |  
-	| SIGSEGV | 11 | Core dump & terminate | Segmentation fault (truy cập bộ nhớ sai). | Sync |  
-	| SIGTERM | 15 | Terminate | Yêu cầu kết thúc lịch sự (`kill` command). | Async |  
-	| SIGTSTP | 20 | Stop | Tạm dừng từ keyboard (`Ctrl+Z`). | Async |  
-	| SIGUSR1 | 10 | Terminate | User-defined signal 1 (tùy ý sử dụng). | Async |  
-	| SIGUSR2 | 12 | Terminate | User-defined signal 2 (tùy ý sử dụng). | Async |
-
-	* 	**Default Action:**
-
-		*  Terminate: Kết thúc process
-		
-		*   Core dump: Tạo file core dump để debug (gdb core)
-		
-		*   Ignore: Không làm gì 
-		
-		*   Stop: Tạm dừng process 
-		
-	* **Signal numbers:**
-		
-		*  Định nghĩa trong `<signal.h>`    (ví dụ: SIGINT == 2 trên hầu hết hệ thống).
-		
-	*  Một số signal không thể catch (SIGKILL, SIGSTOP) - dùng để kiểm soát process cứng 
+	*  **`SIGTERM`:** Yêu cầu chấm dứt tiến trình một cách lịch sự.
 	
-* **VD: Kiểm tra default action**
+	*  **`SIGHUP`:** Terminal điều khiển bị đóng (thường dùng để yêu cầu daemon tải lại cấu hình).
+	
+	*  **`SIGCHLD`:** Trạng thái của tiến trình con thay đổi (kết thúc, dừng,...).
+	
+	* **`SIGUSR1`, `SIGUSR2`:** Tín hiệu do người dùng tự định nghĩa.     
+				  									
+#### **1.5. Bảng tham chiếu tín hiệu phổ biến**
 
-			#include <stdio.h>
-			#include <signal.h>
 
-			int main() {
-			    // Kiểm tra handler mặc định cho SIGINT
-			    if (signal(SIGINT, SIG_DFL) == SIG_ERR) {
-			        perror("signal");
-			    }
-			    printf("Default action cho SIGINT la terminate.\n");
+| Signal | Số | Default Action | Ý nghĩa / Nguyên nhân phổ biến | Loại |  
+|------------|-----|--------------------------|---------------------------------------------------------------------|------------|  
+| SIGABRT | 6 | Core dump & terminate | Gọi `abort()` (lỗi `assert` hoặc tự gọi). | Sync |  
+| SIGALRM | 14 | Terminate | Hết giờ từ `alarm()` hoặc `setitimer()`. | Async |  
+| SIGCONT | 18 | Cont | Tiếp tục tiến trình đã bị dừng | Async
+| SIGCHLD | 17 | Ignore | Con process kết thúc hoặc thay đổi trạng thái. | Async |  
+| SIGFPE | 8 | Core dump & terminate | Floating point exception (chia 0, overflow). | Sync |  
+| SIGHUP | 1 | Terminate | Terminal đóng hoặc controlling process chết. | Async |  
+| SIGILL | 4 | Core dump & terminate | Illegal instruction (lỗi opcode). | Sync |  
+| SIGINT | 2 | Terminate | Interrupt từ keyboard (`Ctrl+C`). | Async |  
+| SIGKILL | 9 | Forced terminate | Không thể catch/block/ignore (`kill -9`), dùng để hủy khẩn cấp | Async |  
+| SIGPIPE | 13 | Terminate | Ghi vào pipe bị đóng ở đầu đọc. | Sync |  
+| SIGQUIT | 3 | Core dump & terminate | Quit từ keyboard (`Ctrl+\`). | Async |  
+| SIGSEGV | 11 | Core dump & terminate | Segmentation fault (truy cập bộ nhớ sai). | Sync | 
+| SIGSTOP | 19 | Stop | Không thể catc/block/ignore. Dừng tiến tình | Async |
+| SIGTERM | 15 | Terminate | Yêu cầu kết thúc lịch sự (`kill` command). | Async |  
+| SIGTSTP | 20 | Stop | Tạm dừng từ keyboard (`Ctrl+Z`). | Async |  
+| SIGUSR1 | 10 | Terminate | User-defined signal 1 (tùy ý sử dụng). | Async |  
+| SIGUSR2 | 12 | Terminate | User-defined signal 2 (tùy ý sử dụng). | Async |
 
-			    // Gửi tín hiệu tự gửi (raise)
-			    raise(SIGINT);      // Gửi SIGINT đến chính process → terminate
 
-			    return 0;
-			} 
 
 
  		        
-### **II.  BASIC SIGNAL HANDLING**
+### **II.  GIAO DIỆN XỬ LÝ TÍN HIỆU CƠ SỞ**
 
 ####  **2.1. Hàm signal() - Đăng ký handler cơ bản**
 
@@ -9968,113 +9861,71 @@
 
 	* **signum:** Số tín hiệu hoặc macro như `SIGINT`, `SIGTERM`, `SIGSEGV`
 	
-	* **handler:** Con trỏ tới hàm xử lý, có dạng `void handler(int sig)` 
-		
-		*  Có thể dùng các giá trị đặc biệt:
-		
-			*  `SIG_DFL:` Khôi phục hành động mặc định
-			
-			*  `SIG_IGN:` Bỏ qua tín hiệu 
-			
-			*  `SIG_ERR:` Giá trị trả về khi lỗi (dùng để kiểm tra)
+	* **handler:** Con trỏ tới hàm xử lý, có dạng `void handler(int sig)` , trong đó `sig` là số tín hiệu 
 			
 * **Giá trị trả về:**
 
-	* Thành công: Handler cũ (hoặc SIG_DFL/SIG_IGN)
+	* Thành công: Con trỏ tới hàm xử lý cũ (`SIG_DFL` hoặc `SIG_IGN` nếu chưa được thiết lập)
 	
 	* Thất bại: Trả về `SIG_ERR` và set `errno`    
-		
 
-####  **2.2. Các tín hiệu phổ biến khi xử lý cơ bản**
+* **Các hằng số xử lý đặc biệt:**
 
-| Tín hiệu | Số (thường) | Mô tả ngắn gọn | Default action | Ứng dụng phổ biến trong handler |  
-|------------|------------|--------------------------------------------------|--------------------------|-----------------------------------------------------------------------|  
-| SIGINT | 2 | Interrupt từ bàn phím (`Ctrl+C`) | Terminate | Cleanup tài nguyên, thoát graceful |  
-| SIGTERM | 15 | Yêu cầu kết thúc (`kill pid`) | Terminate | Đóng file, giải phóng bộ nhớ, ghi log trước khi exit |  
-| SIGSEGV | 11 | Segmentation fault | Core dump & terminate | Ghi log lỗi, in stack trace (nếu đảm bảo an toàn async-signal-safe) |  
-| SIGFPE | 8 | Floating point exception (chia 0, overflow...) | Core dump & terminate | Ghi log lỗi toán học, reset trạng thái nếu phù hợp |  
-| SIGUSR1 | 10 | User-defined signal 1 | Terminate | Reload config, toggle debug mode, trigger hành động tùy chỉnh |  
-| SIGUSR2 | 12 | User-defined signal 2 | Terminate | Giao tiếp nội bộ giữa process, trigger task đặc biệt |
-
-
-####  **2.3. VD**
-
-* **VD1:** Xử lý Ctrl + C (SIGINT)
-
-			#include <stdio.h>
-			#include <signal.h>
-			#include <stdlib.h>
-			#include <unistd.h>
-
-			void sigint_handler(int sig) {
-			    printf("\nNhan duoc SIGINT (%d). Thoat chuong trinh...\n", sig);
-			    // Cleanup: đóng file, free memory, v.v.
-			    exit(0);                    // Thoát sạch sẽ
-			}
-
-			int main() {
-			    // Đăng ký handler cho SIGINT
-			    if (signal(SIGINT, sigint_handler) == SIG_ERR) {
-			        perror("Khong the dang ky SIGINT");
-			        exit(1);
-			    }
-
-			    printf("Chuong trinh dang chay. Nhan Ctrl+C de thoat.\n");
-
-			    while (1) {
-			        printf("Dang lam viec... (PID: %d)\n", getpid());
-			        sleep(2);
-			    }
-
-			    return 0;
-			}
-			
-			// Khi chạy:
-			Nhấn Ctrl+C -> in thông báo và thoát 
-
-* **VD2:** Bỏ qua tín hiệu (ignore SIGUSR1)
-
-			#include <stdio.h>
-			#include <signal.h>
-
-			int main() {
-			    // Bỏ qua SIGUSR1
-			    if (signal(SIGUSR1, SIG_IGN) == SIG_ERR) {
-			        perror("signal");
-			        return 1;
-			    }
-
-			    printf("Da bo qua SIGUSR1. Gui tu ben ngoai: kill -USR1 %d\n", getpid());
-
-			    while (1) {
-			        pause();    // Chờ bất kỳ tín hiệu nào (sẽ không bị gián đoạn bởi SIGUSR1)
-			    }
-
-			    return 0;
-			}				
-
-* **VD3:** Khôi phục default action
-
-			signal(SIGINT, SIG_DFL)
-
-####  **2.4.  Một số hàm hỗ trợ gửi tín hiệu**
-
-* **raise(int sig):**
+	* **`SIG_DFL`:** Khôi phục hành động mặc định của tín hiệu
 	
-	*  Gửi tín hiệu đến chính process hiện tại 
-
-			raise(SIGUSR1);  			// Gửi SIGUSR1 cho chính mình
-
-* **kill(pid_t pid, int sig):**
+	* **`SIG_IGN`:** Yêu cầu tiến trình bỏ qua tín hiệu này
 	
-	*  Gửi tín hiệu đến process khác (cần quyền phù hợp)
+ * **VD:** 
 
-			kill(getpid(), SIGTERM);		// Tự gửi 
+					#include <stdio.h>
+					#include <signal.h>
+					#include <stdlib.h>
+					#include <unistd.h>
+
+					// Hàm xử lý dùng chung
+					void termination_handler(int sig){
+						const char *sig_name = "UNKNOWN";
+						if (sig == SIGINT) sig_name = "SIGINT (Ctrl + C)";
+						else if (sig == SIGTERM) sig_name = "SIGTERM";
+						else if (sig == SIGHUP) sig_name = "SIGHUP (Hangup)";
+
+						// Dùng write() an toàn hơn printf() trong handler()
+					 printf("\n[!] Nhận %s. Đang dọn dẹp và thoát...\n", sig_name);
+					 // Tại đây có thể thực hiện cleanup: đóng file, xóa file tạm...
+					 _exit(0); // Thoát ngay lập tức
+					}						 
+
+					int main(){
+						// Đăng ký handler cho nhiều tín hiệu
+						signal(SIGINT, termination_handler);
+						signal(SIGTERM, termination_handler);
+						signal(SIGHUP, termination_handler);
+					 printf("PID: %d. Đang chạy... (Gửi: kill -TERM %d hoặc kill -HUP %d)\n", getpid(), getpid(), getpid());
+					 while (1) {
+					 printf(".");
+					 fflush(stdout);
+					 sleep(1);
+					 }
+					 return 0;
+					}						    		
+
+####  **2.2. Hạn chế**
+
+* Hàm `signal()` là một giao diện cũ từ Unix System V và có những hạn chế lớn, khiến nó **không được khuyến khích sử dụng** trong các ứng dụng hiện đại:
+
+	* Trên một số hệ thống Unix cũ, sau khi một hàm xử lý tín hiệu được gọi, hệ thống sẽ tự động reset hành động của tín hiệu đó về `SIG_DFL`
+	
+	* Để có hành vi nhất quán và đáng tin cậy, POSIX chuẩn hóa `sigaction()` 
+	
+	* `signal()` không cung cấp cơ chế nào để chặn các tín hiệu khác trong khi hàm xử lý đang chạy (tạo mặt nạ tín hiệu). 
+	 
 
 
-### **III. ADVANCED SIGNAL HANDLING**
+### **III. XỬ LÝ TÍN HIỆU NÂNG CAO (POSIX sigaction)**
 
 ####  **3.1. Hàm sigaction()**
+
+* Cung cấp một giao diện mạnh mẽ, đáng tin cậy, khả chuyển và chi tiết hơn `signal()` để kiểm soát hoàn toàn hành vi xử lý tín hiệu
 
 * **Cú pháp:**
 
@@ -10104,88 +9955,91 @@
 		    void (*sa_restorer)(void);            					 // Không dùng nữa (deprecated)
 		};
 	
-	* **sa_handler:** Dùng khi không cần thông tin nâng cao
-	
-	* **sa_sigaction:** 
-	
-		* Handler nâng cao (khi bật `SA_SIGINFO`)
-		
-		* Cho phép truy cập:
-		
-			* PID sender
-			* UID sender
-			* Địa chỉ gây lỗi (SIGSEGV)
-			* Giá trị gửi kèm (sigqueue())     
+####  **3.2. Mặt nạ tín hiệu và sa_mask**
 
-	* **sa_mask:** 
-	
-		* Tập tín hiệu bị block tạm thời khi handler đang chạy
-		
-		* Mặc định:
-		
-			* Signal hiện tịa tự động bị block 
-			
-			* Có thể thêm signal khác vào  
-					
-	* **Các cờ quan trọng trong sa_flags:**
+* Mỗi tiến trình có một "mặt nạ tín hiệu" (signal mask) - tập hợp các tín hiệu hiện đang bị chặn.
 
-		| Cờ | Ý nghĩa | Khi nào dùng |  
-		|---------------|------------------------------------------------------------------------|------------------------------------------------------------------------------|  
-		| SA_RESTART | System call bị interrupt (như `read()`, `write()`, `accept()`) sẽ tự động restart | Tránh lỗi `EINTR` khi thao tác I/O chậm (socket, pipe, terminal input...) |  
-		| SA_SIGINFO | Dùng `sa_sigaction` thay vì `sa_handler`, nhận thêm `siginfo_t` | Khi cần thông tin chi tiết: sender PID, UID, fault address (`SIGSEGV`) |  
-		| SA_NOCLDSTOP | Không gửi `SIGCHLD` khi child bị `SIGSTOP` / `SIGTSTP` (chỉ khi terminate) | Tránh nhận `SIGCHLD` thừa trong process manager / shell-like program |  
-		| SA_NODEFER | Không tự động block signal hiện tại trong lúc handler đang chạy | Hiếm dùng; chỉ khi cần cho phép signal lồng nhau (cực kỳ cẩn thận) |
+* Một tín hiệu bị chặn sẽ ở trạng thái "chờ" (pending) và chỉ được phân phối sau khi được bỏ chặn.
+
+* **Cơ chế sa_mask:**
+
+	* Trước khi gọi hàm xử lý `sa_handler` hoặc `sa_sigaction`, kernel tự động thêm tập tín hiệu trong `sa_mask` vào mặt nạ của tiến trình.
+	
+	* Khi hàm xử lý kết thúc, mặt nạ cũ sẽ được tự động khôi phục.    
+	
+		* Điều này đảm bảo hàm xử lý không bị gián đoạn bởi chính nó hoặc các tín hiệu khác, ngăn chặn race condition. 
+		
+	* Tín hiệu đang được xử lý (`signum`) cũng luôn bị chặn mặc định (trừ khi dùng cờ `SA_NODEFER`). 
+
+				
+* **Các cờ điều khiển hành vi (sa_flags ):**
+
+	| Cờ | Ý nghĩa | Khi nào dùng |  
+	|---------------|------------------------------------------------------------------------|------------------------------------------------------------------------------|  
+	| SA_RESTART | System call bị interrupt (như `read()`, `write()`, `accept()`) sẽ tự động restart | Tránh lỗi `EINTR` khi thao tác I/O chậm (socket, pipe, terminal input...) |  
+	| SA_SIGINFO | Dùng `sa_sigaction` thay vì `sa_handler`, nhận thêm `siginfo_t` | Khi cần thông tin chi tiết: sender PID, UID, fault address (`SIGSEGV`) |  
+	| SA_NOCLDSTOP | Không gửi `SIGCHLD` khi child bị `SIGSTOP` / `SIGTSTP` (chỉ khi terminate) | Tránh nhận `SIGCHLD` thừa trong process manager / shell-like program |  
+	| SA_NODEFER | Không tự động block signal hiện tại trong lúc handler đang chạy | Hiếm dùng; chỉ khi cần cho phép signal lồng nhau (cực kỳ cẩn thận) |
 		
 
-####  **3.2. VD**
+####  **3.3. VD**
+
+* Ví dụ này cho phép handler in ra PID của tiến trình đã gửi tín hiệu `SIGUSR1` hoặc `SIGTERM`
 
 		#include <stdio.h>
 		#include <signal.h>
 		#include <stdlib.h>
 		#include <unistd.h>
 
-		void handler(int sig) {
-		    printf("\nNhan duoc %s (%d). Thoat chuong trinh...\n",
-		           (sig == SIGINT ? "SIGINT" : "tin hieu khac"), sig);
-		    exit(0);
-		}
+		void advanced_handler(int sig, siginfo_t *info, void *ucontext){
+			 printf("\n[+] Nhận tín hiệu: %d\n", sig);
+			 printf("    Gửi bởi PID: %ld\n", (long)info->si_pid);
+			 printf("    Gửi bởi UID: %ld\n", (long)info->si_uid);			
+	
+			if (sig == SIGTERM){
+			 printf("    Đang thoát...\n");
+			 _exit(0);
+			 }
+			 // Không nên dùng printf trong handler thực tế, chỉ dùng cho mục đích demo
+			}				
 
-		int main() {
-		    struct sigaction sa;
+		 int main(){
+		  struct sigaction sa;
+		
+		  //1. Chọn handler nâng cao
+		  sa.sa_sigaction = advanced_handler;
 
-		    // Xóa mask và flags
-		    sa.sa_handler = handler;
-		    sigemptyset(&sa.sa_mask);           // Không block thêm tín hiệu nào
-		    sa.sa_flags = SA_RESTART;           // Tự restart system call nếu bị interrupt
+			//2. Xóa sạch mặt nạ tạm thời (không block thêm tín hiệu nào)
+			sigemptyset(&sa.sa_mask);
 
-		    // Đăng ký cho SIGINT
-		    if (sigaction(SIGINT, &sa, NULL) == -1) {
-		        perror("sigaction SIGINT");
-		        exit(1);
-		    }
+			//3. Bật các cờ SA_SIGINFO để dùng handler nâng cao và SA_RESTART 
+			sa.sa_flags = SA_SIGINFO | SA_RESTART;
 
-		    printf("Chuong trinh dang chay (PID: %d). Nhan Ctrl+C de thoat.\n", getpid());
-
-		    while (1) {
-		        printf("Dang lam viec...\n");
-		        sleep(3);
-		    }
-
-		    return 0;
-		}
+			//4. Đăng ký cho SIGUSR1 và SIGTERM
+			 if (sigaction(SIGUSR1, &sa, NULL) == -1) {
+			 perror("sigaction SIGUSR1");
+			 exit(1);
+			 }
+			 if (sigaction(SIGTERM, &sa, NULL) == -1) {
+			 perror("sigaction SIGTERM");
+			 exit(1);
+			 }
+			 printf("PID: %d. Đang chờ tín hiệu...\n", getpid());
+			 printf("Thử gửi: kill -USR1 %d hoặc kill -TERM %d\n", getpid(), getpid());
+			 while (1) pause(); // Dừng chương trình để chờ tín hiệu
+			 return 0;
+			}			
 		
 
 
-####  **3.3. Signal Masks và Blocking Signals**
+####  **3.4. Chặn tín hiệu với sigprocmask()**
 
-* Mỗi process có một signal mask (tập hợp tín hiệu bị chặn tạm thời). Khi tín hiệu bị block:
+* Cho phép thao tác trực tiếp với mặt nạ tín hiệu của tiến trình để bảo vệ các đoạn mã nguồn quan trọng
 
-	* Nó không được gửi đến handler ngay lập tức
+* **Cú pháp:**  `int sigprocmask(int how, const sigset_t *set, sigset_t *oldset);`
+
+* **Các hàm thao tác trên sigset_t:** 
 	
-	* Nó được pending (chờ) cho đến khi unblock
-	
-* Các hàm quản lý mask:
-
 	* `sigemptyset(sigset_t *set)`: Xóa hết tín hiệu trong set
 	
 	* `sigfillset(sigset_t *set)`: Thêm tất cả tín hiệu
@@ -10196,36 +10050,108 @@
 	
 	* `sigismember(const sigset_t *set, int signum):` Kiểm tra có trong set không   
 
-* **sigprocmask()** : Thay đổi mask của process
+* VD:
+		
+		sigset_t block_set, old_set;
+		sigemptyset(&block_set);
+		sigaddset(&block_set, SIGINT); // Muốn chặn Ctrl+C
 
-		int sigprocmask(int how, const sigset_t *set, sigset_t *oldset);
+		printf("Đang vào critical section (5 giây), Ctrl+C sẽ bị pending...\n");
+		sigprocmask(SIG_BLOCK, &block_set, &old_set);
+		sleep(5); // Mô phỏng công việc quan trọng
+		printf("Đã rời khỏi critical section.\n");
+
+		sigprocmask(SIG_SETMASK, &old_set, NULL); // Khôi phục mặt nạ cũ
+		// Nếu có SIGINT pending, nó sẽ được xử lý ngay tại đây		
+
+### **IV. TÍNH AN TOÀN TRONG HÀM XỬ LÝ TÍN HIỆU**
+
+####  **4.1. Reentrancy và Async-Signal-Safety**
+
+* Một tín hiệu có thể đến giữa chừng khi chương trình đang gọi một hàm không tái nhập (ví dụ: `printf`, `malloc`, `free`).
+
+* Nếu hàm xử lý tín hiệu cũng gọi chính hàm đó, nó sẽ làm hỏng trạng thái nội bộ của hàm, dẫn đến deadlock hoặc crash.
+
+* Ví dụ: `printf` dùng một buffer toàn cục và cơ chế khóa, gọi nó từ handler trong khi `main` cũng đang `printf` là cực kỳ nguy hiểm.
+
+* Chỉ sử dụng các hàm được POSIX chứng nhận là **Async-Signal-Safe** (an toàn để gọi từ bên trong hàm xử lý tín hiệu một cách bất đồng bộ)
+
+* Các hàm **Async-Signal-Safe**:
+
+	* `_exit()` (không phải `exit()`)
 	
-	* how:
+	*  `write()` (không phải `printf()` hay `fwrite()`)   
+	
+	*   `read()` 
+	
+	*  `kill()`
+	
+	*  `signal()`, `sigaction()`
+	
+	*  `getpid()`, `getuid()`
+	
+	*  `alarm()`    
 
-		-   SIG_BLOCK: Thêm các tín hiệu trong set vào mask.
-		-   SIG_UNBLOCK: Xóa các tín hiệu trong set khỏi mask.
-		-   SIG_SETMASK: Đặt mask mới bằng set.
+####  **4.2. Cờ hiệu volatile sig_atomic_t**
 
-* VD:Block SIGINT trong vùng critical code
+* **`sig_atomic_t`:**
 
-			sigset_t block_set, old_set;
+	* Đây là kiểu dữ liệu số nguyên (do hệ thống định nghĩa) mà các thao tác đọc và ghi trên nó là nguyên tử (atomic), nghĩa là không thể bị gián đoạn dở chừng
+	
+	* Điều này đảm bảo không có race condition khi handler ghi và chương trình chính đọc  
+	
+* **`volatile`:**
 
-			sigemptyset(&block_set);
-			sigaddset(&block_set, SIGINT);
+	* Từ khóa này báo cho trình biên dịch biết giá trị của biến có thể thay đổi bất ngờ từ một luồng khác (hoặc từ handler).
+	
+	* Điều này ngăn trình biên dịch thực hiện các tối ưu hóa nguy hiểm, như lưu giá trị của biến vào thanh ghi CPU và đọc từ đó thay vì đọc từ bộ nhớ chính.
+	
+* **VD:**
 
-			// Block SIGINT
-			sigprocmask(SIG_BLOCK, &block_set, &old_set);
+		#include <stdio.h>
+		#include <signal.h>
+		#include <unistd.h>
 
-			// Critical section: không bị interrupt bởi Ctrl+C
-			sleep(10);
-			printf("Critical section hoan tat.\n");
+		// Biến cờ toàn cục với volatile sig_atomic_t
+		volatile sig_atomic_t got_sighup = 0;
+		volatile sig_atomic_t keep_running = 1;
 
-			// Khôi phục mask cũ
-			sigprocmask(SIG_SETMASK, &old_set, NULL);		
+		// Hàm xử lý tối giản: chỉ đặt cờ
+		void sighup_handler(int sig) {
+		    got_sighup = 1;
+		}
 
-			
+		void sigterm_handler(int sig) {
+		    keep_running = 0; // Yêu cầu vòng lặp chính dừng lại
+		}
+
+		int main() {
+		    // Đăng ký các handler tối giản
+		    signal(SIGHUP, sighup_handler);
+		    signal(SIGTERM, sigterm_handler);
+
+		    printf("PID: %d. Đang chạy...\n", getpid());
+
+		    while (keep_running) {
+		        // Vòng lặp chính kiểm tra cờ một cách an toàn
+		        if (got_sighup) {
+		            got_sighup = 0; // Reset cờ
+		            // Thực hiện hành động thực tế (an toàn vì đang ở main)
+		            printf("[Main] Đã nhận SIGHUP, đang tải lại cấu hình...\n");
+		            // reload_configuration();
+		        }
+		        // Công việc bình thường của chương trình
+		        printf("Đang làm việc...\n");
+		        sleep(1);
+		    }
+
+		    printf("[Main] Nhận tín hiệu dừng, đang thoát an toàn.\n");
+		    // Dọn dẹp tài nguyên và thoát
+		    return 0;
+		} 
 
 				
    </details> 
+
    
    
