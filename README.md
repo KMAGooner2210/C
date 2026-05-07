@@ -2575,7 +2575,11 @@
 
 ##### **1.2.1.Định nghĩa**
 
-* Format specifiers là các mã đặc biệt bắt đầu bằng `%` để chỉ định cách hiển thị dữ liệu. 
+* Format specifiers là các mã đặc biệt bắt đầu bằng `%` để chỉ định cách hiển thị dữ liệu.
+
+* **Cú pháp:**
+
+			%[flags][width][.precision][length modifier]specifier   
 
 ##### **1.2.2.Bảng specifier**
 
