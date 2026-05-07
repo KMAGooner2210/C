@@ -2560,6 +2560,15 @@
 
   ◦ `...:` Các đối số tương ứng với format specifiers (có thể là int, float, char, v.v.).
 
+
+* **Cơ sở:**
+
+	* `printf()` sử dụng cơ chế đổi số khả biến (variadic arguments) thông qua macro `va_list`, `va_start`, `va_arg`, `va_end` từ `<stdarg.h>`
+ 
+ 	* Điều này cho phép hàm nhận số lượng tham số không cố định
+
+   	* Chuỗi `format` đóng vai trò ban đồ để hàm biết có bao nhiêu đối số và kiểu dữ liệu của từng đối số   
+
 ##### **1.1.3.Giá trị trả về**
 
 * Số ký tự được in ra (nếu thành công), hoặc số âm nếu có lỗi (ví dụ: buffer đầy).
@@ -2595,6 +2604,7 @@
 | %o | int (hệ bát phân) | printf("%o", 64); | 100 |
 | %e / %E | Số thực dạng khoa học | printf("%e", 1000.0); | 1.000000e+03 |
 | %g / %G | Số thực (tự chọn) | printf("%g", 3.14); | 3.14 |
+| %n | Ghi số ký tự đã in vào biến con  | printf("Hi%n", &count); | ghi 2 vào count |
 | %% | Ký tự % | printf("%%"); | % |
                    
 * **VD:**
@@ -2685,54 +2695,94 @@
 
 * **Width:** Độ rộng tối thiểu của trường (số ký tự). Nếu dữ liệu ngắn hơn, sẽ padding bằng space (căn phải mặc định).
 
-* **Precision:** Độ chính xác, thường là số chữ số thập phân cho `%f`, hoặc độ dài tối đa cho `%s`
+* **Precision:** Với `%f` là số chữ số thập phân; với `%s` là độ dài tối đa chuỗi; với`%d` là số chữ số tối thiểu (padding 0).
 
-##### **1.4.2.Cú pháp tổng quát**
+##### **1.4.2.VD**
 
-* `%[flags][width][.precision]specifier`
+			#include <stdio.h>
+			
+			int main() {
+			    int number = 123;
+			    float pi = 3.14159;
+			    char str[] = "Hello";
+			
+			    printf("Width 8:          |%8d|\n", number);      // |     123|
+			    printf("Width 2:          |%2d|\n", number);       // |123| (vượt vẫn hiển thị đủ)
+			    printf("String width 10:  |%10s|\n", str);         // |     Hello|
+			    printf("Precision 2:      %.2f\n", pi);            // 3.14
+			    printf("Precision 0:      %.0f\n", pi);            // 3
+			    printf("String prec 3:    %.3s\n", str);           // Hel
+			    printf("Combined:         |%8.2f|\n", pi);         // |    3.14|
+			    printf("Left-align:       |%-8.2f|\n", pi);        // |3.14    |
+			    printf("Int precision:    %.5d\n", 25);            // 00025
+			
+			    return 0;
+			}
 
 
-| **Flag** | **Ý nghĩa** | **Ví dụ** | **Kết quả dự kiến** |
-|-----------|-------------|------------|----------------------|
-| `-` | Căn trái trong trường in ra | `printf("%-10s", "Hi");` | `Hi        ` |
-| `+` | Luôn hiển thị dấu `+` hoặc `-` | `printf("%+d", 25);` | `+25` |
-| (space) | Thêm khoảng trắng trước số dương | `printf("% d", 25);` | ` 25` |
-| `0` | Padding bằng số `0` (thay vì khoảng trắng) | `printf("%05d", 25);` | `00025` |
-| `#` | Format thay thế (prefix với 0x, 0, 0X, ...) | `printf("%#x", 255);` | `0xff` |
-| `#` | Với `%o`, thêm tiền tố `0` | `printf("%#o", 64);` | `0100` |
-| `#` | Với `%f`, luôn có dấu `.` dù không có phần thập phân | `printf("%#.0f", 3.0);` | `3.` |
-
-
-
-#### **1.5.Các Specifiers đặc biệt**
+#### **1.5.Length Modifiers (Bổ ngữ kích thước)**
 
 ##### **1.5.1.Định nghĩa**
 
-* Cho kiểu dữ liệu cố định (`stdint.h`): Sử dụng macro từ `<inttypes.h>` như `PRId32`, `PRIu64`.
+* Length modifiers chỉ định kích thước thực sự của kiểu dữ liệu được truyền vào.
 
-##### **1.5.2.VD**
+* Thiếu modifier phù hợp có thể gây undefined behavior. 
 
-        #include <stdio.h>
-        #include <stdint.h>
-        #include <inttypes.h>
+##### **1.5.2. Bảng Length Modifiers**
 
-        int main(void) {
-            int32_t a = -12345;
-            uint64_t b = 9876543210ULL;
+| **Modifier** | **Ý nghĩa** | **Ví dụ** | 
+|------------|---------------|--------|
+| `h` | `short int` / `unsigned short` | `printf("%hd", (short)x);` |
+| `l` | `long int/ unsigned ` | `printf("%ld", 1234567890L);` |
+| `ll` | `long long int` | `printf("%lld", 9223372036854775807LL);` |
+| `z` | `size_t` (Kết quả của `sizeof` | `printf("%zu", sizeof(int));` |
+| `L` | `long double` | `printf("%Lf", 3.14L);` |
 
-            printf("Số int32_t: %" PRId32 "\n", a);     // PRId32 → in số có dấu 32-bit
-            printf("Số uint64_t: %" PRIu64 "\n", b);    // PRIu64 → in số không dấu 64-bit
+##### **1.5.3. VD**
 
-            return 0;
-        }
+			#include <stdio.h>
+			#include <stddef.h>
+			
+			int main() {
+			    short s = 32767;
+			    long l = 1234567890L;
+			    long long ll = 9223372036854775807LL;
+			    size_t sz = sizeof(double);
+			
+			    printf("short:       %hd\n", s);    // 32767
+			    printf("long:        %ld\n", l);    // 1234567890
+			    printf("long long:   %lld\n", ll);  // 9223372036854775807
+			    printf("size_t:      %zu\n", sz);   // 8 (thường là 8 byte)
+			
+			    return 0;
+			}
 
-        Số int32_t: -12345
-        Số uint64_t: 9876543210
-
-
-#### **1.6.Các ký tự đặc biệt**
+#### **1.6.Các Specifiers đặc biệt**
 
 ##### **1.6.1.Định nghĩa**
+
+* Khi dùng các kiểu từ `<stdint.h>` như `int32_t`, `uint64_t`, sử dụng macro từ `<inttypes.h>` để đảm bảo portable.
+
+##### **1.6.2.VD**
+
+			#include <stdio.h>
+			#include <stdint.h>
+			#include <inttypes.h>
+			
+			int main(void) {
+			    int32_t a = -12345;
+			    uint64_t b = 9876543210ULL;
+			
+			    printf("Số int32_t:  %" PRId32 "\n", a);   // -12345
+			    printf("Số uint64_t: %" PRIu64 "\n", b);   // 9876543210
+			
+			    return 0;
+			}
+
+
+#### **1.7.Các ký tự đặc biệt**
+
+##### **1.7.1.Định nghĩa**
 
 * Escape sequences bắt đầu bằng \ để chèn ký tự đặc biệt vào chuỗi.
 
@@ -2798,6 +2848,8 @@
 
   ◦ `...:` Con trỏ đến các biến sẽ nhận giá trị nhập
 
+  ◦ `scanf()` cần biết địa chỉ bộ nhớ để ghi giá trị vào biến, nên phải dùng toán tử `&` trước tên biến (trừ mảng `char` như `%s` vì tên mảng đã là địa chỉ)	
+
 * **Giá trị trả về:**
 
   ◦ Số biến được nhập thành công (> 0).
@@ -2806,17 +2858,44 @@
 
   ◦ EOF: Lỗi hoặc end-of-file (Ctrl+D trên Unix, Ctrl+Z trên Windows).
 
+	* Cách `scanf()` xử lý whitespace:
+ 
+ 		* Trong chuỗi format, ký tự khoảng trắng (space, tab, \n) khớp với không hoặc nhiều ký tự whitespace trong đầu vào
+   
+   		* `scanf()` tự động bỏ qua whitespace đầu dòng trước hầu hết các specifiers (trừ `%c, %[...], %n`).   
+
 * **Lưu ý:**
 
   ◦ Phải dùng `&` trước biến (trừ mảng char như `%s`).
 
   ◦ `scanf()` dừng khi gặp whitespace không khớp hoặc end-of-input.
 
+* **VD:**
+
+			#include <stdio.h>
+			
+			int main() {
+			    int a, b;
+			    int result = scanf("%d %d", &a, &b);
+			
+			    if (result == 2) {
+			        printf("Nhập thành công: %d và %d\n", a, b);
+			    } else if (result == 1) {
+			        printf("Chỉ nhập được 1 giá trị!\n");
+			    } else if (result == EOF) {
+			        printf("Lỗi hoặc end-of-file!\n");
+			    } else {
+			        printf("Không nhập được giá trị nào!\n");
+			    }
+			
+			    return 0;
+			}
+
 #### **2.2.Width Specification**
 
 ##### **2.2.1.Định nghĩa**
 
-* Width giới hạn số ký tự tối đa nhập vào để tránh tràn buffer (đặc biệt với `%s`).
+* Width giới hạn số ký tự tối đa nhập vào, đặc biệt quan trọng với `%s` để tránh tràn buffer (buffer overflow).
 
 ##### **2.2.2.Cú pháp**
 
@@ -2909,13 +2988,40 @@
             return 0;
         }
 
+#### **2.4.Input Suppression (Bỏ qua dữ liệu đầu vào)**
+
+##### **2.4.1.Vấn đề**
+
+* Cờ `*` đặt sau `%` khiến `scanf()` đọc nhưng không lưu giá trị vào biến
+
+* Biến tương ứng không cần cung  
+
+##### **2.4.2.VD:**
+
+		#include <stdio.h>
+		
+		int main() {
+		    int year, day;
+		    char month[20];
+		
+		    // Input dạng: "2024 January 15"
+		    // Bỏ qua tháng, chỉ lấy năm và ngày
+		    printf("Nhập ngày (năm tháng ngày): ");
+		    scanf("%d %*s %d", &year, &day);
+		    printf("Năm: %d, Ngày: %d\n", year, day);
+		
+		    return 0;
+		}
+		// Input: 2024 January 15
+		// Output: Năm: 2024, Ngày: 15
+
 
 
 #### **2.5.Xử lý buffer**
 
 ##### **2.5.1.Vấn đề**
 
-* Newline (\n) còn sót trong buffer sau `%d` hoặc `%s`, gây `%c` đọc sai.
+* Sau khi dùng `%d` hoặc `%s`, ký tự `\n` còn sót trong buffer khiến `%c` hoặc `fgets()` đọc sai.
 
 * **VD:**
 
@@ -2978,7 +3084,38 @@
 
 * Các hàm nhập/xuất ký tự đơn, làm việc trực tiếp với từng ký tự thay vì chuỗi định dạng.
 
-##### **3.1.2.Ưu điểm**
+##### **3.1.2.Cơ chế Buffered I/O và Unbuffered I/O**
+
+* **Buffered I/O:**
+
+	* **Stream:** `stdin`, `stdout`
+ 
+ 	* Dữ liệu được giữ trong buffer, gửi theo khối
+
+  	* `stdout` thường là line-buffered (gửi khi gặp `\n`)  
+
+* **Unbuffered I/O:**
+
+	* **Stream:** ``
+ 
+ 	* Mỗi ký tự được gửi ngay lập tức, không chờ buffer đầy.
+
+* **getchar() trả về int thay vì char:**
+
+	* Vì `char` chỉ có thể chứa giá trị 0 - 255 (hoặc -128 - 127 nếu signed)
+ 
+ 	* Hằng số `EOF` thường là `-1`, nằm ngoài phạm vi `char`
+
+  	* Nếu `getchar()` trả về `char`, sẽ không phân biệt được `EOF` với ký tự hợp lệ vì thế dùng `int` để giải quyết vấn đề này      
+
+			// ❌ Sai - không phân biệt được EOF
+			char ch = getchar();      // có thể bỏ sót EOF
+			
+			// ✅ Đúng - dùng int
+			int ch = getchar();       // chứa được cả ký tự (0-255) lẫn EOF (-1)
+			if (ch == EOF) { ... }
+
+##### **3.1.3.Ưu điểm**
 
 * Đơn giản, hiệu quả cho xử lý ký tự: Không cần format specifiers, nhanh cho xử lý ký tự lớn.
 
@@ -3074,6 +3211,7 @@
 
         #include <stdio.h>
         int getc(FILE *stream);
+  		int fgetc(FILE *stream);
 
         VD:
         FILE *f = fopen("demo.txt", "r");
@@ -3129,8 +3267,9 @@
 
 * **Cú pháp:**
 
-        #include <stdio.h>
-        int putc(int c, FILE *stream);
+		#include <stdio.h>
+		int putc(int c, FILE *stream);
+		int fputc(int c, FILE *stream);
 
 
         VD: putc(c, stdout);
@@ -3177,6 +3316,12 @@
 
         VD:
         ungetc(c, stdin);
+
+* Đẩy ký tự c trở lại bộ đệm đầu vào để lần đọc tiếp theo sẽ nhận lại ký tự đó.
+
+* Chỉ đảm bảo hoạt động với 1 ký tự tại một thời điểm.
+
+* Trả về c nếu thành công, EOF nếu thất bại.   
 
 
 ##### **3.4.2.Tham số**
@@ -3238,10 +3383,23 @@
 
 * Lý tưởng cho parsing và formatting
 
-#### **4.2.fgets() và puts()**
+#### **4.2.fgets() , puts() và fputs()**
 
 ##### **4.2.1.fgets() - Nhập chuỗi an toàn**
 
+* **Lý do loại bỏ gets():**
+
+		// KHÔNG BAO GIỜ dùng gets() !
+		char buf[10];
+		gets(buf);  // Nếu nhập hơn 9 ký tự → BUFFER OVERFLOW!
+
+	* `gets()` không kiểm tra kích thước buffer, ghi vượt quá vùng nhớ được cấp phát.
+ 
+ 	* Dẫn đến buffer overflow — lỗ hổng bảo mật nghiêm trọng, có thể bị khai thác để thực thi mã độc.
+
+  	* Chuẩn C11 (ISO/IEC 9899:2011) đã xóa hoàn toàn gets()
+ 
+  
 * **Cú pháp:**
 
         #include <stdio.h>
@@ -3272,26 +3430,29 @@
 
   ◦ Trả về `str` nếu thành công, `NULL` nếu lỗi
 
-        #include <stdio.h>
+* **Kỹ thuật cắt bỏ `\n`** 
 
-        int main() {
-            char buf[20];
+			#include <stdio.h>
+			#include <string.h>
+			
+			int main() {
+			    char buf[100];
+			
+			    printf("Nhập một dòng: ");
+			    if (fgets(buf, sizeof(buf), stdin) != NULL) {
+			        // Cắt bỏ '\n' mà fgets giữ lại
+			        size_t len = strlen(buf);
+			        if (len > 0 && buf[len - 1] == '\n') {
+			            buf[len - 1] = '\0';
+			        }
+			        printf("Bạn vừa nhập: [%s]\n", buf);
+			    }
+			    return 0;
+			}
+			// Input: Hello World
+			// Output: Bạn vừa nhập: [Hello World]   ← không có '\n' thừa
 
-            printf("Nhập một dòng (tối đa 19 ký tự): ");
-            if (fgets(buf, sizeof(buf), stdin) != NULL) {
-                printf("Bạn vừa nhập: %s", buf);
-            } else {
-                printf("Đọc chuỗi thất bại hoặc gặp EOF.\n");
-            }
-
-            return 0;
-        }
-
-
-        //Input: Hello C Programming!
-        //Output: Bạn vừa nhập: Hello C Programming!
-
-##### **4.2.2.puts() - Xuất chuỗi**
+##### **4.2.2.puts() - Xuất chuỗi tự thêm `\n`**
 
 * **Cú pháp:**
 
@@ -3300,6 +3461,10 @@
 
         VD:
         puts("Hello, World!");
+
+	* Xuất chuỗi ra `stdout` và tự động thêm `\n` vào cuối.
+ 
+ 	* Trả về giá trị không âm nếu thành công, EOF nếu lỗi. 
 
 * **Tham số:**
 
@@ -3311,13 +3476,7 @@
 
         Không xuất \n nếu đã có trong str.
 
-* **Đặc điểm:**
-
-  ◦ Xuất chuỗi ra stdout
-
-  ◦ Tự động thêm newline
-
-  ◦ Trả về EOF nếu lỗi, giá trị không âm nếu thành công
+* **VD:**
 
         #include <stdio.h>
 
@@ -3341,7 +3500,55 @@
             // Nhập tên của bạn: Tùng
             // Xin chào, Tùng
 
-#### **4.3.sprintf() và sscanf()**
+##### **4.2.3.fputs() - Xuất ra stream bất kỳ, không thêm `\n`**
+
+* **Cú pháp:**
+
+			#include <stdio.h>
+			int fputs(const char *str, FILE *stream);
+
+
+	* Xuất chuỗi ra stream chỉ định.
+ 
+ 	* Không tự thêm \n — phù hợp khi cần kiểm soát định dạng chính xác.
+
+  	* Trả về giá trị không âm nếu thành công, EOF nếu lỗi. 
+
+* **Tham số:**
+
+  ◦ str: Kiểu dữ liệu `const char*`
+
+  		Con trỏ trỏ đến chuỗi ký tự cần xuất. 
+
+        Từ khóa const đảm bảo hàm sẽ không thay đổi nội dung chuỗi gốc.
+
+        Chuỗi phải kết thúc bằng ký tự '\0'.
+
+  ◦ stream: Kiểu dữ liệu `FILE*`
+
+  		Con trỏ trỏ đến luồng đích — nơi chuỗi sẽ được ghi ra.
+
+        Có thể là stdout (in ra màn hình), stderr (in ra lỗi), hoặc một con trỏ file được mở bằng fopen().
+  
+* **VD:**
+
+			#include <stdio.h>
+			
+			int main() {
+			    char name[] = "Nguyễn Văn A";
+			
+			    puts(name);               // In: "Nguyễn Văn A\n"
+			    fputs(name, stdout);      // In: "Nguyễn Văn A" (không có \n)
+			    fputs("\n", stdout);      // In \n riêng
+			
+			    // Xuất ra stderr
+			    fputs("Đây là thông báo lỗi\n", stderr);
+			
+			    return 0;
+			}
+
+
+#### **4.3.sprintf() , snprintf() và sscanf()**
 
 ##### **4.3.1.sprintf() - Format vào string buffer**
 
@@ -3353,6 +3560,10 @@
         VD:
         char buf[50]; 
         sprintf(buf, "Tuổi: %d", 30);
+
+	* sprintf() không kiểm soát kích thước buffer, có nguy cơ buffer overflow.
+ 
+ 	* Dùng snprintf() thay thế. 
 
 * **Tham số:**
 
@@ -3395,7 +3606,74 @@
         //Input: Hello C Programming!
         //Output: Bạn vừa nhập: Hello C Programming!
 
-##### **4.3.2.sscanf() - Đọc từ string buffer**
+##### **4.3.2.snprintf()**
+
+* **Cú pháp:**
+
+		#include <stdio.h>
+		int snprintf(char *str, size_t size, const char *format, ...);
+
+        VD:
+        char buf[50]; 
+        sprintf(buf, "Tuổi: %d", 30);
+
+	* sprintf() không kiểm soát kích thước buffer, có nguy cơ buffer overflow.
+ 
+ 	* Dùng snprintf() thay thế. 
+
+* **Tham số:**
+
+  ◦ `str`: Kiểu dữ liệu `char*`
+
+  		Con trỏ trỏ đến bộ đệm đích (mảng ký tự) nơi chuỗi kết quả sẽ được ghi vào.
+
+  		Phải đủ lớn để chứa tối đa size ký tự.
+
+  ◦ `size`: Kiểu dữ liệu `size_t`
+
+  		Kích thước tối đa của bộ đệm (tính bằng byte)
+
+  		Hàm sẽ ghi tối đa size - 1 ký tự định dạng, sau đó tự động thêm ký tự '\0' kết thúc chuỗi.
+
+  ◦ `format`: Kiểu dữ liệu `const char*`
+
+  		Chuỗi định dạng — chứa văn bản thông thường và các specifier (như %d, %s, %f...) giống hệt printf.
+
+* **Đặc điểm:**
+
+  ◦ Nếu giá trị trả về nhỏ hơn size → toàn bộ chuỗi đã được ghi đầy đủ, không bị cắt cụt.
+  
+  ◦ Nếu giá trị trả về lớn hơn hoặc bằng size → chuỗi bị cắt cụt (truncated), bộ đệm không đủ lớn.
+
+  ◦ Nếu trả về số âm → có lỗi xảy ra trong quá trình định dạng (lỗi encoding, specifier không hợp lệ...).
+  
+			#include <stdio.h>
+			
+			int main() {
+			    char buf[50];
+			    int age = 25;
+			    float score = 9.5f;
+			    char name[] = "An";
+			
+			    // snprintf - an toàn
+			    int written = snprintf(buf, sizeof(buf), "Tên: %s, Tuổi: %d, Điểm: %.1f", name, age, score);
+			    printf("Chuỗi: %s\n", buf);
+			    printf("Số ký tự: %d\n", written);
+			
+			    // Kiểm tra có bị cắt không
+			    if (written >= (int)sizeof(buf)) {
+			        printf("Cảnh báo: chuỗi bị cắt!\n");
+			    }
+			
+			    // Ứng dụng: tạo tên file động
+			    char filename[100];
+			    snprintf(filename, sizeof(filename), "report_%d.txt", 2024);
+			    printf("Tên file: %s\n", filename);
+			
+			    return 0;
+			}
+  
+##### **4.3.3.sscanf() - Đọc từ string buffer**
 
 * **Cú pháp:**
 
@@ -3484,9 +3762,7 @@
 
 * `errno` là biến toàn cục (global) lưu mã lỗi số nguyên từ lần gọi hàm thất bại gần nhất.
 
-*  Nó được set bởi các hàm thư viện chuẩn (như `fopen()`, `malloc()`) khi lỗi xảy ra.
-
-*  Không phải lúc nào cũng set (chỉ khi lỗi), và có thể bị ghi đè bởi hàm khác.
+*  Chỉ được set khi có lỗi; không tự reset.
 
 ##### **5.2.2.Các mã lỗi phổ biến**
 
