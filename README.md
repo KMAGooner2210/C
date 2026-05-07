@@ -2556,9 +2556,9 @@
                    
 * **Tham số:**
 
-  ◦ `format:` Chuỗi định dạng chứa văn bản tĩnh và các **format specifiers** (mã định dạng như `%d`, `%f`).
+	* `format:` Chuỗi định dạng chứa văn bản tĩnh và các **format specifiers** (mã định dạng như `%d`, `%f`).
 
-  ◦ `...:` Các đối số tương ứng với format specifiers (có thể là int, float, char, v.v.).
+	* `...:` Các đối số tương ứng với format specifiers (có thể là int, float, char, v.v.).
 
 
 * **Cơ sở:**
@@ -2575,9 +2575,9 @@
                    
 * **Lưu ý:**
 
-  ◦ Phải include `<stdio.h>` để sử dụng.
+	* Phải include `<stdio.h>` để sử dụng.
 
-  ◦ `printf()` tự động thêm null terminator cho chuỗi.
+	* `printf()` tự động thêm null terminator cho chuỗi.
 
     
 #### **1.2.Format Specifiers**
@@ -2844,19 +2844,19 @@
                    
 * **Tham số:**
 
-  ◦ `format:` Chuỗi định dạng chứa format specifiers
+	* `format:` Chuỗi định dạng chứa format specifiers
 
-  ◦ `...:` Con trỏ đến các biến sẽ nhận giá trị nhập
+	* `...:` Con trỏ đến các biến sẽ nhận giá trị nhập
 
-  ◦ `scanf()` cần biết địa chỉ bộ nhớ để ghi giá trị vào biến, nên phải dùng toán tử `&` trước tên biến (trừ mảng `char` như `%s` vì tên mảng đã là địa chỉ)	
+	* `scanf()` cần biết địa chỉ bộ nhớ để ghi giá trị vào biến, nên phải dùng toán tử `&` trước tên biến (trừ mảng `char` như `%s` vì tên mảng đã là địa chỉ)	
 
 * **Giá trị trả về:**
 
-  ◦ Số biến được nhập thành công (> 0).
+	* Số biến được nhập thành công (> 0).
 
-  ◦ 0: Không có biến nào được nhập (đầu vào không khớp).
+	* 0: Không có biến nào được nhập (đầu vào không khớp).
 
-  ◦ EOF: Lỗi hoặc end-of-file (Ctrl+D trên Unix, Ctrl+Z trên Windows).
+	* EOF: Lỗi hoặc end-of-file (Ctrl+D trên Unix, Ctrl+Z trên Windows).
 
 	* Cách `scanf()` xử lý whitespace:
  
@@ -2866,9 +2866,9 @@
 
 * **Lưu ý:**
 
-  ◦ Phải dùng `&` trước biến (trừ mảng char như `%s`).
+	* Phải dùng `&` trước biến (trừ mảng char như `%s`).
 
-  ◦ `scanf()` dừng khi gặp whitespace không khớp hoặc end-of-input.
+	* `scanf()` dừng khi gặp whitespace không khớp hoặc end-of-input.
 
 * **VD:**
 
@@ -2934,9 +2934,9 @@
 
 * Scan sets cho phép kiểm soát ký tự được chấp nhận (`%[set]` hoặc `%[^set]`).
 
-  ◦ **Scan Set cơ bản:** `%[set]` - Chỉ nhận ký tự trong `set` (ví dụ: `%[a-zA-Z]` chỉ chữ cái).
+	* **Scan Set cơ bản:** `%[set]` - Chỉ nhận ký tự trong `set` (ví dụ: `%[a-zA-Z]` chỉ chữ cái).
 
-  ◦ **Negated Scan Set:** `%[^set]` - Nhận tất cả trừ ký tự trong `set` (ví dụ: %[^\n] nhập đến newline).
+	* **Negated Scan Set:** `%[^set]` - Nhận tất cả trừ ký tự trong `set` (ví dụ: %[^\n] nhập đến newline).
 
 * **VD1:**
 
@@ -2958,9 +2958,9 @@
             return 0;
         }
 
-  ◦ 1.Input người dùng (%[a-zA-Z]): `Hello123 (Enter)` -> Output chương trình: `Hello`
+	* 1.Input người dùng (%[a-zA-Z]): `Hello123 (Enter)` -> Output chương trình: `Hello`
 
-  ◦ 2.Input người dùng: (%[^\n]): `Xin chào` -> Output chương trình: `Xin chào`
+	* 2.Input người dùng: (%[^\n]): `Xin chào` -> Output chương trình: `Xin chào`
 
 
 * **VD2:**
@@ -3137,11 +3137,11 @@
 
 * **Đặc điểm:**
 
-  ◦ Nhận 1 ký tự từ luồng nhập chuẩn (stdin)
+	* Nhận 1 ký tự từ luồng nhập chuẩn (stdin)
 
-  ◦ Trả về `int` thay vì `char` để có thể trả về `EOF`
+	* Trả về `int` thay vì `char` để có thể trả về `EOF`
 
-  ◦ Chờ đến khi có ký tự nhập
+	* Chờ đến khi có ký tự nhập
 
         #include <stdio.h>
 
@@ -3176,11 +3176,11 @@
 
 * **Đặc điểm:**
 
-  ◦ Xuất 1 ký tự ra luồng xuất chuẩn (stdout)
+	* Xuất 1 ký tự ra luồng xuất chuẩn (stdout)
 
-  ◦ Nhận tham số `int` nhưng chỉ xuất 8 bit thấp
+	* Nhận tham số `int` nhưng chỉ xuất 8 bit thấp
 
-  ◦ Trả về ký tự đã xuất, hoặc `EOF` nếu lỗi
+	* Trả về ký tự đã xuất, hoặc `EOF` nếu lỗi
 
         #include <stdio.h>
 
@@ -3219,38 +3219,38 @@
 
 * **Tham số:**
 
-  ◦ stream: Con trỏ đến FILE (stdin, file đã mở, hoặc stream khác)
+	* stream: Con trỏ đến FILE (stdin, file đã mở, hoặc stream khác)
 
         Tương tự getchar() nhưng linh hoạt với stream; có thể là macro (nhanh hơn hàm)
         Trả về ký tự hoặc EOF.
 
 * **Đặc điểm:**
 
-  ◦ Tương tự getchar() nhưng làm việc với stream bất kỳ
+	* Tương tự getchar() nhưng làm việc với stream bất kỳ
 
-  ◦ Có thể là macro hoặc hàm
+	* Có thể là macro hoặc hàm
 
-  ◦ Thường dùng với stdin, file, hoặc stream khác
+	* Thường dùng với stdin, file, hoặc stream khác
 
-        #include <stdio.h>
-
-        int main() {
-            FILE *f = fopen("demo.txt", "r");
-            int ch;
-
-            if (f == NULL) {
-                printf("Không thể mở file!\n");
-                return 1;
-            }
-
-            printf("Nội dung file:\n");
-            while ((ch = getc(f)) != EOF) {
-                putchar(ch);
-            }
-
-            fclose(f);
-            return 0;
-        }
+	        #include <stdio.h>
+	
+	        int main() {
+	            FILE *f = fopen("demo.txt", "r");
+	            int ch;
+	
+	            if (f == NULL) {
+	                printf("Không thể mở file!\n");
+	                return 1;
+	            }
+	
+	            printf("Nội dung file:\n");
+	            while ((ch = getc(f)) != EOF) {
+	                putchar(ch);
+	            }
+	
+	            fclose(f);
+	            return 0;
+	        }
 
 
 
@@ -3276,19 +3276,19 @@
 
 * **Tham số:**
 
-  ◦ c: Ký tự dưới dạng int (8 bit thấp).
+	* c: Ký tự dưới dạng int (8 bit thấp).
 
-  ◦ stream: Con trỏ đến FILE (stdout, file đã mở).
+	* stream: Con trỏ đến FILE (stdout, file đã mở).
 
-        Tương tự putchar() nhưng cho stream tùy chỉnh; có thể là macro
+		* Tương tự putchar() nhưng cho stream tùy chỉnh; có thể là macro
 
-        Trả về ký tự đã xuất hoặc EOF nếu lỗi.
+		* Trả về ký tự đã xuất hoặc EOF nếu lỗi.
 
 * **Đặc điểm:**
 
-  ◦ Tương tự `putchar()` nhưng làm việc với stream bất kỳ
+	* Tương tự `putchar()` nhưng làm việc với stream bất kỳ
 
-  ◦ Có thể là macro hoặc hàm
+	* Có thể là macro hoặc hàm
 
         #include <stdio.h>
 
@@ -3338,11 +3338,11 @@
 
 ##### **3.4.3.Đặc điểm:**
 
-  ◦ Tương tự getchar() nhưng làm việc với stream bất kỳ
+	* Tương tự getchar() nhưng làm việc với stream bất kỳ
 
-  ◦ Có thể là macro hoặc hàm
+	* Có thể là macro hoặc hàm
 
-  ◦ Thường dùng với stdin, file, hoặc stream khác
+	* Thường dùng với stdin, file, hoặc stream khác
 
         #include <stdio.h>
 
@@ -3411,24 +3411,24 @@
 
 * **Tham số:**
 
-  ◦ str: Con trỏ đến buffer char để lưu chuỗi (phải đủ lớn).
+	* str: Con trỏ đến buffer char để lưu chuỗi (phải đủ lớn).
 
-  ◦ size: Kích thước tối đa của buffer (đọc tối đa size-1 ký tự, chừa chỗ cho \0).
+	* size: Kích thước tối đa của buffer (đọc tối đa size-1 ký tự, chừa chỗ cho \0).
 
-  ◦ stream: Luồng nguồn (stdin mặc định cho bàn phím).
+	* stream: Luồng nguồn (stdin mặc định cho bàn phím).
 
         Đặc điểm: Dừng khi gặp newline (\n), EOF, hoặc đạt size-1. 
         Tự thêm \0. Trả về str nếu thành công, NULL nếu lỗi/EOF.
 
 * **Đặc điểm:**
 
-  ◦ Đọc tối đa `size-1` ký tự từ stream
+	* Đọc tối đa `size-1` ký tự từ stream
 
-  ◦ Tự động thêm \0 vào cuối
+	* Tự động thêm \0 vào cuối
 
-  ◦ Dừng khi gặp newline hoặc EOF
+	* Dừng khi gặp newline hoặc EOF
 
-  ◦ Trả về `str` nếu thành công, `NULL` nếu lỗi
+	* Trả về `str` nếu thành công, `NULL` nếu lỗi
 
 * **Kỹ thuật cắt bỏ `\n`** 
 
@@ -3468,37 +3468,36 @@
 
 * **Tham số:**
 
-  ◦ str: Con trỏ đến chuỗi null-terminated (const để không thay đổi).
+	* str: Con trỏ đến chuỗi null-terminated (const để không thay đổi).
 
-        Xuất đến \0, tự thêm \n ở cuối 
+		* Xuất đến \0, tự thêm \n ở cuối 
 
-        Trả về giá trị không âm nếu thành công, EOF nếu lỗi
+		* Trả về giá trị không âm nếu thành công, EOF nếu lỗi
 
-        Không xuất \n nếu đã có trong str.
+		* Không xuất \n nếu đã có trong str.
 
 * **VD:**
 
-        #include <stdio.h>
-
-        int main() {
-            char name[100];
-            
-            printf("Nhập tên của bạn: ");
-            
-            // Sử dụng fgets thay vì gets (an toàn hơn)
-            if (fgets(name, sizeof(name), stdin) != NULL) {
-                printf("Xin chào, ");
-                puts(name);  // puts tự động thêm newline
-            } else {
-                printf("Lỗi khi nhập tên!\n");
-            }
-            
-            return 0;
-        }
-
-
-            // Nhập tên của bạn: Tùng
-            // Xin chào, Tùng
+	        #include <stdio.h>
+	
+	        int main() {
+	            char name[100];
+	            
+	            printf("Nhập tên của bạn: ");
+	            
+	            // Sử dụng fgets thay vì gets (an toàn hơn)
+	            if (fgets(name, sizeof(name), stdin) != NULL) {
+	                printf("Xin chào, ");
+	                puts(name);  // puts tự động thêm newline
+	            } else {
+	                printf("Lỗi khi nhập tên!\n");
+	            }
+	            
+	            return 0;
+	        }
+	
+	  		// Nhập tên của bạn: Tùng
+	  		// Xin chào, Tùng
 
 ##### **4.2.3.fputs() - Xuất ra stream bất kỳ, không thêm `\n`**
 
@@ -3516,19 +3515,19 @@
 
 * **Tham số:**
 
-  ◦ str: Kiểu dữ liệu `const char*`
+	* str: Kiểu dữ liệu `const char*`
+ 
+ 		* Con trỏ trỏ đến chuỗi ký tự cần xuất. 
 
-  		Con trỏ trỏ đến chuỗi ký tự cần xuất. 
+ 		* Từ khóa const đảm bảo hàm sẽ không thay đổi nội dung chuỗi gốc.
 
-        Từ khóa const đảm bảo hàm sẽ không thay đổi nội dung chuỗi gốc.
+ 		* Chuỗi phải kết thúc bằng ký tự '\0'.
 
-        Chuỗi phải kết thúc bằng ký tự '\0'.
+	* stream: Kiểu dữ liệu `FILE*`
 
-  ◦ stream: Kiểu dữ liệu `FILE*`
+ 		* Con trỏ trỏ đến luồng đích — nơi chuỗi sẽ được ghi ra.
 
-  		Con trỏ trỏ đến luồng đích — nơi chuỗi sẽ được ghi ra.
-
-        Có thể là stdout (in ra màn hình), stderr (in ra lỗi), hoặc một con trỏ file được mở bằng fopen().
+ 		* Có thể là stdout (in ra màn hình), stderr (in ra lỗi), hoặc một con trỏ file được mở bằng fopen().
   
 * **VD:**
 
@@ -3554,24 +3553,24 @@
 
 * **Cú pháp:**
 
-        #include <stdio.h>
-        int sprintf(char *str, const char *format, ...);
-
-        VD:
-        char buf[50]; 
-        sprintf(buf, "Tuổi: %d", 30);
+	        #include <stdio.h>
+	        int sprintf(char *str, const char *format, ...);
+	
+	        VD:
+	        char buf[50]; 
+	        sprintf(buf, "Tuổi: %d", 30);
 
 	* sprintf() không kiểm soát kích thước buffer, có nguy cơ buffer overflow.
- 
- 	* Dùng snprintf() thay thế. 
+	 
+	* Dùng snprintf() thay thế. 
 
 * **Tham số:**
 
-  ◦ `str`: Buffer để ghi chuỗi (phải đủ lớn, không kiểm soát size → rủi ro overflow).
+	* `str`: Buffer để ghi chuỗi (phải đủ lớn, không kiểm soát size → rủi ro overflow).
 
-  ◦ `format`: Chuỗi định dạng (như %d, %s).
+	* `format`: Chuỗi định dạng (như %d, %s).
 
-  ◦ `...`: Đối số tương ứng (int, float, v.v.).
+	* `...`: Đối số tương ứng (int, float, v.v.).
 
         Đặc điểm: Ghi đến \0, trả về số ký tự ghi (không tính \0).
 
@@ -3579,32 +3578,32 @@
 
 * **Đặc điểm:**
 
-  ◦ Đọc tối đa `size-1` ký tự từ stream
+	* Đọc tối đa `size-1` ký tự từ stream
 
-  ◦ Tự động thêm \0 vào cuối
+	* Tự động thêm \0 vào cuối
 
-  ◦ Dừng khi gặp newline hoặc EOF
+	* Dừng khi gặp newline hoặc EOF
 
-  ◦ Trả về `str` nếu thành công, `NULL` nếu lỗi
-
-        #include <stdio.h>
-
-        int main() {
-            char buf[20];
-
-            printf("Nhập một dòng (tối đa 19 ký tự): ");
-            if (fgets(buf, sizeof(buf), stdin) != NULL) {
-                printf("Bạn vừa nhập: %s", buf);
-            } else {
-                printf("Đọc chuỗi thất bại hoặc gặp EOF.\n");
-            }
-
-            return 0;
-        }
+	* Trả về `str` nếu thành công, `NULL` nếu lỗi
 
 
-        //Input: Hello C Programming!
-        //Output: Bạn vừa nhập: Hello C Programming!
+	        #include <stdio.h>
+	
+	        int main() {
+	            char buf[20];
+	
+	            printf("Nhập một dòng (tối đa 19 ký tự): ");
+	            if (fgets(buf, sizeof(buf), stdin) != NULL) {
+	                printf("Bạn vừa nhập: %s", buf);
+	            } else {
+	                printf("Đọc chuỗi thất bại hoặc gặp EOF.\n");
+	            }
+	
+	            return 0;
+	        }
+	
+	        //Input: Hello C Programming!
+	        //Output: Bạn vừa nhập: Hello C Programming!
 
 ##### **4.3.2.snprintf()**
 
@@ -3623,109 +3622,111 @@
 
 * **Tham số:**
 
-  ◦ `str`: Kiểu dữ liệu `char*`
+	* `str`: Kiểu dữ liệu `char*`
 
-  		Con trỏ trỏ đến bộ đệm đích (mảng ký tự) nơi chuỗi kết quả sẽ được ghi vào.
+ 		* Con trỏ trỏ đến bộ đệm đích (mảng ký tự) nơi chuỗi kết quả sẽ được ghi vào.
 
-  		Phải đủ lớn để chứa tối đa size ký tự.
+ 		* Phải đủ lớn để chứa tối đa size ký tự.
 
-  ◦ `size`: Kiểu dữ liệu `size_t`
+	* `size`: Kiểu dữ liệu `size_t`
 
-  		Kích thước tối đa của bộ đệm (tính bằng byte)
+ 		* Kích thước tối đa của bộ đệm (tính bằng byte)
 
-  		Hàm sẽ ghi tối đa size - 1 ký tự định dạng, sau đó tự động thêm ký tự '\0' kết thúc chuỗi.
+ 		* Hàm sẽ ghi tối đa size - 1 ký tự định dạng, sau đó tự động thêm ký tự '\0' kết thúc chuỗi.
 
-  ◦ `format`: Kiểu dữ liệu `const char*`
+	* `format`: Kiểu dữ liệu `const char*`
 
-  		Chuỗi định dạng — chứa văn bản thông thường và các specifier (như %d, %s, %f...) giống hệt printf.
+ 		* Chuỗi định dạng — chứa văn bản thông thường và các specifier (như %d, %s, %f...) giống hệt printf.
 
 * **Đặc điểm:**
 
-  ◦ Nếu giá trị trả về nhỏ hơn size → toàn bộ chuỗi đã được ghi đầy đủ, không bị cắt cụt.
+	* Nếu giá trị trả về nhỏ hơn size → toàn bộ chuỗi đã được ghi đầy đủ, không bị cắt cụt.
   
-  ◦ Nếu giá trị trả về lớn hơn hoặc bằng size → chuỗi bị cắt cụt (truncated), bộ đệm không đủ lớn.
+	* Nếu giá trị trả về lớn hơn hoặc bằng size → chuỗi bị cắt cụt (truncated), bộ đệm không đủ lớn.
 
-  ◦ Nếu trả về số âm → có lỗi xảy ra trong quá trình định dạng (lỗi encoding, specifier không hợp lệ...).
+	* Nếu trả về số âm → có lỗi xảy ra trong quá trình định dạng (lỗi encoding, specifier không hợp lệ...).
+ 
   
-			#include <stdio.h>
-			
-			int main() {
-			    char buf[50];
-			    int age = 25;
-			    float score = 9.5f;
-			    char name[] = "An";
-			
-			    // snprintf - an toàn
-			    int written = snprintf(buf, sizeof(buf), "Tên: %s, Tuổi: %d, Điểm: %.1f", name, age, score);
-			    printf("Chuỗi: %s\n", buf);
-			    printf("Số ký tự: %d\n", written);
-			
-			    // Kiểm tra có bị cắt không
-			    if (written >= (int)sizeof(buf)) {
-			        printf("Cảnh báo: chuỗi bị cắt!\n");
-			    }
-			
-			    // Ứng dụng: tạo tên file động
-			    char filename[100];
-			    snprintf(filename, sizeof(filename), "report_%d.txt", 2024);
-			    printf("Tên file: %s\n", filename);
-			
-			    return 0;
-			}
+				#include <stdio.h>
+				
+				int main() {
+				    char buf[50];
+				    int age = 25;
+				    float score = 9.5f;
+				    char name[] = "An";
+				
+				    // snprintf - an toàn
+				    int written = snprintf(buf, sizeof(buf), "Tên: %s, Tuổi: %d, Điểm: %.1f", name, age, score);
+				    printf("Chuỗi: %s\n", buf);
+				    printf("Số ký tự: %d\n", written);
+				
+				    // Kiểm tra có bị cắt không
+				    if (written >= (int)sizeof(buf)) {
+				        printf("Cảnh báo: chuỗi bị cắt!\n");
+				    }
+				
+				    // Ứng dụng: tạo tên file động
+				    char filename[100];
+				    snprintf(filename, sizeof(filename), "report_%d.txt", 2024);
+				    printf("Tên file: %s\n", filename);
+				
+				    return 0;
+				}
   
 ##### **4.3.3.sscanf() - Đọc từ string buffer**
 
 * **Cú pháp:**
 
-        #include <stdio.h>
-        int sscanf(const char *str, const char *format, ...);
-
-        VD:
-        int age;
-        sscanf("25", "%d", &age);
+	        #include <stdio.h>
+	        int sscanf(const char *str, const char *format, ...);
+	
+	        VD:
+	        int age;
+	        sscanf("25", "%d", &age);
 
 * **Tham số:**
 
-  ◦ `str`: Chuỗi nguồn để đọc (const).
+	* `str`: Chuỗi nguồn để đọc (const).
 
-  ◦ `format`: Chuỗi định dạng (như %d, %s).
+	* `format`: Chuỗi định dạng (như %d, %s).
 
-  ◦ `...`: Con trỏ đến biến nhận giá trị (&var cho scalar, mảng cho string)
+	* `...`: Con trỏ đến biến nhận giá trị (&var cho scalar, mảng cho string)
 
         Trả về số biến đọc thành công 
         Dừng khi không khớp format.
 
 * **Đặc điểm:**
 
-  ◦ Tương tự scanf() nhưng đọc từ string buffer
+	* Tương tự scanf() nhưng đọc từ string buffer
 
-  ◦ Trả về số biến được đọc thành công
-
-        #include <stdio.h>
-
-        int main() {
-            char str[] = "25 3.14 hello";  // Chuỗi nguồn
-            int num;
-            float f;
-            char word[10];
-            
-            // sscanf: Đọc từ str theo format "%d %f %s"
-            int ret = sscanf(str, "%d %f %s", &num, &f, word);
-            
-            // In kết quả
-            printf("Số biến đọc thành công: %d\n", ret);
-            printf("num = %d\n", num);
-            printf("f = %.2f\n", f);
-            printf("word = %s\n", word);
-            
-            return 0;
-        }
+	* Trả về số biến được đọc thành công
 
 
-        Số biến đọc thành công: 3
-        num = 25
-        f = 3.14
-        word = hello
+	        #include <stdio.h>
+	
+	        int main() {
+	            char str[] = "25 3.14 hello";  // Chuỗi nguồn
+	            int num;
+	            float f;
+	            char word[10];
+	            
+	            // sscanf: Đọc từ str theo format "%d %f %s"
+	            int ret = sscanf(str, "%d %f %s", &num, &f, word);
+	            
+	            // In kết quả
+	            printf("Số biến đọc thành công: %d\n", ret);
+	            printf("num = %d\n", num);
+	            printf("f = %.2f\n", f);
+	            printf("word = %s\n", word);
+	            
+	            return 0;
+	        }
+	
+	
+	        Số biến đọc thành công: 3
+	        num = 25
+	        f = 3.14
+	        word = hello
 
 ### **V. ERROR HANDLING VỚI I/O**
 
@@ -3781,43 +3782,44 @@
 * **Lưu ý:** Mã số có thể khác tùy OS (Linux vs Windows). Dùng hằng số (ENOENT) thay vì số cứng để portable.
 
 
-        #include <stdio.h>
-        #include <errno.h>
-        #include <string.h>
 
-        int main() {
-            FILE *file;
-            
-            // Cố mở file không tồn tại
-            file = fopen("file_khong_ton_tai.txt", "r");
-            
-            if (file == NULL) {
-                printf("Lỗi khi mở file!\n");
-                printf("Mã lỗi: %d (%s)\n", errno, strerror(errno));  // strerror() mô tả
-                
-                // Kiểm tra cụ thể
-                if (errno == ENOENT) {
-                    printf("File không tồn tại! Hãy kiểm tra đường dẫn.\n");
-                } else if (errno == EACCES) {
-                    printf("Không có quyền truy cập! Kiểm tra quyền file.\n");
-                } else {
-                    printf("Lỗi khác: %s\n", strerror(errno));
-                }
-                
-                // Reset errno cho lần gọi sau
-                errno = 0;
-            } else {
-                printf("Mở file thành công!\n");
-                fclose(file);
-            }
-            
-            return 0;
-        }
-
-
-        Lỗi khi mở file!
-        Mã lỗi: 2 (No such file or directory)
-        File không tồn tại! Hãy kiểm tra đường dẫn.
+	        #include <stdio.h>
+	        #include <errno.h>
+	        #include <string.h>
+	
+	        int main() {
+	            FILE *file;
+	            
+	            // Cố mở file không tồn tại
+	            file = fopen("file_khong_ton_tai.txt", "r");
+	            
+	            if (file == NULL) {
+	                printf("Lỗi khi mở file!\n");
+	                printf("Mã lỗi: %d (%s)\n", errno, strerror(errno));  // strerror() mô tả
+	                
+	                // Kiểm tra cụ thể
+	                if (errno == ENOENT) {
+	                    printf("File không tồn tại! Hãy kiểm tra đường dẫn.\n");
+	                } else if (errno == EACCES) {
+	                    printf("Không có quyền truy cập! Kiểm tra quyền file.\n");
+	                } else {
+	                    printf("Lỗi khác: %s\n", strerror(errno));
+	                }
+	                
+	                // Reset errno cho lần gọi sau
+	                errno = 0;
+	            } else {
+	                printf("Mở file thành công!\n");
+	                fclose(file);
+	            }
+	            
+	            return 0;
+	        }
+	
+	
+	        Lỗi khi mở file!
+	        Mã lỗi: 2 (No such file or directory)
+	        File không tồn tại! Hãy kiểm tra đường dẫn.
 
 #### **5.3.perror() và strerror()**
 
@@ -3825,7 +3827,7 @@
 
 * **Định nghĩa:**
 
-  ◦ perror(): In thông báo lỗi chuẩn hóa ra stderr.
+	* perror(): In thông báo lỗi chuẩn hóa ra stderr.
 
 * **Cú pháp:**
 
@@ -3836,26 +3838,27 @@
 
 * **Tham số:**
 
-  ◦ s: Chuỗi mô tả ngữ cảnh (ví dụ: "fopen failed"). 
+	* s: Chuỗi mô tả ngữ cảnh (ví dụ: "fopen failed").
   
-        Nếu NULL, chỉ in mô tả errno.
+ 		* Nếu NULL, chỉ in mô tả errno.
 
-        In format: s: mô tả lỗi từ errno\n.
+ 		* In format: s: mô tả lỗi từ errno\n.
 
-        Tự động dùng errno hiện tại; không thay đổi errno.
+ 		* Tự động dùng errno hiện tại; không thay đổi errno.
 
-        #include <stdio.h>
-        #include <errno.h>
 
-        int main() {
-            FILE *f = fopen("nofile.txt", "r");  // file không tồn tại
-            if (!f) {
-                perror("Mở file thất bại");  // in lỗi ra stderr
-            }
-            return 0;
-        }
-
-        Mở file thất bại: No such file or directory
+	        #include <stdio.h>
+	        #include <errno.h>
+	
+	        int main() {
+	            FILE *f = fopen("nofile.txt", "r");  // file không tồn tại
+	            if (!f) {
+	                perror("Mở file thất bại");  // in lỗi ra stderr
+	            }
+	            return 0;
+	        }
+	
+	        Mở file thất bại: No such file or directory
 
 
 
@@ -3863,7 +3866,7 @@
 
 * **Định nghĩa:**
 
-  ◦ strerror(): Trả về chuỗi mô tả lỗi
+	* strerror(): Trả về chuỗi mô tả lỗi
 
 * **Cú pháp:**
 
@@ -3874,23 +3877,24 @@
 
 * **Tham số:**
 
-  ◦ errnum: Mã lỗi (thường là errno).
+	* errnum: Mã lỗi (thường là errno).
   
-        Trả về con trỏ đến chuỗi tĩnh (không free);
+ 		* Trả về con trỏ đến chuỗi tĩnh (không free);
 
-        không thay đổi errno
+ 		* không thay đổi errno
 
-        #include <stdio.h>
-        #include <string.h>
-        #include <errno.h>
 
-        int main() {
-            int err = ENOENT;  // file không tồn tại
-            printf("Lỗi: %s\n", strerror(err));
-            return 0;
-        }
-
-        Lỗi: No such file or directory
+		        #include <stdio.h>
+		        #include <string.h>
+		        #include <errno.h>
+		
+		        int main() {
+		            int err = ENOENT;  // file không tồn tại
+		            printf("Lỗi: %s\n", strerror(err));
+		            return 0;
+		        }
+		
+		        Lỗi: No such file or directory
 
 #### **5.4.Kiểm tra Return Value của Hàm I/O**
 
@@ -3898,87 +3902,88 @@
 
 * **Luôn kiểm tra:**
 
-  ◦ Mỗi hàm I/O trả về indicator lỗi (NULL cho fopen, -1 cho read/write, 0 cho fread/fwrite nếu không đầy đủ).
+	* Mỗi hàm I/O trả về indicator lỗi (NULL cho fopen, -1 cho read/write, 0 cho fread/fwrite nếu không đầy đủ).
 
 * **Xử lý ngay:**
 
-  ◦ Dọn dẹp (fclose, free) và thoát/log lỗi.
+	* Dọn dẹp (fclose, free) và thoát/log lỗi.
 
 * **Kết hợp errno:**
 
-  ◦ Sau khi kiểm tra return, dùng errno/perror để chi tiết.
+	* Sau khi kiểm tra return, dùng errno/perror để chi tiết.
 
 * **Kiểm tra ferror/feof:**
 
-  ◦ Sau fread/fwrite, dùng ferror(stream) (lỗi) hoặc feof(stream) (hết file).
+	* Sau fread/fwrite, dùng ferror(stream) (lỗi) hoặc feof(stream) (hết file).
 
-        #include <stdio.h>
-        #include <errno.h>
-        #include <string.h>
-        #include <stdlib.h>
 
-        #define CHECK_NULL(ptr, msg) \
-            do { \
-                if ((ptr) == NULL) { \
-                    fprintf(stderr, "Lỗi: %s (errno: %d - %s)\n", \
-                        (msg), errno, strerror(errno)); \
-                    exit(EXIT_FAILURE); \
-                } \
-            } while(0)
-
-        #define CHECK_IO(result, expected, msg) \
-            do { \
-                if ((result) != (expected)) { \
-                    fprintf(stderr, "Lỗi: %s (kết quả: %zd, mong đợi: %zd; errno: %d - %s)\n", \
-                        (msg), (result), (expected), errno, strerror(errno)); \
-                    exit(EXIT_FAILURE); \
-                } \
-            } while(0)
-
-        void safe_file_operations() {
-            FILE *source, *destination;
-            char buffer[1024];
-            size_t bytes_read, bytes_written;
-            
-            // Mở file (giả sử source.txt tồn tại)
-            source = fopen("source.txt", "rb");
-            CHECK_NULL(source, "Không thể mở file nguồn");
-            
-            destination = fopen("destination.txt", "wb");
-            CHECK_NULL(destination, "Không thể tạo file đích");
-            
-            // Sao chép
-            while ((bytes_read = fread(buffer, 1, sizeof(buffer), source)) > 0) {
-                bytes_written = fwrite(buffer, 1, bytes_read, destination);
-                CHECK_IO(bytes_written, bytes_read, "Ghi file thất bại");
-            }
-            
-            // Kiểm tra lỗi đọc
-            if (ferror(source)) {
-                fprintf(stderr, "Lỗi đọc file nguồn: %s\n", strerror(errno));
-                fclose(source);
-                fclose(destination);
-                exit(EXIT_FAILURE);
-            }
-            
-            if (feof(source)) {
-                printf("Đã đọc hết file nguồn.\n");
-            }
-            
-            printf("Sao chép file thành công!\n");
-            
-            if (fclose(source) != 0 || fclose(destination) != 0) {
-                fprintf(stderr, "Lỗi đóng file: %s\n", strerror(errno));
-            }
-        }
-
-        int main() {
-            safe_file_operations();
-            return 0;
-        }
-
-        Đã đọc hết file nguồn.
-        Sao chép file thành công!
+		        #include <stdio.h>
+		        #include <errno.h>
+		        #include <string.h>
+		        #include <stdlib.h>
+		
+		        #define CHECK_NULL(ptr, msg) \
+		            do { \
+		                if ((ptr) == NULL) { \
+		                    fprintf(stderr, "Lỗi: %s (errno: %d - %s)\n", \
+		                        (msg), errno, strerror(errno)); \
+		                    exit(EXIT_FAILURE); \
+		                } \
+		            } while(0)
+		
+		        #define CHECK_IO(result, expected, msg) \
+		            do { \
+		                if ((result) != (expected)) { \
+		                    fprintf(stderr, "Lỗi: %s (kết quả: %zd, mong đợi: %zd; errno: %d - %s)\n", \
+		                        (msg), (result), (expected), errno, strerror(errno)); \
+		                    exit(EXIT_FAILURE); \
+		                } \
+		            } while(0)
+		
+		        void safe_file_operations() {
+		            FILE *source, *destination;
+		            char buffer[1024];
+		            size_t bytes_read, bytes_written;
+		            
+		            // Mở file (giả sử source.txt tồn tại)
+		            source = fopen("source.txt", "rb");
+		            CHECK_NULL(source, "Không thể mở file nguồn");
+		            
+		            destination = fopen("destination.txt", "wb");
+		            CHECK_NULL(destination, "Không thể tạo file đích");
+		            
+		            // Sao chép
+		            while ((bytes_read = fread(buffer, 1, sizeof(buffer), source)) > 0) {
+		                bytes_written = fwrite(buffer, 1, bytes_read, destination);
+		                CHECK_IO(bytes_written, bytes_read, "Ghi file thất bại");
+		            }
+		            
+		            // Kiểm tra lỗi đọc
+		            if (ferror(source)) {
+		                fprintf(stderr, "Lỗi đọc file nguồn: %s\n", strerror(errno));
+		                fclose(source);
+		                fclose(destination);
+		                exit(EXIT_FAILURE);
+		            }
+		            
+		            if (feof(source)) {
+		                printf("Đã đọc hết file nguồn.\n");
+		            }
+		            
+		            printf("Sao chép file thành công!\n");
+		            
+		            if (fclose(source) != 0 || fclose(destination) != 0) {
+		                fprintf(stderr, "Lỗi đóng file: %s\n", strerror(errno));
+		            }
+		        }
+		
+		        int main() {
+		            safe_file_operations();
+		            return 0;
+		        }
+		
+		        Đã đọc hết file nguồn.
+		        Sao chép file thành công!
 
 </details> 
 <details>
