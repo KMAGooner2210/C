@@ -4405,7 +4405,7 @@
             return 0;
         }
 
-##### **2.2.4. Khối lệnh **
+##### **2.2.4. Khối lệnh**
 
 * Thực thi khi không có case nào khớp.
 
