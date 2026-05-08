@@ -5492,14 +5492,29 @@
 
 
 
-#### **1.2.Địa chỉ bộ nhớ và mô hình lưu trữ**
+#### **1.2.Mô hình bộ nhớ tuyến tính**
 
-##### **1.2.1.Không gian địa chỉ**
+##### **1.2.1.RAM như một mảng bytes khổng lồ**
 
-* Mỗi chương trình khi chạy sẽ được hệ điều hành cấp phát một không gian địa chỉ ảo (virtual address space)
+* Dưới góc nhìn của C, bộ nhớ máy tính (RAM) là một mảng liên tiếp các ô nhớ (byte), mỗi ô có kích thước 1 byte. 
 
-*  Trên hệ thống 64 bit hiện đại, không gian này lên đến 2⁶⁴ byte
+* Mỗi byte có một địa chỉ duy nhất — chỉ số định danh của ô nhớ đó trong không gian bộ nhớ ảo.
 
+
+		Địa chỉ:  0x1000  0x1001  0x1002  0x1003  0x1004  ...
+		          +------+------+------+------+------+
+		Nội dung: |  25  |  00  |  00  |  00  |  ...  |
+		          +------+------+------+------+------+
+		           ↑
+		           int x = 25 chiếm 4 byte liên tiếp (little-endian)
+
+* Không gian địa chỉ ảo (Virtual Address Space):
+
+	* Mỗi chương trình khi chạy được hệ điều hành cấp một không gian địa chỉ ảo riêng.
+ 
+ 	* Trên hệ thống 64-bit hiện đại, không gian này có thể lên đến 2⁶⁴ byte, dù RAM vật lý thực tế nhỏ hơn nhiều.
+ 
+    
 ##### **1.2.2.Biểu diễn địa chỉ trong hệ thập lục phân**
 
 * Địa chỉ bộ nhớ luôn được biểu diễn dưới dạng hexadecimal khi in bằng `%p`
@@ -5520,7 +5535,7 @@
 
 ##### **1.2.3.Kiểu dữ liệu uintptr_t**
 
-* từ C99, `uintptr_t` (trong `<stdint.h>`) cung cấp kiểu số nguyên không dấu đủ lớn để chứa toàn bộ địa chỉ hiện tại 
+* Từ C99, uintptr_t trong <stdint.h> cung cấp kiểu số nguyên không dấu đủ lớn để chứa toàn bộ địa chỉ trên kiến trúc hiện tại.
 
 		#include <stdio.h>
 		#include <stdint.h>
@@ -5576,11 +5591,20 @@
 
 ##### **1.4.1.Đặc điểm**
 
-* **&:** Address-of
+* **&:** Address-of  (Lấy địa chỉ)
  
-	* Lấy địa chỉ của biến
+	* Trích xuất địa chỉ bộ nhớ của một biến đã được cấp phát.
 			
 			&x
+
+
+	* **Giới hạn cần lưu ý:**
+ 
+	   	* Không thể lấy địa chỉ của biến khai báo register
+	   	
+		* Từ khóa register gợi ý compiler lưu biến trong thanh ghi CPU — thanh ghi không có địa chỉ bộ nhớ.
+	 
+	 	* Tuy nhiên, từ C11, register hầu như không còn hiệu lực thực tế vì compiler tự tối ưu hóa.  
 	
 * **`*`:** Dereference (giải tham chiếu)
 
@@ -5802,13 +5826,13 @@
 
 	* Trong C, mảng hoạt động như một con trỏ hằng trỏ đến phần tử đầu tiên của mảng
 	
-		int arr[5] = {10, 20, 30}
-		
-		// Tương đương
-		arr ≡ &arr[0]
-		arr + 1 ≡ &arr[1]
-		*(arr + 2)  ≡ arr[2]
-		arr[i] ≡ *(arr + i) ≡ *(i + arr) (vì phép cộng có tính giao hoán)
+			int arr[5] = {10, 20, 30, 40, 50};
+			
+			// Các biểu thức tương đương:
+			arr        ≡  &arr[0]          // địa chỉ phần tử đầu
+			arr + 1    ≡  &arr[1]          // địa chỉ phần tử thứ 2
+			*(arr + 2) ≡  arr[2]           // giá trị phần tử thứ 3
+			arr[i]     ≡  *(arr + i)       // cách truy cập tổng quát
 		
 * 	Cách tính địa chỉ phần tử tiếp theo
 
@@ -5823,6 +5847,8 @@
 			int* ptr -> ptr + 1 tăng 4 byte (hoặc 8 byte)
 			char* ptr -> ptr + 1 tăng 1 byte
 			double* ptr -> ptr + 1 tăng 8 byte
+
+ 
 
 #### **3.2.Các phép toán tăng giảm**
 
@@ -5911,6 +5937,54 @@
 		    // undefined behavior
 		}
 
+#### **3.. Ưu tiên toán tử — `*ptr++ vs (*ptr)++`**
+
+* **Biểu thức:**
+
+	* **`*(ptr++)`**: Lấy giá trị tại ptr, sau đó tăng địa chỉ ptr
+	
+	* **`*(++ptr)`**: Trước tiên tăng ptr, rồi lấy giá trị tại địa chỉ mới
+		
+	* **`(*ptr)++`**: Lấy giá trị tại ptr, sau đó tăng giá trị tại địa chỉ đó
+	
+	* **`++(*ptr)`**: Trước tiên tăng giá trị tại địa chỉ, rồi trả về
+
+* **Quy tắc ưu tiên:**
+
+	* `++` và `* (unary)` có cùng độ ưu tiên, kết hợp từ phải sang trái.  
+
+* **VD:**
+
+			#include <stdio.h>
+			
+			int main() {
+			    int arr[] = {10, 20, 30, 40};
+			    int *p;
+			    int val;
+			
+			    // --- *ptr++ : lấy giá trị rồi tăng con trỏ ---
+			    p = arr;
+			    val = *p++;              // val = arr[0] = 10, p trỏ sang arr[1]
+			    printf("*ptr++:    val=%d, *p=%d\n", val, *p);   // 10, 20
+			
+			    // --- *(++ptr) : tăng con trỏ rồi lấy giá trị ---
+			    p = arr;
+			    val = *(++p);            // p trỏ sang arr[1] trước, val = arr[1] = 20
+			    printf("*(++ptr):  val=%d, *p=%d\n", val, *p);   // 20, 20
+			
+			    // --- (*ptr)++ : tăng giá trị tại địa chỉ, con trỏ không đổi ---
+			    p = arr;
+			    val = (*p)++;            // val = arr[0] = 10, arr[0] trở thành 11
+			    printf("(*ptr)++:  val=%d, arr[0]=%d, *p=%d\n", val, arr[0], *p);   // 10, 11, 11
+			
+			    // --- ++(*ptr) : tăng giá trị trước rồi lấy ---
+			    p = arr;
+			    val = ++(*p);            // arr[0] tăng thêm 1 (11 → 12), val = 12
+			    printf("++(*ptr):  val=%d, arr[0]=%d\n", val, arr[0]);   // 12, 12
+			
+			    return 0;
+			}
+  
 #### **3.4.Phép trừ hai con trỏ**
 
 * Chỉ hợp lệ khi hai con trỏ trỏ vào cùng một mảng (hoặc cùng một khối bộ nhớ cấp phát liên tục).
@@ -6050,6 +6124,48 @@
 
 *  `const int * const * ptr`:  ptr là con trỏ → trỏ tới → (const pointer to const int)   
 
+#### **4.5.Chú ý**
+
+*  Khi thiết kế hàm, nên khai báo tham số con trỏ với const nếu hàm chỉ đọc dữ liệu, không cần ghi.
+
+	* Khẳng định với compiler: hàm này chỉ có quyền read-only.
+	
+	* Bảo vệ dữ liệu gốc của người gọi khỏi bị thay đổi ngoài ý muốn.
+ 
+ 	* Cho phép truyền cả const và non-const vào hàm.  
+
+
+			#include <stdio.h>
+			
+			// ✅ Đúng: chỉ đọc arr, dùng const
+			void print_array(const int *arr, int size) {
+			    for (int i = 0; i < size; i++)
+			        printf("%d ", arr[i]);
+			    printf("\n");
+			    // arr[0] = 999;   // ❌ LỖI biên dịch — compiler bảo vệ dữ liệu
+			}
+			
+			// ✅ Đúng: có ghi vào arr, không dùng const
+			void fill_array(int *arr, int size, int value) {
+			    for (int i = 0; i < size; i++)
+			        arr[i] = value;
+			}
+			
+			// ✅ Tham số chuỗi chỉ đọc
+			size_t my_strlen(const char *s) {
+			    size_t len = 0;
+			    while (*s++) len++;
+			    return len;
+			}
+			
+			int main() {
+			    int data[] = {1, 2, 3, 4, 5};
+			    print_array(data, 5);
+			    fill_array(data, 5, 0);
+			    print_array(data, 5);
+			    return 0;
+			}
+
 ### **V. CÁC LỖI THƯỜNG GẶP**
 
 #### **5.1.Error**
@@ -6133,9 +6249,47 @@
 		exit(1); 
 		}
 
-##### **5.2.9.Khi cần truy cập byte-level → dùng unsigned char* hoặc uint8_t***
+##### **5.2.9.Khi cần truy cập byte-level → dùng `unsigned char*` hoặc `uint8_t*`**
 
 		unsigned char *bytes = (unsigned char*)&data;
+
+
+			// Ví dụ tổng hợp nguyên tắc thực hành
+			#include <stdio.h>
+			#include <stdlib.h>
+			
+			int *create_array(int size) {
+			    if (size <= 0) return NULL;              // validate input
+			
+			    int *arr = malloc(size * sizeof(int));
+			    if (!arr) {                              // (8) kiểm tra malloc
+			        perror("malloc failed");
+			        return NULL;
+			    }
+			    return arr;
+			}
+			
+			void process_array(const int *arr, int size) {  // (5) const — chỉ đọc
+			    if (arr == NULL || size <= 0) return;        // (2) kiểm tra NULL
+			    for (int i = 0; i < size; i++)
+			        printf("%d ", arr[i]);
+			    printf("\n");
+			}
+			
+			int main() {
+			    int *p = NULL;                           // (1) khởi tạo NULL
+			
+			    p = create_array(5);
+			    if (!p) return 1;
+			
+			    for (int i = 0; i < 5; i++) p[i] = i * 10;
+			    process_array(p, 5);
+			
+			    free(p);                                 // (3) free rồi gán NULL
+			    p = NULL;
+			
+			    return 0;
+			}
 													 
 </details>
 
