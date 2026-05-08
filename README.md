@@ -4008,7 +4008,32 @@
 * Xử lý các tình huống đặc biệt và lỗi
 
 * Tạo ra các nhánh logic trong chương trình
-                   
+
+##### **1.1.3.Cơ sở**
+
+* Trong C không có kiểu bool riêng biệt, mọi biểu thức đều được đánh giá theo quy tắc:
+
+	* True (Đúng): Giá trị khác 0 — bao gồm số nguyên, số thực, con trỏ khác NULL.
+
+	* False (Sai): Giá trị bằng 0 — số nguyên 0, số thực 0.0, con trỏ NULL.
+
+
+			#include <stdio.h>
+			
+			int main() {
+			    int x = 5;
+			    double d = 0.0;
+			    int *p = NULL;
+			
+			    if (x)       printf("x khác 0 → True\n");      // In ra
+			    if (d)       printf("d khác 0 → True\n");       // Không in (d = 0.0)
+			    if (p)       printf("p khác NULL → True\n");    // Không in (p = NULL)
+			    if (!p)      printf("p là NULL → True\n");      // In ra
+			
+			    return 0;
+			}
+
+
 #### **1.2.Các dạng if-else**
 
 ##### **1.2.1. IF đơn giản**
@@ -4155,13 +4180,46 @@
             return 0;
         }
 
-#### **1.4.Nested if statements**
+#### **1.4.Danling Else**
 
 ##### **1.4.1.Khái niệm**
 
+* "Dangling Else" xảy ra khi có nhiều if lồng nhau nhưng số lượng else ít hơn if, gây ra mơ hồ về việc else thuộc if nào.
+
+##### **1.4.2.Nguyên tắc hoạt động**
+
+* Lệnh else luôn được ghép cặp với lệnh if gần nhất chưa có else ở cùng cấp độ khối lệnh.
+
+			#include <stdio.h>
+			
+			int main() {
+			    int x = 10, y = 5;
+			
+			    // ❌ Trông như else thuộc if ngoài, nhưng KHÔNG PHẢI
+			    if (x > 0)
+			        if (y > 10)
+			            printf("y > 10\n");
+			    else                          // else này thuộc if (y > 10) !
+			        printf("x <= 0\n");       // Sẽ in khi x > 0 VÀ y <= 10
+			
+			    // ✅ Dùng {} để xác định rõ ràng
+			    if (x > 0) {
+			        if (y > 10)
+			            printf("y > 10\n");
+			    } else {                      // else này rõ ràng thuộc if (x > 0)
+			        printf("x <= 0\n");
+			    }
+			
+			    return 0;
+			}
+  
+#### **1.5.Nested if statements**
+
+##### **1.5.1.Khái niệm**
+
 * **Nested if** là cấu trúc if-else lồng bên trong nhau, cho phép kiểm tra các điều kiện phức tạp theo nhiều cấp độ.
 
-##### **1.4.2.Cú pháp**
+##### **1.5.2.Cú pháp**
 
         if (điều_kiện_ngoài) {
             // Khối lệnh ngoài
@@ -4261,6 +4319,13 @@
             return 0;
             }
 
+
+##### **2.1.4.Cơ chế điều hướng của switch**
+
+* Khi switch thực thi, trình biên dịch chuyển quyền điều khiển trực tiếp đến nhãn case có giá trị khớp, sau đó thực thi tuyến tính (từ trên xuống) cho đến khi gặp break hoặc kết thúc switch.
+
+* Switch không kiểm tra điều kiện lại cho các case phía dưới — nó chỉ "nhảy" đến điểm bắt đầu rồi chạy thẳng xuống. 
+
 #### **2.2.Break và Fall-through Behavior**
 
 ##### **2.2.1.Khái niệma**
@@ -4340,6 +4405,63 @@
             return 0;
         }
 
+##### **2.2.4. Khối lệnh **
+
+* Thực thi khi không có case nào khớp.
+
+* Không bắt buộc phải nằm ở cuối — có thể đặt ở bất kỳ vị trí nào trong switch.
+
+* Nên luôn có default để xử lý các giá trị ngoài dự kiến (catch-all).
+
+		switch (option) {
+		    default:                         // default ở đầu vẫn hợp lệ
+		        printf("Lựa chọn không hợp lệ\n");
+		        break;
+		    case 1: printf("Option 1\n"); break;
+		    case 2: printf("Option 2\n"); break;
+		}
+
+#### **2.3. Tối ưu hóa trình biên dịch — Jump Table vs Binary Search Tree**
+
+* **if-else ladder → O(n):**
+
+	* Trình biên dịch sinh ra chuỗi so sánh tuần tự.
+ 
+ 	* Với n nhánh, trường hợp xấu nhất cần n lần so sánh. 
+
+* **switch → O(1) với Jump Table:**
+
+	* Khi các giá trị case liên tục hoặc gần liên tục (ví dụ: 1, 2, 3, 4, 5), trình biên dịch tạo ra một bảng nhảy (Jump Table) — mảng địa chỉ các nhãn case
+ 
+ 	* Chương trình chỉ cần một phép tính địa chỉ để nhảy thẳng đến case đúng, bất kể có bao nhiêu case.
+
+			Jump Table (ví dụ switch với case 1-5):
+			Index:  [0]      [1]      [2]      [3]      [4]
+			Addr:  &case1   &case2   &case3   &case4   &case5
+			
+			Thực thi: goto table[value - 1]  → O(1)
+
+* **switch → O(log n) với Binary Search Tree:**
+
+	* Khi các giá trị case thưa thớt (ví dụ: 1, 100, 1000, 9999), trình biên dịch có thể sinh ra cấu trúc tìm kiếm nhị phân ở mức assembly, đạt O(log n).
+
+				// Ví dụ minh họa: compiler chọn Jump Table cho case liên tục
+				switch (x) {       // x từ 1-5: Jump Table O(1)
+				    case 1: ...; break;
+				    case 2: ...; break;
+				    case 3: ...; break;
+				    case 4: ...; break;
+				    case 5: ...; break;
+				}
+				
+				// Compiler có thể chọn BST cho case thưa thớt
+				switch (x) {       // x: 1, 100, 500, 1000, 9999: BST O(log n)
+				    case 1:    ...; break;
+				    case 100:  ...; break;
+				    case 500:  ...; break;
+				    case 1000: ...; break;
+				    case 9999: ...; break;
+				}
 
 ### **III. TOÁN TỬ ĐIỀU KIỆN**
 
@@ -4376,6 +4498,49 @@
             
             return 0;
         }
+
+##### **3.1.3.Ternary là Expression, không phải Statement**
+
+
+* if-else là câu lệnh (statement) — không trả về giá trị, không dùng được trong biểu thức.
+
+* Ternary là biểu thức (expression) — trả về một giá trị, dùng được ở bất kỳ nơi nào cần giá trị.
+
+
+			// if-else là statement: không thể dùng như thế này
+			// int x = if (a > b) a else b;   ← LỖI BIÊN DỊCH
+			
+			// ternary là expression: dùng được mọi nơi cần giá trị
+			int x = (a > b) ? a : b;                    // Gán biến
+			printf("%d\n", (a > b) ? a : b);            // Đối số hàm
+			int arr[3] = {1, (x > 0) ? x : 0, 3};      // Khởi tạo mảng
+
+##### **3.1.4.Quy tắc hợp nhất kiểu**
+
+* Khi nhánh true và nhánh false có kiểu dữ liệu khác nhau, trình biên dịch tự động tìm kiểu chung (common type) để chứa cả hai kết quả — tương tự phép ép kiểu ngầm định.
+
+* Nên đảm bảo cả hai nhánh cùng kiểu hoặc có thể ép kiểu tường minh để tránh kết quả ngoài ý muốn.
+
+
+		#include <stdio.h>
+		
+		int main() {
+		    int a = 5;
+		
+		    // Nhánh true: int (1), nhánh false: double (2.5)
+		    // → Toàn bộ biểu thức có kiểu double
+		    double result = (a > 3) ? 1 : 2.5;
+		    printf("%.1f\n", result);   // 1.0  (không phải 1 nguyên)
+		
+		    // int và float → float
+		    float f = (a > 0) ? a : 3.14f;
+		    printf("%.2f\n", f);        // 5.00
+		
+		    // Cảnh báo: kiểu không tương thích
+		    // (a > 0) ? "text" : 42;   ← Undefined behavior, tránh dùng
+		
+		    return 0;
+		}
 
 #### **3.2.Nested ternary operators**
 
