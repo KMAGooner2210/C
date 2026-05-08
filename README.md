@@ -4670,6 +4670,34 @@
             return 0;
         }
 
+##### **1.1.5.Lexical Scope của biến trong for (C99)**
+
+
+* Từ C99, có thể khai báo biến ngay trong phần khởi tạo của for
+
+* Đây là phạm vi từ vựng hẹp (Strict Lexical Scope): biến bị hủy ngay khi vòng lặp kết thúc.
+
+
+		#include <stdio.h>
+		
+		int main() {
+		    // ✅ C99: khai báo trong for - biến i chỉ sống trong vòng lặp
+		    for (int i = 0; i < 3; i++) {
+		        printf("i = %d\n", i);
+		    }
+		    // printf("%d", i);  ← LỖI BIÊN DỊCH: i không tồn tại ở đây
+		
+		    // Khai báo ngoài for - biến i tồn tại sau vòng lặp
+		    int j;
+		    for (j = 0; j < 3; j++) {
+		        printf("j = %d\n", j);
+		    }
+		    printf("j sau vòng lặp: %d\n", j);  // j = 3, hợp lệ
+		
+		    return 0;
+		}
+
+
 #### **1.2.Multiple Initialization**
 
 ##### **1.2.1.Khái niệm**
@@ -4697,15 +4725,65 @@
             return 0;
         }
 
-#### **1.3.Vòng lặp vô hạn**
+#### **1.3.Lược bỏ biểu thức**
 
-##### **1.3.1.Khái niệm**
+##### **1.3.1.Tính tùy chọn của biểu thức**
+
+			// Bỏ khởi tạo (biến đã khai báo trước)
+			int i = 0;
+			for (; i < 5; i++) { ... }
+			
+			// Bỏ cập nhật (cập nhật trong body)
+			for (int i = 0; i < 5;) { i++; }
+			
+			// Bỏ tất cả → vòng lặp vô hạn
+			for (;;) { ... }
+
+##### **1.3.2.for(;;) và while(1)**
+
+* `for(;;)` là idiom C chuẩn cho vòng lặp vô hạn — không có biểu thức điều kiện nào cần đánh giá.
+
+*  Một số compiler sinh cảnh báo với while(1) (constant condition), trong khi for(;;) không bao giờ sinh cảnh báo.
+
+*  Trình biên dịch tối ưu hóa for(;;) tốt hơn vì không cần kiểm tra điều kiện. 
+
+
+			#include <stdio.h>
+			
+			int main() {
+			    int count = 0;
+			
+			    // ✅ Idiom chuẩn mực - vòng lặp vô hạn
+			    for (;;) {
+			        printf("Lần lặp thứ %d\n", ++count);
+			        if (count >= 5) {
+			            printf("Đã đủ 5 lần, thoát.\n");
+			            break;
+			        }
+			    }
+			
+			    // Ứng dụng: Server event loop
+			    int request_count = 0;
+			    for (;;) {
+			        printf("Chờ request... (Request #%d)\n", ++request_count);
+			        if (request_count >= 3) {
+			            printf("Server dừng sau 3 request.\n");
+			            break;
+			        }
+			    }
+			
+			    return 0;
+			}
+			
+#### **1.4.Vòng lặp vô hạn**
+
+##### **1.4.1.Khái niệm**
 
 * Khi điều kiện luôn true (rỗng hoặc hằng true), vòng lặp chạy mãi trừ khi dùng `break`.
 
 * Thường dùng cho event loops (server, game) hoặc simulation.
 
-##### **1.3.2.VD**
+##### **1.4.2.VD**
 
         #include <stdio.h>
 
@@ -4738,15 +4816,15 @@
         }
 
 
-#### **1.4.Optimization Considerations**
+#### **1.5.Optimization Considerations**
 
-##### **1.4.1.Khái niệm**
+##### **1.5.1.Khái niệm**
 
 * Tối ưu vòng lặp nhằm giảm thời gian chạy, đặc biệt với dữ liệu lớn.
 
 * Các kỹ thuật bao gồm loop-invariant hoisting (chuyển tính toán ra ngoài), unrolling (mở rộng vòng lặp), và tránh function calls trong điều kiện.
 
-##### **1.4.2.Lý thuyết tối ưu**
+##### **1.5.2.Lý thuyết tối ưu**
 
 * **Loop-invariant:** Tính toán không đổi (như strlen) chỉ gọi một lần.
 
@@ -4878,6 +4956,39 @@
         Nhập số tiếp theo (số dương để dừng): 3
         Đã thoát vòng lặp với số: 3
 
+#### **2.3.Assignment Expression trong while**
+
+##### **2.3.1.Kỹ thuật**
+
+* Biểu thức gán (assignment expression) có thể dùng trực tiếp trong điều kiện while, tạo ra code ngắn gọn và hiệu quả.
+
+* `while ((ch = getchar()) != EOF)` — đọc từng ký tự cho đến hết file. Đây là idiom phổ biến nhất trong xử lý stream C.
+
+##### **2.3.2.VD**
+
+
+		#include <stdio.h>
+		
+		int main() {
+		    int ch;
+		
+		    // Pattern 1: Đọc từng ký tự đến EOF
+		    printf("Nhập văn bản (Ctrl+D để kết thúc):\n");
+		    while ((ch = getchar()) != EOF) {   // gán VÀ kiểm tra trong một bước
+		        putchar(ch);
+		    }
+		
+		    // Pattern 2: Đọc số đến khi nhập đúng
+		    int n;
+		    printf("Nhập số dương: ");
+		    while (scanf("%d", &n) == 1 && n <= 0) {
+		        printf("Phải là số dương! Nhập lại: ");
+		    }
+		    printf("Đã nhận: %d\n", n);
+		
+		    return 0;
+		}
+			
 ### **III. VÒNG LẶP DO-WHILE**
 
 #### **3.1.Giới thiệu**
@@ -4967,6 +5078,78 @@
             printf("Chính xác! Số là %d\n", secret);
             return 0;
         }
+
+#### **3.4.do { ... } while(0) trong Macro**
+
+##### **3.4.1.Vấn đề với macro đa lệnh**
+
+* Khi macro chứa nhiều câu lệnh, có thể gây lỗi cú pháp khi dùng trong if-else không có {}:
+
+
+			// ❌ Macro lỗi khi dùng với if không có {}
+			#define SWAP(a, b) \
+			    int tmp = a;   \
+			    a = b;         \
+			    b = tmp;
+			
+			// Khi gọi:
+			if (x > y)
+			    SWAP(x, y);    // Mở rộng thành 3 câu lệnh riêng biệt
+			else               // ← LỖI: else không có if tương ứng (chỉ câu đầu thuộc if)
+			    printf("...");
+
+##### **3.4.2.Giải pháp — do { ... } while(0)**
+
+		// ✅ Đóng gói an toàn bằng do-while(0)
+		#define SWAP(a, b)      \
+		    do {                \
+		        int tmp = (a);  \
+		        (a) = (b);      \
+		        (b) = tmp;      \
+		    } while (0)
+		
+		// Khi gọi:
+		if (x > y)
+		    SWAP(x, y);    // Mở rộng thành: do { ... } while(0);
+		else               // ✅ else hợp lệ vì if chỉ có 1 câu lệnh (do-while)
+		    printf("Không cần đổi\n");
+
+* Toàn bộ macro trở thành một câu lệnh duy nhất (kết thúc bằng ;).
+
+* Compiler không bao giờ thực sự lặp vì điều kiện 0 luôn false.
+
+* Không ảnh hưởng hiệu năng — compiler tối ưu bỏ phần kiểm tra while(0).  
+
+
+			#include <stdio.h>
+			
+			#define LOG_ERROR(msg)          \
+			    do {                        \
+			        fprintf(stderr, "ERROR: %s\n", msg); \
+			        error_count++;          \
+			    } while (0)
+			
+			#define SAFE_FREE(ptr)          \
+			    do {                        \
+			        if ((ptr) != NULL) {    \
+			            free(ptr);          \
+			            (ptr) = NULL;       \
+			        }                       \
+			    } while (0)
+			
+			int error_count = 0;
+			
+			int main() {
+			    int x = 5, y = 3;
+			
+			    if (x > y)
+			        LOG_ERROR("Giá trị không hợp lệ");  // ✅ An toàn với if không có {}
+			    else
+			        printf("Không có lỗi\n");
+			
+			    printf("Số lỗi: %d\n", error_count);
+			    return 0;
+			}
 
 ### **IV. ĐIỀU KHIỂN VÒNG LẶP**
 
@@ -5141,7 +5324,103 @@
             
             return 0;
         }
-        
+
+#### **5.2.Big O Notation**
+
+##### **5.2.1.Khái niệm**
+
+* Big O Notation mô tả tốc độ tăng của thời gian thực thi khi kích thước đầu vào (N) tăng.
+
+* Số tầng lặp lồng nhau ảnh hưởng trực tiếp đến độ phức tạp.
+
+
+		f(N) = O(g(N)) nếu tồn tại hằng số c > 0 và N₀ sao cho với mọi N ≥ N₀ thì f(N) ≤ c·g(N)
+
+##### **5.2.2.Quy tắc tính Big O**
+
+* **Quy tắc 1: - Bỏ hằng số:**
+
+		5N  → O(N)
+		100 → O(1)
+		3N² → O(N²)
+
+* **Quy tắc 2: - Bỏ số hạng bậc thấp:**
+
+		N² + N + 1 → O(N²)
+		N³ + N²    → O(N³)
+
+
+* **Quy tắc 3: - Cộng (các bước tuần tự):**
+
+		for (i = 0; i < N; i++) { ... }    // O(N)
+		for (j = 0; j < N; j++) { ... }    // O(N)
+		// Tổng: O(N) + O(N) = O(2N) = O(N)
+
+* **Quy tắc 4: - Nhân (vòng lặp lồng nhau):**
+
+		for (i = 0; i < N; i++) {          // O(N)
+		    for (j = 0; j < N; j++) { ... } // O(N)
+		}
+		// Tổng: O(N) × O(N) = O(N²)
+  
+##### **5.2.3.Mối quan hệ giữa số tầng lặp và Big O**
+
+* Số tâng lặp:
+
+	* **1 Vồng:**
+ 
+ 		* **O(N) - Tuyến tính**
+   
+   		* VD: Tìm kiếm tuần tự, in mảng
+ 
+
+ 
+	* **2 Vồng:**
+ 
+ 		* **O(N^2) - Bình phương**
+   
+   		* VD: Bubble Sort, Selection Sort
+
+	* **3 Vồng:**
+ 
+ 		* **O(N^3) - Lập phương**
+   
+   		* VD: Nhân ma trận naïve
+
+
+			#include <stdio.h>
+			
+			int main() {
+			    int N = 4;
+			
+			    // O(N) - 1 vòng: N bước
+			    printf("O(N) - %d bước:\n", N);
+			    for (int i = 0; i < N; i++) {
+			        printf("i=%d ", i);
+			    }
+			    printf("\n");
+			
+			    // O(N²) - 2 vòng: N×N = %d bước
+			    printf("\nO(N²) - %d bước:\n", N * N);
+			    for (int i = 0; i < N; i++) {
+			        for (int j = 0; j < N; j++) {
+			            printf("(%d,%d) ", i, j);
+			        }
+			    }
+			    printf("\n");
+			
+			    // O(N³) - 3 vòng: N×N×N bước
+			    printf("\nO(N³) - %d bước:\n", N * N * N);
+			    int count = 0;
+			    for (int i = 0; i < N; i++)
+			        for (int j = 0; j < N; j++)
+			            for (int k = 0; k < N; k++)
+			                count++;
+			    printf("Tổng số bước: %d\n", count);
+			
+			    return 0;
+			}
+	
 </details> 
 
 <details>
