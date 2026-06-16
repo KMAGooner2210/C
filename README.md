@@ -6822,6 +6822,181 @@
 
 
 
+### **V. INLINE FUNCTION VÀ STATIC INLINE FUNCTION**
+
+#### **5.1.Inline Function**
+
+##### **5.1.1.Khái niệm**
+
+* Inline Function là hàm được khai báo với từ khóa `inline`
+
+* Khi biên dịch, thay vì thực hiện một lời gọi hàm truyền thống (tạo stack frame, nhảy địa chỉ), trình biên dịch sẽ cố gắng thay thế trực tiếp đoạn code của thân hàm vào ngay tại vị trí hàm được gọi  
+
+##### **5.1.2.Đặc điểm:**
+	
+* Khác với Macro (`#define`) của tiền xử lý, hàm inline được trình biên dịch kiểm tra kiểu dữ liệu của tham số và giá trị trả về một cách nghiêm ngặt
+	
+* Trình biên dịch có quyền từ chối inline nếu hàm quá phức tạp (chứa vòng lặp lớn, đệ quy, hoặc kích thước hàm quá dài)
+
+* Nếu một hàm inline được gọi ở rất nhiều nơi, mã nguồn của nó sẽ bị sao chép ra bấy nhiêu lần, làm tăng dung lượng bộ nhớ chương trình
+
+##### **5.1.3.Cú pháp:**
+
+		inline kiểu_trả_về tên_hàm(danh_sách_tham_số){\
+			//body
+			return giá_trị
+		}
+	
+* **VD:**	
+
+			#include<stdio.h>
+			inline int binhPhuong(int x){
+				return x * x;
+			}
+			int main (){
+				int a = 5;
+				printf("Result: %d\n", binhPhuong(a));
+				return 0;
+			}
+
+	* **Cách trình biên dịch xử lý ngầm:**
+	
+			int main(){
+				int a = 5;
+				printf("Result: %d\n", a * a);
+				return 0;
+			} 		
+
+#### **5.2.Static Inline Function**
+
+##### **5.2.1.Khái niệm**
+
+* Nếu định nghĩa mooht hàm inline thông thường trong file `.h` , rồi `#include` file này vào nhiều file `.c` khác nhau để sử dụng, quá trình liên kết (Linker) sẽ báo lỗi **Multiple Definition (trùng lặp định nghĩa hàm)** do vi phạm quy tắc ODR
+
+
+##### **5.2.2.Đặc điểm:**
+	
+* Static Inline Function là sự kết hợp giữa từ khóa `static` (giới hạn phạm vi) và `inline` (yêu cầu tối ưu nội tuyến) 
+	
+* Từ khóa `static` giới hạn phạm vi của hàm chỉ nằm trong file `.c` nào trực tiếp include nó
+
+* Linker sẽ không nhìn thấy hàm này ở phạm vi toàn cục, tránh hoàn toàn lỗi trùng lặp định nghĩa 
+
+* Nếu trình biên dịch quyết định không inline hóa hàm đó, nó sẽ tự động coi hàm đó như một hàm `static` bình thường của riêng file `.c` đó, không tạo ra các cảnh báo hay lỗi biên dịch
+
+##### **5.2.3.Cú pháp**
+
+		static inline kiểu_trả_về tên_hàm(danh_sách_tham_số){
+			//body
+			return giá_trị;
+		}
+
+##### **5.2.4.VD**
+
+* **File `utils.h`:**
+
+		#ifndef UTILS_H
+		#define UTILS_H
+
+		static inline int timMax(int a, int b){
+			return (a > b) ? a : b;
+		}
+
+		#endif
+
+* **File `process1.c`:**
+
+		#include <stdio.h>
+		#include "utils.h"
+		void process1(){
+			int m = timMax(10, 20);
+			printf("Max 1: %d\n", m);
+		}
+
+* **File `process2.c`:**
+
+		 #include <stdio.h>
+		 #include "utils.h"
+		 void process2(){
+			 int n = timMax(100, 200);
+			 printf("Max 2: %d\n", n);
+		}
+
+### **VI. HÀM ĐỆ QUY (RECURSION)**
+
+#### **6.1. Khái niệm**
+
+* Hàm đệ quy là hàm tự gọi lại chính nó một cách trực tiếp hoặc gián tiếp (thông qua một hàm khác) trong quá trình thực thi
+
+* Phương pháp đệ quy chia một bài toán lớn thành các bài toán con nhỏ hơn, có cùng tính chất, cho đến khi bài toán con này đủ đơn giản để có thể giải quyết trực tiếp mà không cần phân rã thêm
+
+* Các Stack Frame này sẽ xếp chồng lên nhau 
+
+* Khi đạt tới điều kiện dừng, các hàm bắt đầu trả về giá trị (return), các Stack Frame lần lượt bị hủy (pop) theo cơ chế **LIFO** cho đến khi quay về lời gọi ban đầu  
+
+#### **6.2. Cấu trúc**
+
+* Một hàm đệ quy chuẩn luôn phải được cấu thành từ hai phần rõ rệt:
+
+	* Là điều kiện tiên quyết để kết thúc quá trình đệ quy
+	
+	* Tại điểm dừng, hàm sẽ trả về một giá trị cụ thể ngay lập tức mà không thực hiện thêm bất kỳ lời gọi nào khác  
+
+		* Nếu thiếu điểm dừng hoặc điểm dừng được thiết lập sai, hàm sẽ gọi chính nó vô hạn, dẫn đến việc cạn kiệt bộ nhớ Stack của hệ thống
+
+* Là phần thân hàm thực hiện việc gọi lại chính nó, nhưng với tham số đã được thay đổi theo hướng tiến dần về phía điểm dừng
+
+#### **6.3. Cú pháp**
+
+			return_type recursive_function_name(parameter_list){
+				//1. Base Case
+				if(termination_condition){
+					return base_value;
+				}
+				//2. Recursive Case
+				return process_logic_with(recursive_function_name(modified_parameter));
+			 }
+
+#### **6.4. VD**
+
+* Nếu n = 0 hoặc n = 1: n! = 1 (Điểm dừng)
+
+* Nếu n > 1: n! = n x (n - 1)! (Bước đệ quy)
+
+			#include<stdio.h>
+			long long factorial(int n){
+				if(n == 0 || n == 1){
+					return 1;
+				}
+
+				return n * factorial(n - 1);
+			}
+			int main(){
+				int num = 3;
+				printf("Factorial cua %d la : %lld\n", num, factorial(num));
+				return 0;
+			}
+
+* Cách hoạt động:
+
+			factorial(3)
+			= 3 * factorial(2)
+			= 3 * (2 * factorial(1))
+			= 3 * (2 * 1)
+			= 6
+
+* Quá trình gọi hàm:
+
+		factorial(3)
+		    ↓
+		factorial(2)
+		    ↓
+		factorial(1)  ← Base Case, trả về 1
+		    ↑
+		2 × 1 = 2
+		    ↑
+		3 × 2 = 6
+				
 
 													 
 </details>
