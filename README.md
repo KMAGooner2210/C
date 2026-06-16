@@ -8225,6 +8225,307 @@
 	* `char32_t` : Dùng cho UTF-32 (thường 4 byte).
 	
 	* Thư viện hỗ trợ: `<uchar.h>`
+
+
+
+### **VII. THAO TÁC AN TOÀN VÀ CÁC HÀM VÙNG NHỚ TRÊN MẢNG**
+
+#### **7.1. Truyền mảng hai chiều vào hàm**
+
+##### **7.1.1.Khái niệm**
+
+* Khi truyền mảng một chiều `int arr[10]` vào hàm, nó phân rã thành con trỏ trỏ đến phần tử đầu tiên (`int *`)
+
+* Đối với mảng hai chiều `int matrix[3][4]`, nó được hiểu là mảng gồm 3 phần tử, mỗi phần tử là một mảng 4 số nguyên
+ 
+
+##### **7.1.2.Đặc điểm:**
+	
+* Đối với mảng hai chiều `int matrix[3][4]`, nó được hiểu là mảng gồm 3 phần tử, mỗi phần tử là một mảng 4 số nguyên
+	
+* Khi truyền matrix vào hàm, nó phân rã thành con trỏ đến mảng gồm 4 phần tử int, mang kiểu dữ liệu: `int (*)[4]`
+
+	* Nó không phân rã thành con trỏ trỏ đến con trỏ (`int **`) 
+
+* Để tính toán địa chỉ của phần tử matrix[i][j], trình biên dịch áp dụng công thức
+
+	* **Địa chỉ = Địa chỉ cơ sở + (i x Số cột + j) x sizeof(kiểu_dữ_liệu)**
+	
+* Nếu không biết số cột, compiler không thể tính toán được bước nhảy để đi tới hàng thứ i   
+
+##### **7.1.3.Cú pháp**
+
+* Chiều đầu tiên (số hàng) có thể bỏ trống, nhưng chiều thứ hai (số cột) phải là một hằng số cụ thể
+
+			#include<stdio.h>
+			#define COLS 4
+
+			void inMaTran(int arr[][COLS], int rows){
+				for(int i = 0; i < rows; i++){
+					for(int j = 0; j < COLS; j++){
+						printf("%d", arr[i][j]);
+					}
+					printf("\n");
+				}
+			}
+			int main(void){
+				int matrix[3][COLS] = {
+					{1, 2, 3, 4},
+					{5, 6, 7, 8},
+					{9, 10, 11, 12}
+				};
+				inMaTran(matrix, 3);
+				return 0;
+			}
+
+
+
+#### **7.2.Các hàm thao tác trên vùng nhớ mảng (`<string.h>`)**
+
+##### **7.2.1.memset()**
+
+###### **7.2.1.1.Khái niệm**
+
+* Các hàm này thao tác trực tiếp trên các byte bộ nhớ thô (`void *`), bỏ qua ràng buộc về kiểu dữ liệu nên tốc độ xử lý rất nhanh
+
+
+###### **7.2.1.2.Cú pháp**
+
+			void *memset(void *ptr, int value, size_t num);
+
+			// ptr: Con trỏ trỏ đến khối bộ nhớ cần điền
+			// value: giá trị cần điền 
+			// num: số lương byte cần điền
+			
+	
+* Lưu ý:
+
+	* memset điền theo từng byte, nên không thể dùng nó để khởi tạo mảng số nguyên int với các giá trị khác ngoài 0 và -1 
+	
+	* VD1: 
+	
+		* Đặt giá trị là 1 sẽ khiên mỗi byte trong số 4 byte của kiểu int nhận giá trị 0x01, kết quả phần tử đó sẽ có giá trị 0x01010101 = 16843009
+		
+	* VD2: 
+
+			#include <stdio.h>
+			#include <string.h>
+			int main(void){
+				int arr[5] = {1, 2, 3, 4, 5};
+				memset(arr, 0, sizeof(arr));
+				for(int i = 0; i < 5; i++){
+					printf("%d ", arr[i]);
+				}
+				return 0;
+			} 
+	
+		* Đặt giá trị là 1 sẽ khiên mỗi byte trong số 4 byte của kiểu int nhận giá trị 0x01, kết quả phần tử đó sẽ có giá trị 0x01010101 = 16843009
+
+
+##### **7.2.2.memcpy**
+
+###### **7.2.2.1.Khái niệm**
+
+* `memcpy()` là hàm dùng để sao chép một số byte xác định từ vùng nhớ sang vùng nhớ đích
+
+* Hàm này giả định rằng hai vùng nhớ không chồng lấn lên nhau
+
+* Nếu vùng nguồn và đích bị chồng lấn, kết quả sẽ là Undefined Behavior  
+
+###### **7.2.2.2.Cú pháp**
+
+			void *memcpy(void *destination, const void *source, size_t num);
+
+			// destination: Địa chỉ vùng nhớ đích
+			// source: Địa chỉ vùng nhớ nguồn 
+			// num: Số byte cần sao chép
+
+* VD:
+			
+	
+			#include <stdio.h>
+			#include <string.h>
+
+			int main() {
+			    int source[] = {1, 2, 3, 4, 5};
+			    int destination[5];
+
+			    memcpy(destination, source, 5 * sizeof(int));
+
+			    printf("Mang destination: ");
+			    for (int i = 0; i < 5; i++) {
+			        printf("%d ", destination[i]);
+			    }
+
+			    return 0;
+			}
+
+			// Mang destination: 1 2 3 4 5
+
+
+###### **7.2.2.3. Đặc điểm**
+
+* Sao chép dữ liệu theo từng byte.
+
+* Tốc độ thực thi nhanh.
+
+* Không kiểm tra sự chồng lấn giữa hai vùng nhớ.
+
+##### **7.2.3.memmove()**
+
+###### **7.2.3.1.Khái niệm**
+
+* `memmove()` dùng để sao chép dữ liệu từ vùng nhớ nguồn sang vùng nhớ đích giống như `memcpy()`, nhưng hỗ trợ an toàn khi **hai vùng nhớ bị chồng lấn lên nhau**.
+
+###### **7.2.3.2.Cú pháp**
+
+			void *memmove(void *destination, const void *source, size_t num);
+
+			// destination: Địa chỉ vùng nhớ đích
+			// source: Địa chỉ vùng nhớ nguồn 
+			// num: Số byte cần sao chép
+
+* VD:
+			
+	
+		#include <stdio.h>
+		#include <string.h>
+
+		int main() {
+		    int arr[5] = {1, 2, 3, 4, 5};
+
+		    // Dịch các phần tử sang phải một vị trí
+		    memmove(arr + 1, arr, 4 * sizeof(int));
+
+		    for (int i = 0; i < 5; i++) {
+		        printf("%d ", arr[i]);
+		    }
+
+		    return 0;
+		}
+
+		// 1 1 2 3 4
+
+
+###### **7.2.3.3. Đặc điểm**
+
+* Sao chép dữ liệu theo từng byte.
+
+* An toàn khi hai vùng nhớ chồng lấn nhau.
+
+* Thường dùng để dịch chuyển dữ liệu trong cùng một mảng.
+
+### **VIII. KỸ THUẬT NÂNG CAO VỚI CHUỖI**
+
+#### **8.1. fgets**
+
+##### **8.1.1.Giới thiệu**
+
+* **gets(str):**
+
+	*  Đọc dữ liệu đến khi gặp ký tự xuống dòng (`'\n'`).
+	
+	*  Hàm này hoàn toàn không kiểm soát kích thước mảng nhận vào, cực kỳ dễ bị khai thác lỗi tràn bộ đệm (Buffer Overflow).
+
+* **scanf("%s", str):**
+
+	*  Dừng lại khi gặp bất kỳ ký tự khoảng trắng nào (phím cách, tab, xuống dòng).
+	
+	*  Ngoài ra cũng không giới hạn được độ dài nhập vào trừ khi viết tường minh scanf("%49s", str).
+ 
+
+##### **8.1.2.Cú pháp**
+	
+		char *fgets(char *str, int num, FILE *stream);
+	
+* str: Con trỏ tới mảng ký tự nhận dữ liệu.
+
+* num: Số ký tự tối đa được phép đọc (bao gồm cả ký tự kết thúc \0) nên fgets chỉ đọc tối đa num - 1 ký tự từ bàn phím.
+
+* stream: Nguồn nhập dữ liệu
+
+##### **8.1.3. Lưu ý**
+	
+*    Khi bạn nhập chuỗi từ bàn phím và nhấn Enter, fgets sẽ đọc luôn ký tự xuống dòng `'\n'` này và lưu vào mảng nếu còn đủ chỗ chứa, sau đó mới thêm ký tự `'\0'`.
+
+*    Điều này khiến chuỗi bị xuống dòng ngoài ý muốn khi in ra và gây sai lệch khi so sánh chuỗi bằng strcmp.
+
+*    Cách xử lý:
+
+			#include <stdio.h>
+			#include <string.h>
+
+			int main(void) {
+			    char name[20];
+			    
+			    printf("Nhập tên của bạn: ");
+			    fgets(name, sizeof(name), stdin);
+			    
+			    // Loại bỏ ký tự '\n' nếu có
+			    name[strcspn(name, "\n")] = '\0';
+			    
+			    printf("Xin chào: [%s]!\n", name); // Không bị xuống dòng trước dấu '!'
+			    return 0;
+			} 
+
+#### **8.2. <ctype.h>**
+
+##### **8.2.1.Giới thiệu**
+
+* Thư viện này cung cấp các hàm tối ưu cao để phân tích và chuyển đổi các ký tự đơn lẻ.
+
+##### **8.2.2. Đặc điểm**
+
+* Các hàm này nhận vào một ký tự (dưới dạng int) và trả về giá trị khác 0 (true) nếu thỏa mãn điều kiện, ngược lại trả về 0 (false):
+
+	*  `isalpha(c)` : Có phải chữ cái (a-z, A-Z) hay không
+
+	*  `isdigit(c)` : Có phải chữ số (0-9) hay không
+
+	*  `isalnum(c)` : Có phải chữ cái hoặc chữ số (isalpha hoặc isdigit)
+
+	*  `islower(c)` : Có phải chữ cái viết thường hay không
+
+	*  `isupper(c)` :Có phải chữ cái viết hoa hay không
+
+	*  `isspace(c)` : Có phải khoảng trắng (dấu cách ' ', '\t', '\n', '\r') hay không
+	
+	*  `tolower(int c)` :Chuyển ký tự in hoa thành in thường. Nếu ký tự không phải là chữ hoa, giữ nguyên.
+
+	*  `toupper(int c)` : Chuyển ký tự thường thành in hoa.
+	
+##### **8.2.3. VD**
+
+		#include <stdio.h>
+		#include <ctype.h>
+
+		void chuanHoaTen(char str[]) {
+		    int i = 0;
+		    int vietHoaTiepTheo = 1; // Cờ đánh dấu cần viết hoa ký tự tiếp theo
+
+		    while (str[i] != '\0') {
+		        if (isspace(str[i])) {
+		            vietHoaTiepTheo = 1;
+		        } else {
+		            if (vietHoaTiepTheo) {
+		                str[i] = toupper(str[i]);
+		                vietHoaTiepTheo = 0;
+		            } else {
+		                str[i] = tolower(str[i]);
+		            }
+		        }
+		        i++;
+		    }
+		}
+
+		int main(void) {
+		    char name[] = "nGuYEn vAn a";
+		    chuanHoaTen(name);
+		    printf("Chuỗi chuẩn hóa: %s\n", name); // Output: Nguyen Van A
+		    return 0;
+		}
+ 
+
 		
 
 			 										
