@@ -992,65 +992,71 @@
 
 	* Phạm vi: Cục bộ (trong hàm/khối)
 
-	        #include <stdio.h>
-	
-	        int main() {
-	            {
-	                auto int inside = 99;
-	                printf("Inside block: %d\n", inside);
-	            }
-	            // printf("%d", inside);  // LỖI: ngoài phạm vi
-	            return 0;
-	        }
 
-	        Inside block: 99
+			        #include <stdio.h>
+			
+			        int main() {
+			            {
+			                auto int inside = 99;
+			                printf("Inside block: %d\n", inside);
+			            }
+			            // printf("%d", inside);  // LỖI: ngoài phạm vi
+			            return 0;
+			        }
+		
+			        Inside block: 99
+   
 
 	* Thời gian sống: Từ khi vào khối đến khi ra khối
 
-	        #include <stdio.h>
-	
-	        void counter() {
-	            auto int count = 0;  // Tạo mới mỗi lần gọi
-	            count++;
-	            printf("Count: %d\n", count);
-	        }
-	
-	        int main() {
-	            counter();  // Count: 1
-	            counter();  // Count: 1 (không giữ giá trị)
-	            counter();  // Count: 1
-	            return 0;
-	        }
-	
-	        Count: 1
-	        Count: 1
-	        Count: 1
+
+			        #include <stdio.h>
+			
+			        void counter() {
+			            auto int count = 0;  // Tạo mới mỗi lần gọi
+			            count++;
+			            printf("Count: %d\n", count);
+			        }
+			
+			        int main() {
+			            counter();  // Count: 1
+			            counter();  // Count: 1 (không giữ giá trị)
+			            counter();  // Count: 1
+			            return 0;
+			        }
+			
+			        Count: 1
+			        Count: 1
+			        Count: 1
+   
 
 	* Vị trí lưu trữ: Bộ nhớ stack
 
-	        #include <stdio.h>
-	
-	        int main() {
-	            auto int a = 50;
-	            printf("Dia chi a: %p\n", (void*)&a);  // Địa chỉ trên stack
-	            return 0;
-	        }
-	
-	        Dia chi a: 0x7fff5fbff6ac
+
+			        #include <stdio.h>
+			
+			        int main() {
+			            auto int a = 50;
+			            printf("Dia chi a: %p\n", (void*)&a);  // Địa chỉ trên stack
+			            return 0;
+			        }
+			
+			        Dia chi a: 0x7fff5fbff6ac
 
 	* Khởi tạo: Không tự động (chứa giá trị rác)
 
-	        #include <stdio.h>
-	
-	        void demo() {
-	            auto int x;           // Không khởi tạo → rác
-	            printf("Gia tri rac: %d\n", x);  // Kết quả không xác định!
-	        }
-	
-	        int main() {
-	            demo();
-	            return 0;
-	        }
+
+		   			#include <stdio.h>
+			
+			        void demo() {
+			            auto int x;           // Không khởi tạo → rác
+			            printf("Gia tri rac: %d\n", x);  // Kết quả không xác định!
+			        }
+			
+			        int main() {
+			            demo();
+			            return 0;
+			        }
 
 * **Lưu ý:**
 
@@ -1175,14 +1181,17 @@
 
 	* Compiler có thể bỏ qua gợi ý nếu không có thanh ghi trống
 
-	        // Nếu không đủ thanh ghi → compiler lưu vào stack như auto
-	        register int too_many_vars[100];  // Quá lớn → không thể vào thanh ghi
+
+		        // Nếu không đủ thanh ghi → compiler lưu vào stack như auto
+		        register int too_many_vars[100];  // Quá lớn → không thể vào thanh ghi
+
 
 	* Kích thước biến phải nhỏ hơn hoặc bằng kích thước thanh ghi
 
-	        register char c;      // OK: 1 byte
-	        register int i;       // OK: 4/8 bytes
-	        // register double d; // Có thể bị bỏ qua (8 bytes)
+
+		        register char c;      // OK: 1 byte
+		        register int i;       // OK: 4/8 bytes
+		        // register double d; // Có thể bị bỏ qua (8 bytes)
 
 
 ##### **2.3.4.Local static**
