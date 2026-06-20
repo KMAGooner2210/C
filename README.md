@@ -980,75 +980,77 @@
 
 	* Mặc định cho tất cả biến cục bộ
 
-        #include <stdio.h>
 
-        void test() {
-            auto int local = 100;   // auto = mặc định
-            int local2 = 200;       // giống nhau
-            printf("local = %d, local2 = %d\n", local, local2);
-        }
+	        #include <stdio.h>
+	
+	        void test() {
+	            auto int local = 100;   // auto = mặc định
+	            int local2 = 200;       // giống nhau
+	            printf("local = %d, local2 = %d\n", local, local2);
+	        }
+
 
 	* Phạm vi: Cục bộ (trong hàm/khối)
 
-        #include <stdio.h>
+	        #include <stdio.h>
+	
+	        int main() {
+	            {
+	                auto int inside = 99;
+	                printf("Inside block: %d\n", inside);
+	            }
+	            // printf("%d", inside);  // LỖI: ngoài phạm vi
+	            return 0;
+	        }
 
-        int main() {
-            {
-                auto int inside = 99;
-                printf("Inside block: %d\n", inside);
-            }
-            // printf("%d", inside);  // LỖI: ngoài phạm vi
-            return 0;
-        }
-
-        Inside block: 99
+	        Inside block: 99
 
 	* Thời gian sống: Từ khi vào khối đến khi ra khối
 
-        #include <stdio.h>
-
-        void counter() {
-            auto int count = 0;  // Tạo mới mỗi lần gọi
-            count++;
-            printf("Count: %d\n", count);
-        }
-
-        int main() {
-            counter();  // Count: 1
-            counter();  // Count: 1 (không giữ giá trị)
-            counter();  // Count: 1
-            return 0;
-        }
-
-        Count: 1
-        Count: 1
-        Count: 1
+	        #include <stdio.h>
+	
+	        void counter() {
+	            auto int count = 0;  // Tạo mới mỗi lần gọi
+	            count++;
+	            printf("Count: %d\n", count);
+	        }
+	
+	        int main() {
+	            counter();  // Count: 1
+	            counter();  // Count: 1 (không giữ giá trị)
+	            counter();  // Count: 1
+	            return 0;
+	        }
+	
+	        Count: 1
+	        Count: 1
+	        Count: 1
 
 	* Vị trí lưu trữ: Bộ nhớ stack
 
-        #include <stdio.h>
-
-        int main() {
-            auto int a = 50;
-            printf("Dia chi a: %p\n", (void*)&a);  // Địa chỉ trên stack
-            return 0;
-        }
-
-        Dia chi a: 0x7fff5fbff6ac
+	        #include <stdio.h>
+	
+	        int main() {
+	            auto int a = 50;
+	            printf("Dia chi a: %p\n", (void*)&a);  // Địa chỉ trên stack
+	            return 0;
+	        }
+	
+	        Dia chi a: 0x7fff5fbff6ac
 
 	* Khởi tạo: Không tự động (chứa giá trị rác)
 
-        #include <stdio.h>
-
-        void demo() {
-            auto int x;           // Không khởi tạo → rác
-            printf("Gia tri rac: %d\n", x);  // Kết quả không xác định!
-        }
-
-        int main() {
-            demo();
-            return 0;
-        }
+	        #include <stdio.h>
+	
+	        void demo() {
+	            auto int x;           // Không khởi tạo → rác
+	            printf("Gia tri rac: %d\n", x);  // Kết quả không xác định!
+	        }
+	
+	        int main() {
+	            demo();
+	            return 0;
+	        }
 
 * **Lưu ý:**
 
@@ -1058,18 +1060,18 @@
 
 	* Mỗi lần gọi hàm sẽ tạo biến mới
 
-	        #include <stdio.h>
-	
-	        int* get_auto_address() {
-	            auto int temp = 999;
-	            return &temp;  // NGUY HIỂM: trả về địa chỉ biến đã hủy!
-	        }
-	
-	        int main() {
-	            int* ptr = get_auto_address();
-	            printf("*ptr = %d\n", *ptr);  // Hành vi không xác định!
-	            return 0;
-	        }
+		        #include <stdio.h>
+		
+		        int* get_auto_address() {
+		            auto int temp = 999;
+		            return &temp;  // NGUY HIỂM: trả về địa chỉ biến đã hủy!
+		        }
+		
+		        int main() {
+		            int* ptr = get_auto_address();
+		            printf("*ptr = %d\n", *ptr);  // Hành vi không xác định!
+		            return 0;
+	        	}
 
 
 
@@ -1081,64 +1083,64 @@
 
 * **Cú pháp:**
 
-	        register data_type variable_name;
-	
-	        VD:
-	
-	        register int i = 0;
-	        register float counter = 0.0f;
+		        register data_type variable_name;
+		
+		        VD:
+		
+		        register int i = 0;
+		        register float counter = 0.0f;
 
 * **Đặc điểm:**
 
 	* Phạm vi: Cục bộ (trong hàm/khối)
 
-	        #include <stdio.h>
-	
-	        void loop() {
-	            register int i;  // Chỉ tồn tại trong hàm
-	            for (i = 0; i < 3; i++) {
-	                printf("i = %d\n", i);
-	            }
-	        }
+		        #include <stdio.h>
+		
+		        void loop() {
+		            register int i;  // Chỉ tồn tại trong hàm
+		            for (i = 0; i < 3; i++) {
+		                printf("i = %d\n", i);
+		            }
+		        }
 
 	* Thời gian sống: Từ khi vào khối đến khi ra khối
 
-	        #include <stdio.h>
-	
-	        void test() {
-	            register int count = 100;
-	            count++;
-	            printf("count = %d\n", count);  // 101
-	        }
-	
-	        int main() {
-	            test();  // 101
-	            test();  // 101 → tạo mới mỗi lần
-	            return 0;
-	        }
-	
-	
-	        count = 101
-	        count = 101
+		        #include <stdio.h>
+		
+		        void test() {
+		            register int count = 100;
+		            count++;
+		            printf("count = %d\n", count);  // 101
+		        }
+		
+		        int main() {
+		            test();  // 101
+		            test();  // 101 → tạo mới mỗi lần
+		            return 0;
+		        }
+		
+		
+		        count = 101
+		        count = 101
 
 	* Vị trí lưu trữ: Thanh ghi CPU (nếu có thể)
 
-	        #include <stdio.h>
-	
-	        void fast_loop() {
-	            register int i;
-	            register int sum = 0;
-	            for (i = 0; i < 1000000; i++) {
-	                sum += i;  // Biến lặp → gợi ý lưu vào thanh ghi
-	            }
-	            printf("sum = %d\n", sum);
-	        }
+		        #include <stdio.h>
+		
+		        void fast_loop() {
+		            register int i;
+		            register int sum = 0;
+		            for (i = 0; i < 1000000; i++) {
+		                sum += i;  // Biến lặp → gợi ý lưu vào thanh ghi
+		            }
+		            printf("sum = %d\n", sum);
+		        }
 
 	* Khởi tạo: Không tự động
 
-	        register int x;       // Chứa giá trị rác!
-	        x = 10;               // Phải gán trước khi dùng
-	        printf("x = %d\n", x);
+		        register int x;       // Chứa giá trị rác!
+		        x = 10;               // Phải gán trước khi dùng
+		        printf("x = %d\n", x);
 
 * **Lưu ý:**
 
@@ -1146,41 +1148,41 @@
 
 	* Không thể lấy địa chỉ (không dùng được với &)
 	
-	        #include <stdio.h>
-	
-	        int main() {
-	            register int value = 42;
-	            // printf("Address: %p\n", &value);  // LỖI BIÊN DỊCH!
-	            printf("value = %d\n", value);
-	            return 0;
-	        }
+		        #include <stdio.h>
+		
+		        int main() {
+		            register int value = 42;
+		            // printf("Address: %p\n", &value);  // LỖI BIÊN DỊCH!
+		            printf("value = %d\n", value);
+		            return 0;
+		        }
 
 	* Tốt cho biến được truy cập thường xuyên
 
-	        #include <stdio.h>
-	
-	        int fibonacci(int n) {
-	            if (n <= 1) return n;
-	            
-	            register int a = 0, b = 1, temp;  // a, b truy cập liên tục
-	            for (register int i = 2; i <= n; i++) {
-	                temp = a + b;
-	                a = b;
-	                b = temp;
-	            }
-	            return b;
-	        }
+		        #include <stdio.h>
+		
+		        int fibonacci(int n) {
+		            if (n <= 1) return n;
+		            
+		            register int a = 0, b = 1, temp;  // a, b truy cập liên tục
+		            for (register int i = 2; i <= n; i++) {
+		                temp = a + b;
+		                a = b;
+		                b = temp;
+		            }
+		            return b;
+		        }
 
 	* Compiler có thể bỏ qua gợi ý nếu không có thanh ghi trống
 
-        // Nếu không đủ thanh ghi → compiler lưu vào stack như auto
-        register int too_many_vars[100];  // Quá lớn → không thể vào thanh ghi
+	        // Nếu không đủ thanh ghi → compiler lưu vào stack như auto
+	        register int too_many_vars[100];  // Quá lớn → không thể vào thanh ghi
 
 	* Kích thước biến phải nhỏ hơn hoặc bằng kích thước thanh ghi
 
-        register char c;      // OK: 1 byte
-        register int i;       // OK: 4/8 bytes
-        // register double d; // Có thể bị bỏ qua (8 bytes)
+	        register char c;      // OK: 1 byte
+	        register int i;       // OK: 4/8 bytes
+	        // register double d; // Có thể bị bỏ qua (8 bytes)
 
 
 ##### **2.3.4.Local static**
@@ -1191,267 +1193,139 @@
 
 * **Cú pháp:**
 
-        static data_type variable_name;
-
-
-        VD:
-        static int counter = 0;
-        static float total = 0.0f;
+	        static data_type variable_name;
+	
+	
+	        VD:
+	        static int counter = 0;
+	        static float total = 0.0f;
 
 * **Đặc điểm:**
 
   ◦ Phạm vi: Cục bộ (trong hàm/khối)
 
-        #include <stdio.h>
-
-        void demo() {
-            static int local_static = 100;  // Chỉ thấy trong hàm
-            printf("local_static = %d\n", local_static);
-        }
-
-        int main() {
-            demo();  // OK
-            // printf("%d", local_static);  // LỖI: ngoài phạm vi
-            return 0;
-        }
+	        #include <stdio.h>
+	
+	        void demo() {
+	            static int local_static = 100;  // Chỉ thấy trong hàm
+	            printf("local_static = %d\n", local_static);
+	        }
+	
+	        int main() {
+	            demo();  // OK
+	            // printf("%d", local_static);  // LỖI: ngoài phạm vi
+	            return 0;
+	        }
 
   ◦ Thời gian sống: Từ khi vào khối đến khi ra khối
 
-        #include <stdio.h>
-
-        void count_calls() {
-            static int count = 0;  // Tồn tại suốt chương trình
-            count++;
-            printf("Ham da goi: %d lan\n", count);
-        }
-
-        int main() {
-            count_calls();  // 1
-            count_calls();  // 2
-            count_calls();  // 3
-            return 0;
-        }
-
-
-        Ham da goi: 1 lan
-        Ham da goi: 2 lan
-        Ham da goi: 3 lan
+	        #include <stdio.h>
+	
+	        void count_calls() {
+	            static int count = 0;  // Tồn tại suốt chương trình
+	            count++;
+	            printf("Ham da goi: %d lan\n", count);
+	        }
+	
+	        int main() {
+	            count_calls();  // 1
+	            count_calls();  // 2
+	            count_calls();  // 3
+	            return 0;
+	        }
+	
+	
+	        Ham da goi: 1 lan
+	        Ham da goi: 2 lan
+	        Ham da goi: 3 lan
 
   ◦ Vị trí lưu trữ: Data segment
 
-        #include <stdio.h>
-
-        void show_address() {
-            static int value = 999;
-            printf("Dia chi static: %p\n", (void*)&value);
-        }
-
-        int main() {
-            show_address();
-            show_address();  // Cùng địa chỉ
-            return 0;
-        }
-
-
-        Dia chi static: 0x404000
-        Dia chi static: 0x404000
+	        #include <stdio.h>
+	
+	        void show_address() {
+	            static int value = 999;
+	            printf("Dia chi static: %p\n", (void*)&value);
+	        }
+	
+	        int main() {
+	            show_address();
+	            show_address();  // Cùng địa chỉ
+	            return 0;
+	        }
+	
+	
+	        Dia chi static: 0x404000
+	        Dia chi static: 0x404000
 
   ◦ Khởi tạo: Tự động = 0 (một lần duy nhất)
 
-        #include <stdio.h>
-
-        void test_init() {
-            static int x;           // Tự động = 0
-            static int y = 50;      // Chỉ gán 1 lần
-            printf("x = %d, y = %d\n", x, y);
-            x++;
-            y++;
-        }
-
-        int main() {
-            test_init();  // x = 0, y = 50
-            test_init();  // x = 1, y = 51 → x tăng, y vẫn tăng
-            return 0;
-        }
-
-        x = 0, y = 50
-        x = 1, y = 51
+	        #include <stdio.h>
+	
+	        void test_init() {
+	            static int x;           // Tự động = 0
+	            static int y = 50;      // Chỉ gán 1 lần
+	            printf("x = %d, y = %d\n", x, y);
+	            x++;
+	            y++;
+	        }
+	
+	        int main() {
+	            test_init();  // x = 0, y = 50
+	            test_init();  // x = 1, y = 51 → x tăng, y vẫn tăng
+	            return 0;
+	        }
+	
+	        x = 0, y = 50
+	        x = 1, y = 51
 
 * **Lưu ý:**
 
   ◦ Giữ giá trị giữa các lần gọi hàm
 
-        #include <stdio.h>
-
-        int get_next_id() {
-            static int id = 1000;  // Giữ giá trị
-            return ++id;
-        }
-
-        int main() {
-            printf("ID: %d\n", get_next_id());  // 1001
-            printf("ID: %d\n", get_next_id());  // 1002
-            printf("ID: %d\n", get_next_id());  // 1003
-            return 0;
-        }
-
-        ID: 1001
-        ID: 1002
-        ID: 1003
+	        #include <stdio.h>
+	
+	        int get_next_id() {
+	            static int id = 1000;  // Giữ giá trị
+	            return ++id;
+	        }
+	
+	        int main() {
+	            printf("ID: %d\n", get_next_id());  // 1001
+	            printf("ID: %d\n", get_next_id());  // 1002
+	            printf("ID: %d\n", get_next_id());  // 1003
+	            return 0;
+	        }
+	
+	        ID: 1001
+	        ID: 1002
+	        ID: 1003
 
   ◦ Chỉ được khởi tạo một lần duy nhất
 
-        #include <stdio.h>
-
-        int init_once() {
-            static int initialized = 0;
-            if (initialized == 0) {
-                printf("Khoi tao lan dau!\n");
-                initialized = 1;
-            } else {
-                printf("Da khoi tao truoc do.\n");
-            }
-            return initialized;
-        }
-
-        int main() {
-            init_once();  // Khởi tạo lần đầu!
-            init_once();  // Đã khởi tạo trước đó.
-            return 0;
-        }
-
-        Khoi tao lan dau!
-        Da khoi tao truoc do.
-
-  ◦ Tồn tại suốt chương trình nhưng chỉ visible trong hàm
-
-        #include <stdio.h>
-
-        void secret() {
-            static int password = 123456;
-            printf("Mat khau bi mat: %d\n", password);
-        }
-
-        int main() {
-            secret();  // OK
-            // password = 0;  // LỖI: không thấy được
-            return 0;
-        }
-
-##### **2.3.5.Global Static**
-
-* **Khái niệm:**
-
-	* Khi dùng static cho biến toàn cục hoặc hàm, nó thay đổi phạm vi liên kết (linkage) của thực thể đó, biến nó thành "riêng tư" cho tệp nguồn hiện tại. 
-
-* **Cú pháp:**
-
-        static data_type variable_name;
-
-        VD:
-        static int file_counter = 0;        // Biến toàn cục static
-        static void helper_function();     // Hàm static
-
-* **Đặc điểm:**
-
-	* Phạm vi: File (chỉ visible trong file hiện tại)
-
-	        // file: module.c
-	        static int secret_data = 999;  // Chỉ dùng trong file này
-	
-	        void public_func() {
-	            printf("Secret: %d\n", secret_data);
-	        }  
-	
-	        secret_data không thể truy cập từ file khác.
-
-	* Thời gian sống: Toàn bộ chương trình
-	
-	        // module.c
-	        static int init_count = 0;
-	
-	        void track_init() {
-	            init_count++;
-	            printf("Khoi tao lan %d\n", init_count);
-	        }
-
-
-	* Vị trí lưu trữ: Bộ nhớ data segment
-
-	        // module.c
-	        static long long big_value = 1234567890123LL;
-	
-	        void show_address() {
-	            printf("Dia chi static global: %p\n", (void*)&big_value);
-	        }
-	
-	
-	        Dia chi static global: 0x404010 → data segment
-
-	* Khởi tạo: Tự động = 0 
-
-	        // module.c
-	        static int x;        // Tự động = 0
-	        static float y;      // Tự động = 0.0f
-	
-	        void test() {
-	            printf("x = %d, y = %.1f\n", x, y);  // 0, 0.0
-	        }
-
-* **Lưu ý:**
-
-	* Ngăn không cho các file khác truy cập biến/hàm
-
-	        //file module.c
-	        static int private_var = 100;  // Không thể truy cập từ ngoài
-	
-	        int get_private() {
-	            return private_var;
-	        }
-	
-	        void set_private(int v) {
-	            private_var = v;
-	        }
-	
-	        //file main.c
 	        #include <stdio.h>
 	
-	        extern int get_private();
-	        extern void set_private(int);
+	        int init_once() {
+	            static int initialized = 0;
+	            if (initialized == 0) {
+	                printf("Khoi tao lan dau!\n");
+	                initialized = 1;
+	            } else {
+	                printf("Da khoi tao truoc do.\n");
+	            }
+	            return initialized;
+	        }
 	
 	        int main() {
-	            printf("Gia tri: %d\n", get_private());  // OK: 100
-	            set_private(500);
-	            printf("Sau thay doi: %d\n", get_private());  // 500
-	            // private_var = 10;  // LỖI: không thấy được!
-	            return 0;
-	        }
-
-	* Dùng cho biến/hàm "private" của file
-
-	        //file utils.c
-	
-	        static void internal_log(const char* msg) {
-	            printf("[LOG] %s\n", msg);
-	        }
-	
-	        void public_api() {
-	            internal_log("API duoc goi");  // OK
-	        }
-	
-	        //file main.c
-	        
-	        extern void public_api();
-	
-	        int main() {
-	            public_api();  // OK
-	            // internal_log("test");  // LỖI: không thấy hàm!
+	            init_once();  // Khởi tạo lần đầu!
+	            init_once();  // Đã khởi tạo trước đó.
 	            return 0;
 	        }
 	
-	        Kết quả: [LOG] API duoc goi
+	        Khoi tao lan dau!
+	        Da khoi tao truoc do.
 
-	* Tồn tại suốt chương trình nhưng chỉ visible trong hàm
+  ◦ Tồn tại suốt chương trình nhưng chỉ visible trong hàm
 
 	        #include <stdio.h>
 	
@@ -1466,6 +1340,134 @@
 	            return 0;
 	        }
 
+##### **2.3.5.Global Static**
+
+* **Khái niệm:**
+
+	* Khi dùng static cho biến toàn cục hoặc hàm, nó thay đổi phạm vi liên kết (linkage) của thực thể đó, biến nó thành "riêng tư" cho tệp nguồn hiện tại. 
+
+* **Cú pháp:**
+
+	        static data_type variable_name;
+	
+	        VD:
+	        static int file_counter = 0;        // Biến toàn cục static
+	        static void helper_function();     // Hàm static
+
+* **Đặc điểm:**
+
+	* Phạm vi: File (chỉ visible trong file hiện tại)
+
+		        // file: module.c
+		        static int secret_data = 999;  // Chỉ dùng trong file này
+		
+		        void public_func() {
+		            printf("Secret: %d\n", secret_data);
+		        }  
+		
+		        secret_data không thể truy cập từ file khác.
+
+	* Thời gian sống: Toàn bộ chương trình
+	
+		        // module.c
+		        static int init_count = 0;
+		
+		        void track_init() {
+		            init_count++;
+		            printf("Khoi tao lan %d\n", init_count);
+		        }
+
+
+	* Vị trí lưu trữ: Bộ nhớ data segment
+
+		        // module.c
+		        static long long big_value = 1234567890123LL;
+		
+		        void show_address() {
+		            printf("Dia chi static global: %p\n", (void*)&big_value);
+		        }
+		
+		
+		        Dia chi static global: 0x404010 → data segment
+
+	* Khởi tạo: Tự động = 0 
+
+		        // module.c
+		        static int x;        // Tự động = 0
+		        static float y;      // Tự động = 0.0f
+		
+		        void test() {
+		            printf("x = %d, y = %.1f\n", x, y);  // 0, 0.0
+	        }
+
+* **Lưu ý:**
+
+	* Ngăn không cho các file khác truy cập biến/hàm
+
+		        //file module.c
+		        static int private_var = 100;  // Không thể truy cập từ ngoài
+		
+		        int get_private() {
+		            return private_var;
+		        }
+		
+		        void set_private(int v) {
+		            private_var = v;
+		        }
+		
+		        //file main.c
+		        #include <stdio.h>
+		
+		        extern int get_private();
+		        extern void set_private(int);
+		
+		        int main() {
+		            printf("Gia tri: %d\n", get_private());  // OK: 100
+		            set_private(500);
+		            printf("Sau thay doi: %d\n", get_private());  // 500
+		            // private_var = 10;  // LỖI: không thấy được!
+		            return 0;
+		        }
+
+	* Dùng cho biến/hàm "private" của file
+
+		        //file utils.c
+		
+		        static void internal_log(const char* msg) {
+		            printf("[LOG] %s\n", msg);
+		        }
+		
+		        void public_api() {
+		            internal_log("API duoc goi");  // OK
+		        }
+		
+		        //file main.c
+		        
+		        extern void public_api();
+		
+		        int main() {
+		            public_api();  // OK
+		            // internal_log("test");  // LỖI: không thấy hàm!
+		            return 0;
+		        }
+		
+		        Kết quả: [LOG] API duoc goi
+
+	* Tồn tại suốt chương trình nhưng chỉ visible trong hàm
+
+		        #include <stdio.h>
+		
+		        void secret() {
+		            static int password = 123456;
+		            printf("Mat khau bi mat: %d\n", password);
+		        }
+		
+		        int main() {
+		            secret();  // OK
+		            // password = 0;  // LỖI: không thấy được
+		            return 0;
+		        }
+
 ##### **2.7.6.extern**
 
 * **Khái niệm:**
@@ -1476,27 +1478,27 @@
 
 * **Cú pháp:**
 
-        extern data_type variable_name;
-
-        VD:
-        extern int global_counter;
-        extern void init_system();
+	        extern data_type variable_name;
+	
+	        VD:
+	        extern int global_counter;
+	        extern void init_system();
 
 * **Đặc điểm:**
 
 	* Phạm vi: Toàn cục (nhiều file)
-
-        // file1.c
-        extern int shared_value;  // Có thể dùng ở nhiều file
+	
+	        // file1.c
+	        extern int shared_value;  // Có thể dùng ở nhiều file
 
 	* Thời gian sống: Toàn bộ chương trình
 
-        // Biến extern tồn tại từ lúc chương trình chạy đến khi kết thúc
+  	      // Biến extern tồn tại từ lúc chương trình chạy đến khi kết thúc
 
 
 	* Vị trí lưu trữ: Bộ nhớ data segment
 
-        // Cùng vùng nhớ với biến toàn cục static
+	        // Cùng vùng nhớ với biến toàn cục static
 
 
 	* Khởi tạo: Phải được định nghĩa ở file khác
@@ -1505,108 +1507,108 @@
 
 	* Chỉ là khai báo, không phải định nghĩa
 
-        // file: utils.h
-        extern int config_mode;     // KHAI BÁO (không tạo biến)
+	        // file: utils.h
+	        extern int config_mode;     // KHAI BÁO (không tạo biến)
 
 	* Dùng để chia sẻ biến/hàm giữa các file
 
 
 
-        //file shared.c
-
-        int request_count = 0;  // Định nghĩa
-
-        //file api.c
-        
-        extern int request_count;
-
-        void handle_request() {
-            request_count++;
-        }
-
-        //file main.c
-        
-        #include <stdio.h>
-        extern int request_count;
-        extern void handle_request();
-
-        int main() {
-            handle_request();
-            handle_request();
-            printf("So request: %d\n", request_count);  // 2
-            return 0;
-        }       
+	        //file shared.c
+	
+	        int request_count = 0;  // Định nghĩa
+	
+	        //file api.c
+	        
+	        extern int request_count;
+	
+	        void handle_request() {
+	            request_count++;
+	        }
+	
+	        //file main.c
+	        
+	        #include <stdio.h>
+	        extern int request_count;
+	        extern void handle_request();
+	
+	        int main() {
+	            handle_request();
+	            handle_request();
+	            printf("So request: %d\n", request_count);  // 2
+	            return 0;
+	        }       
 
 	* Biến phải được định nghĩa (cấp phát bộ nhớ) ở một file
 
-        //file config.c
-
-        #include "utils.h"
-
-        int config_mode = 1;  // ĐỊNH NGHĨA: cấp phát bộ nhớ
-
-        //file main.c– Dùng extern để truy cập
-
-        #include <stdio.h>
-        #include "utils.h"
-
-        extern int config_mode;  // KHAI BÁO: dùng biến đã định nghĩa ở nơi khác
-
-        int main() {
-            printf("Che do: %d\n", config_mode);
-            config_mode = 2;
-            printf("Da thay doi: %d\n", config_mode);
-            return 0;
-        }
-
-        Che do: 1
-        Da thay doi: 2
+	        //file config.c
+	
+	        #include "utils.h"
+	
+	        int config_mode = 1;  // ĐỊNH NGHĨA: cấp phát bộ nhớ
+	
+	        //file main.c– Dùng extern để truy cập
+	
+	        #include <stdio.h>
+	        #include "utils.h"
+	
+	        extern int config_mode;  // KHAI BÁO: dùng biến đã định nghĩa ở nơi khác
+	
+	        int main() {
+	            printf("Che do: %d\n", config_mode);
+	            config_mode = 2;
+	            printf("Da thay doi: %d\n", config_mode);
+	            return 0;
+	        }
+	
+	        Che do: 1
+	        Da thay doi: 2
 
 * **Lỗi phổ biến:**
 
 	* Chỉ khai báo, không định nghĩa
 
-        // main.c
-        extern int missing_var;
-        printf("%d", missing_var);  // Lỗi linker: undefined reference
+	        // main.c
+	        extern int missing_var;
+	        printf("%d", missing_var);  // Lỗi linker: undefined reference
 
 	* Định nghĩa nhiều lần
 
-        // file1.c
-        int value = 10;
-
-        // file2.c
-        int value = 20;  // Lỗi linker: multiple definition
+	        // file1.c
+	        int value = 10;
+	
+	        // file2.c
+	        int value = 20;  // Lỗi linker: multiple definition
 
 * **Cách thực hiện đúng:**
 
-        //file globals.h
-
-        #ifndef GLOBALS_H
-        #define GLOBALS_H
-
-        extern int app_version;
-        extern float pi_value;
-
-        #endif
-
-        //file globals.c
-
-        #include "globals.h"
-
-        int app_version = 100;
-        float pi_value = 3.14159f;
-
-        //file main.c
-
-        #include <stdio.h>
-        #include "globals.h"
-
-        int main() {
-            printf("Phien ban: %d\n", app_version);
-            printf("Pi: %.5f\n", pi_value);
-            return 0;
-        }
+	        //file globals.h
+	
+	        #ifndef GLOBALS_H
+	        #define GLOBALS_H
+	
+	        extern int app_version;
+	        extern float pi_value;
+	
+	        #endif
+	
+	        //file globals.c
+	
+	        #include "globals.h"
+	
+	        int app_version = 100;
+	        float pi_value = 3.14159f;
+	
+	        //file main.c
+	
+	        #include <stdio.h>
+	        #include "globals.h"
+	
+	        int main() {
+	            printf("Phien ban: %d\n", app_version);
+	            printf("Pi: %.5f\n", pi_value);
+	            return 0;
+	        }
 
 ### **III. TYPE QUALIFIERS** 
 
@@ -1628,14 +1630,14 @@
 
 ##### **3.1.3. Cú pháp chung**
 
-		qualifier data_type variable_name;
+			qualifier data_type variable_name;
 
 * VD:
 
-		const int MAX = 100;
-		volatile int status;
-		int *restrict ptr;
-		_Atomic int counter;
+			const int MAX = 100;
+			volatile int status;
+			int *restrict ptr;
+			_Atomic int counter;
 
 #### **3.2.const Qualifier**
 
@@ -1659,167 +1661,167 @@
 
 * **Cú pháp:** 
 
-        const data_type variable_name = value;
-        data_type const variable_name = value; // Tương đương
+	        const data_type variable_name = value;
+	        data_type const variable_name = value; // Tương đương
 
 * **VD:**
 
-		const int MAX_SIZE = 100;
-		int const LIMIT = 50;
+			const int MAX_SIZE = 100;
+			int const LIMIT = 50;
 
 ##### **3.2.2.Các cách sử dụng const**
 
 * **const với biến cơ bản:** 
 
-        #include <stdio.h>
-
-        int main() {
-            // Biến const cơ bản
-            const int MAX_SIZE = 100;
-            const double PI = 3.14159265359;
-            const char NEWLINE = '\n';
-            
-            printf("Max size: %d\n", MAX_SIZE);
-            printf("PI: %.10f\n", PI);
-            printf("Newline: %c", NEWLINE);
-            
-            // ❌ KHÔNG thể thay đổi
-            // MAX_SIZE = 200;      // Lỗi: assignment of read-only variable
-            // PI = 3.14;           // Lỗi: assignment of read-only variable
-            
-            return 0;
-        }
+	        #include <stdio.h>
+	
+	        int main() {
+	            // Biến const cơ bản
+	            const int MAX_SIZE = 100;
+	            const double PI = 3.14159265359;
+	            const char NEWLINE = '\n';
+	            
+	            printf("Max size: %d\n", MAX_SIZE);
+	            printf("PI: %.10f\n", PI);
+	            printf("Newline: %c", NEWLINE);
+	            
+	            // ❌ KHÔNG thể thay đổi
+	            // MAX_SIZE = 200;      // Lỗi: assignment of read-only variable
+	            // PI = 3.14;           // Lỗi: assignment of read-only variable
+	            
+	            return 0;
+	        }
 
 
 * **const với con trỏ:** 
 
-        #include <stdio.h>
-
-        int main() {
-            int x = 10;
-            int y = 20;
-            
-            // 1. Con trỏ đến hằng số
-            const int *ptr1 = &x;
-            printf("Value: %d\n", *ptr1);  // ✅ Đọc được
-            // *ptr1 = 30;                 // ❌ Lỗi: không thay đổi được giá trị
-            ptr1 = &y;                     // ✅ Có thể thay đổi con trỏ
-            printf("New value: %d\n", *ptr1);
-            
-            // 2. Con trỏ hằng
-            int *const ptr2 = &x;
-            printf("Value: %d\n", *ptr2);  // ✅ Đọc được
-            *ptr2 = 30;                    // ✅ Có thể thay đổi giá trị
-            printf("Updated value: %d\n", *ptr2);
-            // ptr2 = &y;                  // ❌ Lỗi: không thay đổi được con trỏ
-            
-            // 3. Con trỏ hằng đến hằng số
-            const int *const ptr3 = &x;
-            printf("Value: %d\n", *ptr3);  // ✅ Đọc được
-            // *ptr3 = 40;                 // ❌ Lỗi: không thay đổi giá trị
-            // ptr3 = &y;                  // ❌ Lỗi: không thay đổi con trỏ
-            
-            return 0;
-        }
+	        #include <stdio.h>
+	
+	        int main() {
+	            int x = 10;
+	            int y = 20;
+	            
+	            // 1. Con trỏ đến hằng số
+	            const int *ptr1 = &x;
+	            printf("Value: %d\n", *ptr1);  // ✅ Đọc được
+	            // *ptr1 = 30;                 // ❌ Lỗi: không thay đổi được giá trị
+	            ptr1 = &y;                     // ✅ Có thể thay đổi con trỏ
+	            printf("New value: %d\n", *ptr1);
+	            
+	            // 2. Con trỏ hằng
+	            int *const ptr2 = &x;
+	            printf("Value: %d\n", *ptr2);  // ✅ Đọc được
+	            *ptr2 = 30;                    // ✅ Có thể thay đổi giá trị
+	            printf("Updated value: %d\n", *ptr2);
+	            // ptr2 = &y;                  // ❌ Lỗi: không thay đổi được con trỏ
+	            
+	            // 3. Con trỏ hằng đến hằng số
+	            const int *const ptr3 = &x;
+	            printf("Value: %d\n", *ptr3);  // ✅ Đọc được
+	            // *ptr3 = 40;                 // ❌ Lỗi: không thay đổi giá trị
+	            // ptr3 = &y;                  // ❌ Lỗi: không thay đổi con trỏ
+	            
+	            return 0;
+	        }
 
 * **const với mảng:** 
 
-		#include <stdio.h>
-		
-		int main() {
-		    // Mảng hằng số
-		    const int PRIME_NUMBERS[] = {2, 3, 5, 7, 11};
-		    const int SIZE = 5;
-		    
-		    printf("Prime numbers: ");
-		    for(int i = 0; i < SIZE; i++) {
-		        printf("%d ", PRIME_NUMBERS[i]);
-		    }
-		    printf("\n");
-		    
-		    // ❌ Không thể thay đổi phần tử của mảng const:
-		    // PRIME_NUMBERS[0] = 1;      // Lỗi biên dịch
-		    // PRIME_NUMBERS[2] = 10;     // Lỗi biên dịch
-		    
-		    return 0;
-		}
+			#include <stdio.h>
+			
+			int main() {
+			    // Mảng hằng số
+			    const int PRIME_NUMBERS[] = {2, 3, 5, 7, 11};
+			    const int SIZE = 5;
+			    
+			    printf("Prime numbers: ");
+			    for(int i = 0; i < SIZE; i++) {
+			        printf("%d ", PRIME_NUMBERS[i]);
+			    }
+			    printf("\n");
+			    
+			    // ❌ Không thể thay đổi phần tử của mảng const:
+			    // PRIME_NUMBERS[0] = 1;      // Lỗi biên dịch
+			    // PRIME_NUMBERS[2] = 10;     // Lỗi biên dịch
+			    
+			    return 0;
+			}
 
 
 * **const với struct:**
 
 	* **Tham số là biến const** 
-
-		#include<stdio.h>
-		void print_value(const int x){
-			printf("Value: %d\n", x);
-   			// x = 10; // LỖI: KHÔNG THỂ THAY ĐỔI
-   		}
-
-  		int main(){
-   			int a = 5;
-   			print_value(a);
-   			return 0;
-   		}
+	
+			#include<stdio.h>
+			void print_value(const int x){
+				printf("Value: %d\n", x);
+	   			// x = 10; // LỖI: KHÔNG THỂ THAY ĐỔI
+	   		}
+	
+	  		int main(){
+	   			int a = 5;
+	   			print_value(a);
+	   			return 0;
+   			}
 
 
 	* **Tham số là mảng const**
 
-		#include<stdio.h>
-		void print_array(const int arr[], int size){
-			for(int i = 0; i < size; i++){
-   				printf("%d ", arr[i]);
-   				// arr[i] = 0; // LỖI
+			#include<stdio.h>
+			void print_array(const int arr[], int size){
+				for(int i = 0; i < size; i++){
+	   				printf("%d ", arr[i]);
+	   				// arr[i] = 0; // LỖI
 
 
    	* **Tham số là con trỏ tới const (không sửa được dữ liệu)** 
 
-		#include <stdio.h>
-		void print_string(const char * str){
-			while(*str){
-				printf("%c", *str);
-				str++;
+			#include <stdio.h>
+			void print_string(const char * str){
+				while(*str){
+					printf("%c", *str);
+					str++;
+				}
+			// *str = 'X';  // LỖI: KHÔNG SỬA ĐƯỢC DỮ LIỆU
 			}
-		// *str = 'X';  // LỖI: KHÔNG SỬA ĐƯỢC DỮ LIỆU
-		}
-
-		int main(){
-			print_string("Hello);
-			return 0;
-		}
+	
+			int main(){
+				print_string("Hello);
+				return 0;
+			}
 
 
    	* **Tham số là con trỏ const (không sửa được địa chỉ)** 
 
-		#include <stdio.h>
-		void modify_data(int *const ptr){
-			*ptr = 100;   // Sửa dữ liệu được
-			// ptr = NULL; // LỖI: KHÔNG SỬA ĐƯỢC ĐỊA CHỈ
-		}
-		int main(){
-			int x = 5;
-			modify_data(&x);
-			printf("%d\n", x);  // 100
-			return 0;
-		}
+			#include <stdio.h>
+			void modify_data(int *const ptr){
+				*ptr = 100;   // Sửa dữ liệu được
+				// ptr = NULL; // LỖI: KHÔNG SỬA ĐƯỢC ĐỊA CHỈ
+			}
+			int main(){
+				int x = 5;
+				modify_data(&x);
+				printf("%d\n", x);  // 100
+				return 0;
+			}
 
    	* **Tham số là struct const (qua con trỏ)** 
 
-		#include <stdio.h>
-
-		struct Point {
-			int x, y;
-		}
-
-		void print_point(const struct Point * p){
-			printf("(%d, %d)\n", p->x, p->y);
-			// p->x = 0; // LỖI
-		}
-
-		int main(){
-			struct Point p = {3, 4};
-			print_point(&p);
-			return 0;
-		}
+			#include <stdio.h>
+	
+			struct Point {
+				int x, y;
+			}
+	
+			void print_point(const struct Point * p){
+				printf("(%d, %d)\n", p->x, p->y);
+				// p->x = 0; // LỖI
+			}
+	
+			int main(){
+				struct Point p = {3, 4};
+				print_point(&p);
+				return 0;
+			}
 
 ##### **3.2.3.Const với chuỗi hằng**
 
@@ -1827,9 +1829,9 @@
 
 	* Chuỗi hằng (string literal) là một dãy ký tự được đặt trong dấu ngoặc kép, xuất hiện trực tiếp trong mã nguồn:
  
-			"Hello World"
-			"Error: File not found"
-			""
+				"Hello World"
+				"Error: File not found"
+				""
 
 * **Bản chất:**
 
@@ -1890,9 +1892,9 @@
 
         * 4. Nếu chưa tồn tại, compiler thêm chuỗi mới vào .rodata và ghi nhận vào bảng.
 
-				const char *a = "test";
-				const char *b = "test";
-				const char *c = "test";
+					const char *a = "test";
+					const char *b = "test";
+					const char *c = "test";
 
         	* Sau khi pooling, trong .rodata chỉ có một chuỗi "test" duy nhất, và cả ba con trỏ a, b, c đều trỏ tới cùng một địa chỉ.
 
@@ -1924,12 +1926,12 @@
 
 * **Cú pháp:** 
 
-	        volatile data_type variable_name;
+		        volatile data_type variable_name;
 
 * **VD:**
 
-			volatile int status;
-			volatile unsigned int flag;
+				volatile int status;
+				volatile unsigned int flag;
 
 * **Đặc điểm:** 
 
@@ -1945,46 +1947,46 @@
 
 * **Giả sử:**
 
-		int flag = 0;
-		
-		while(flag == 0){}
+			int flag = 0;
+			
+			while(flag == 0){}
  
  	* Compiler có thể tối ưu thành vì nó cho rằng `flag` không thể tự thay đổi
 
-		if(flag == 0)
-		{
-		    while(1)
-		    {
-		    }
-		} 
+			if(flag == 0)
+			{
+			    while(1)
+			    {
+			    }
+			} 
 
 * **Nếu khai báo:** `volatile int flag = 0;` thì compiler buộc phải sinh mã tương đương:
 
-		while(flag == 0)
-		{
-		    // đọc flag từ bộ nhớ mỗi vòng lặp
-		}
+			while(flag == 0)
+			{
+			    // đọc flag từ bộ nhớ mỗi vòng lặp
+			}
 
 * **Sơ đồ:**
 
 	* **Không dùng volatile:** Giá trị có thể được giữ trong register và không đọc lại bộ nhớ
 
-			Memory
-			   │
-			   ▼
-			Register
-			   │
-			while(...)
+				Memory
+				   │
+				   ▼
+				Register
+				   │
+				while(...)
 
 	* **Có dùng volatile:** Mỗi vòng lặp đều truy cập bộ nhớ.
 
-			Memory
-			   ▲
-			   │
-			while(...)
-			   │
-			   ▼
-			Memory
+				Memory
+				   ▲
+				   │
+				while(...)
+				   │
+				   ▼
+				Memory
 
 ##### **3.3.3.Các tình huống sử dụng volatile**
 
@@ -1994,30 +1996,30 @@
  
  	* VD1:
 
-		#define STATUS_REGISTER (*(volatile unsigned int*)0x1000)
-		#define DATA_REGISTER   (*(volatile unsigned int*)0x1004)
+			#define STATUS_REGISTER (*(volatile unsigned int*)0x1000)
+			#define DATA_REGISTER   (*(volatile unsigned int*)0x1004)
 
  	* VD2:
 		
-		#include <stdio.h>
-		
-		#define STATUS_REGISTER (*(volatile unsigned int*)0x1000)
-		#define DATA_REGISTER   (*(volatile unsigned int*)0x1004)
-		
-		void wait_for_data_ready()
-		{
-		    while((STATUS_REGISTER & 0x01) == 0)
-		    {
-		        // chờ phần cứng set bit 0
-		    }
-		}
-		
-		unsigned int read_data()
-		{
-		    wait_for_data_ready();
-		
-		    return DATA_REGISTER;
-		}
+			#include <stdio.h>
+			
+			#define STATUS_REGISTER (*(volatile unsigned int*)0x1000)
+			#define DATA_REGISTER   (*(volatile unsigned int*)0x1004)
+			
+			void wait_for_data_ready()
+			{
+			    while((STATUS_REGISTER & 0x01) == 0)
+			    {
+			        // chờ phần cứng set bit 0
+			    }
+			}
+			
+			unsigned int read_data()
+			{
+			    wait_for_data_ready();
+			
+			    return DATA_REGISTER;
+			}
 
  	* Nếu không dùng volatile: Compiler có thể đọc `STATUS_REGISTER` một lần duy nhất rồi lưu vào register, khi đó `while(...)` có thể trở thành vòng lặp vô hạn mặc dù phần cứng đã cập nhật giá trị
 
@@ -2028,33 +2030,33 @@
  
  	* VD:
 
-			#include <signal.h>
-			
-			volatile sig_atomic_t interrupt_flag = 0;
-			
-			void interrupt_handler(int sig)
-			{
-			    interrupt_flag = 1;
- 
-			}
+				#include <signal.h>
+				
+				volatile sig_atomic_t interrupt_flag = 0;
+				
+				void interrupt_handler(int sig)
+				{
+				    interrupt_flag = 1;
+	 
+				}
 
  		* Chương trình chính:
    
-			while(!interrupt_flag)
-			{
-			}
+				while(!interrupt_flag)
+				{
+				}
 
  		* Không có: `volatile` compiler có thể tối ưu 
    
-			while(!interrupt_flag)
-			{
-			}
-
-			thành
-
-			while(1)
-			{
-			}
+				while(!interrupt_flag)
+				{
+				}
+	
+				thành
+	
+				while(1)
+				{
+				}
 
 ##### **3.3.4.Kết hợp const với volatile**
 
@@ -2090,64 +2092,64 @@
 	* **Trường hợp 1: Con trỏ tới dữ liệu volatile**
  
  		* Cú pháp: `volatile int *ptr` hoặc `int volatile *ptr;`
-   
-			// Thanh ghi dữ liệu của GPIO port A
-			#define GPIOA_DATA  (*(volatile int *)0x40020000)
-			
-			void toggle_led(void) {
-			    int current = GPIOA_DATA;   // Đọc trực tiếp từ địa chỉ phần cứng
-			    GPIOA_DATA = current ^ 0x01; // Ghi trực tiếp vào địa chỉ phần cứng
-			}				
+	   
+				// Thanh ghi dữ liệu của GPIO port A
+				#define GPIOA_DATA  (*(volatile int *)0x40020000)
+				
+				void toggle_led(void) {
+				    int current = GPIOA_DATA;   // Đọc trực tiếp từ địa chỉ phần cứng
+				    GPIOA_DATA = current ^ 0x01; // Ghi trực tiếp vào địa chỉ phần cứng
+				}				
+	
+				// Hành vi compiler đảm bảo
 
-			// Hành vi compiler đảm bảo
-
-			volatile int *reg = (volatile int *)0x40020000;
-			
-			int a = *reg;  // Đọc lần 1: truy cập bộ nhớ thực
-			int b = *reg;  // Đọc lần 2: truy cập bộ nhớ thực (KHÔNG dùng giá trị cache từ lần 1)
-			// a và b có thể khác nhau nếu phần cứng đã thay đổi giá trị giữa hai lần đọc
-
+				volatile int *reg = (volatile int *)0x40020000;
+				
+				int a = *reg;  // Đọc lần 1: truy cập bộ nhớ thực
+				int b = *reg;  // Đọc lần 2: truy cập bộ nhớ thực (KHÔNG dùng giá trị cache từ lần 1)
+				// a và b có thể khác nhau nếu phần cứng đã thay đổi giá trị giữa hai lần đọc
+	
 
 	* **Trường hợp 2: Con trỏ volatile tới dữ liệu thường**
  
  		* Cú pháp: `int * volatile ptr;`
    
-			// Con trỏ hàm được cập nhật bởi ISR
-			void (* volatile isr_callback)(void);
-			
-			void main_loop(void) {
-			    while (1) {
-			        if (isr_callback != NULL) {  // Luôn đọc từ bộ nhớ, không cache
-			            isr_callback();           // Gọi hàm xử lý ngắt
-			            isr_callback = NULL;
-			        }
-			    }
-			}
-			
-			// ISR cập nhật con trỏ khi có ngắt
-			void ISR_handler(void) {
-			    isr_callback = process_interrupt;
-			}			
-
-			// Hành vi compiler đảm bảo
-
-			int * volatile ptr = some_address;
-			
-			// Mỗi lần đọc ptr đều truy cập bộ nhớ thực
-			if (ptr != NULL) {        // Đọc ptr từ bộ nhớ
-			    *ptr = 100;           // Đọc ptr từ bộ nhớ (lần nữa), rồi ghi vào địa chỉ đó
-			}
-			// Giữa hai lần đọc, ptr có thể đã bị thay đổi bởi ISR
+				// Con trỏ hàm được cập nhật bởi ISR
+				void (* volatile isr_callback)(void);
+				
+				void main_loop(void) {
+				    while (1) {
+				        if (isr_callback != NULL) {  // Luôn đọc từ bộ nhớ, không cache
+				            isr_callback();           // Gọi hàm xử lý ngắt
+				            isr_callback = NULL;
+				        }
+				    }
+				}
+				
+				// ISR cập nhật con trỏ khi có ngắt
+				void ISR_handler(void) {
+				    isr_callback = process_interrupt;
+				}			
+	
+				// Hành vi compiler đảm bảo
+	
+				int * volatile ptr = some_address;
+				
+				// Mỗi lần đọc ptr đều truy cập bộ nhớ thực
+				if (ptr != NULL) {        // Đọc ptr từ bộ nhớ
+				    *ptr = 100;           // Đọc ptr từ bộ nhớ (lần nữa), rồi ghi vào địa chỉ đó
+				}
+				// Giữa hai lần đọc, ptr có thể đã bị thay đổi bởi ISR
 
 	* **Trường hợp 3: Con trỏ volatile tới dữ liệu volatile**
- 
-			// Bộ mô tả DMA: địa chỉ nguồn có thể được DMA controller cập nhật
-			volatile unsigned int * volatile dma_source_ptr;
-			
-			void configure_dma(void) {
-			    // Cả địa chỉ nguồn và dữ liệu tại đó đều có thể thay đổi không báo trước
-			    unsigned int data = *dma_source_ptr;  // Đọc an toàn trong môi trường DMA
-			}
+	 
+				// Bộ mô tả DMA: địa chỉ nguồn có thể được DMA controller cập nhật
+				volatile unsigned int * volatile dma_source_ptr;
+				
+				void configure_dma(void) {
+				    // Cả địa chỉ nguồn và dữ liệu tại đó đều có thể thay đổi không báo trước
+				    unsigned int data = *dma_source_ptr;  // Đọc an toàn trong môi trường DMA
+				}
 
 
 
@@ -2169,45 +2171,45 @@
 
  	* VD:
 
-		int x = 10;
-		
-		int *a = &x;
-		int *b = &x;
+			int x = 10;
+			
+			int *a = &x;
+			int *b = &x;
 
 * **Cú pháp:** 
 
-        data_type *restrict pointer_name;
+	        data_type *restrict pointer_name;
 
 * **VD:** 
 
-		float *restrict src;
-		int *restrict ptr;
+			float *restrict src;
+			int *restrict ptr;
 
 ##### **3.4.2.Cơ chế hoạt động**
 
 * **Giả sử:**
 
-		void add(int *a, int *b, int n)
-		{
-		    for(int i = 0; i < n; i++)
-		    {
-		        a[i] = a[i] + b[i];
-		    }
-		}
+			void add(int *a, int *b, int n)
+			{
+			    for(int i = 0; i < n; i++)
+			    {
+			        a[i] = a[i] + b[i];
+			    }
+			}
 
 	* Compiler phải giả sử rằng: a và b có thể trỏ cùng vùng nhớ  nên không thể tối ưu quá mạnh.
 
 * **Nếu khai báo:**
-
-		void add(int *restrict a,
-		         int *restrict b,
-		         int n)
-		{
-		    for(int i = 0; i < n; i++)
-		    {
-		        a[i] = a[i] + b[i];
-		    }
-		}
+	
+			void add(int *restrict a,
+			         int *restrict b,
+			         int n)
+			{
+			    for(int i = 0; i < n; i++)
+			    {
+			        a[i] = a[i] + b[i];
+			    }
+			}
 
 	* thì compiler được phép giả định: a và b KHÔNG alias
   
@@ -2216,48 +2218,48 @@
 
 * **Khi viết:** 
 
-		int *restrict a;
+			int *restrict a;
 
 	* Bạn đang cam kết rằng: Trong phạm vi tồn tại của a, không có con trỏ nào khác được dùng để truy cập cùng vùng nhớ đó.
 
 
 * **Dùng đúng – Không aliasing:** 
 
-        int x[5] = {1, 2, 3, 4, 5};
-        int y[5] = {10, 20, 30, 40, 50};
-
-        add(x, y, 5);  // OK: x và y khác nhau → restrict đúng
+	        int x[5] = {1, 2, 3, 4, 5};
+	        int y[5] = {10, 20, 30, 40, 50};
+	
+	        add(x, y, 5);  // OK: x và y khác nhau → restrict đúng
 
 * **Dùng sai – Có aliasing (Lỗi logic!):** 
 
-        int arr[5] = {1, 2, 3, 4, 5};
-
-        add(arr, arr, 5);  // SAI: a và b cùng trỏ arr → vi phạm restrict!
+	        int arr[5] = {1, 2, 3, 4, 5};
+	
+	        add(arr, arr, 5);  // SAI: a và b cùng trỏ arr → vi phạm restrict!
 
 
 * **restrict vs non-restrict:** 
 
-        // Phiên bản an toàn (không restrict)
-        void add_safe(int *a, int *b, int n) {
-            for (int i = 0; i < n; i++) a[i] += b[i];
-        }
-
-        // Phiên bản tối ưu (có restrict)
-        void add_fast(int *restrict a, int *restrict b, int n) {
-            for (int i = 0; i < n; i++) a[i] += b[i];
-        }
-
-        add_fast nhanh hơn nếu chắc chắn a ≠ b
+	        // Phiên bản an toàn (không restrict)
+	        void add_safe(int *a, int *b, int n) {
+	            for (int i = 0; i < n; i++) a[i] += b[i];
+	        }
+	
+	        // Phiên bản tối ưu (có restrict)
+	        void add_fast(int *restrict a, int *restrict b, int n) {
+	            for (int i = 0; i < n; i++) a[i] += b[i];
+	        }
+	
+	        add_fast nhanh hơn nếu chắc chắn a ≠ b
 
 * **const + restrict:** 
 
-        void scale(const float *restrict src, float *restrict dest, float k, int n) {
-            for (int i = 0; i < n; i++) {
-                dest[i] = src[i] * k;
-            }
-        }
-
-        src không đổi, dest không trùng src → tối ưu + an toàn.
+	        void scale(const float *restrict src, float *restrict dest, float k, int n) {
+	            for (int i = 0; i < n; i++) {
+	                dest[i] = src[i] * k;
+	            }
+	        }
+	
+	        src không đổi, dest không trùng src → tối ưu + an toàn.
 
 
 #### **3.5._Atomic Qualifier (C11)**
@@ -2276,66 +2278,67 @@
 
 * **Cú pháp:** 
 
-        _Atomic data_type variable_name;
-        _Atomic(data_type) variable_name;
-
-        VD:
-
-        #include <stdatomic.h>
-
-        _Atomic int counter = 0;           // Cách 1
-        _Atomic(int) flag = 1;             // Cách 2
+	        _Atomic data_type variable_name;
+	        _Atomic(data_type) variable_name;
+	
+	        VD:
+	
+	        #include <stdatomic.h>
+	
+	        _Atomic int counter = 0;           // Cách 1
+	        _Atomic(int) flag = 1;             // Cách 2
 
 ##### **3.5.2.Đặc điểm**
 
 * **Tăng/giảm nguyên tử – An toàn đa luồng:** 
 
-        #include <stdatomic.h>
-        #include <stdio.h>
-
-        _Atomic int count = 0;
-
-        void worker() {
-            for (int i = 0; i < 100000; i++) {
-                count++;  // Nguyên tử: không bị race condition
-            }
-        }
+	        #include <stdatomic.h>
+	        #include <stdio.h>
+	
+	        _Atomic int count = 0;
+	
+	        void worker() {
+	            for (int i = 0; i < 100000; i++) {
+	                count++;  // Nguyên tử: không bị race condition
+	            }
+	        }
 
 * **Không _Atomic → Race condition:** 
 
 	* Race Condition:Hai hoặc nhiều luồng cùng truy cập một biến chung, ít nhất một luồng ghi, và kết quả phụ thuộc vào thứ tự chạy – không kiểm soát được.
-
-        int count = 0;
-
-        void thread1() { count++; }  // Đọc → +1 → Ghi
-        void thread2() { count++; }  // Cùng lúc
-
-        Mong đợi: count = 2
-        Thực tế có thể: count = 1 → mất dữ liệu!
+	
+	        int count = 0;
+	
+	        void thread1() { count++; }  // Đọc → +1 → Ghi
+	        void thread2() { count++; }  // Cùng lúc
+	
+	        Mong đợi: count = 2
+	        Thực tế có thể: count = 1 → mất dữ liệu!
 
 	* VD:
-        int count = 0;  // KHÔNG atomic
-
-        void bad_worker() {
-            for (int i = 0; i < 100000; i++) {
-                count++;  // NGUY HIỂM: có thể mất dữ liệu!
-            }
-        }
+ 
+	        int count = 0;  // KHÔNG atomic
+	
+	        void bad_worker() {
+	            for (int i = 0; i < 100000; i++) {
+	                count++;  // NGUY HIỂM: có thể mất dữ liệu!
+	            }
+	        }
 
 * **Dùng atomic_load / atomic_store** 
 
-        #include <stdatomic.h>
-        #include <stdio.h>
-
-        _Atomic int status = 0;
-
-        void set_ready() {
-            atomic_store(&status, 1);  // Ghi nguyên tử
-        }
-
-        int is_ready() {
-            return atomic_load(&status);  // Đọc nguyên tử
-        }
+	        #include <stdatomic.h>
+	        #include <stdio.h>
+	
+	        _Atomic int status = 0;
+	
+	        void set_ready() {
+	            atomic_store(&status, 1);  // Ghi nguyên tử
+	        }
+	
+	        int is_ready() {
+	            return atomic_load(&status);  // Đọc nguyên tử
+	        }
 
 ### **IV.TOÁN TỬ VÀ BIỂU THỨC**
 
@@ -2349,32 +2352,32 @@
 
 * **Biểu thức (Expression):** Kết hợp toán tử và toán hạng tạo ra giá trị
 
-		a + b * 2
-		
-		// a, b, 2 là các toán hạng
-		// +, * là các toán tử
-		// a + b * 2 là một biểu thức
+			a + b * 2
+			
+			// a, b, 2 là các toán hạng
+			// +, * là các toán tử
+			// a + b * 2 là một biểu thức
 
 
 ##### **4.1.2.Phân loại theo số lượng toán hạng**
 
 * **Toán tử một ngôi (Unary Operators)** - Tác động lên một toán hạng.
 
-		-x
-  		++x
-  		!flag
-  		sizeof(int)
+			-x
+	  		++x
+	  		!flag
+	  		sizeof(int)
 
 * **Toán tử hai ngôi (Binary Operators)** - Tác động lên hai toán hạng.
 
-		a + b
-		a * b
-		x > y
-		x && y
+			a + b
+			a * b
+			x > y
+			x && y
 
 * **Toán tử ba ngôi (Ternary Operator)** - Chỉ có toán tử điều kiện ?:
 
-		max = (a > b) ? a : b;
+			max = (a > b) ? a : b;
 
 ##### **4.1.3.Phân loại theo chức năng**
 
