@@ -11326,6 +11326,7 @@
    </details> 
 
 
+
 <details>
     <summary><strong>CHƯƠNG 13: THAO TÁC TỆP TIN</strong></summary>
 
@@ -11338,9 +11339,9 @@
 
 ##### **1.1.1. Khái niệm**
 
-*	Luồng là một dãy byte được truyền đi hoặc nhận về theo thứ tự
+*	Luồng (stream) là một dãy byte được truyền đi hoặc nhận về theo thứ tự, đóng vai trò như một kênh giao tiếp trừu tượng giữa chương trình và thiết bị vào/ra (đĩa cứng, bàn phím, màn hình, cổng mạng...).
 
-*  Trong ngôn ngữ C, mọi hoạt động nhập/xuất đều được mô hình hóa dưới dạng luồng	
+*  Trong ngôn ngữ C, mọi hoạt động nhập/xuất đều được mô hình hóa dưới dạng luồng.
   
 *	Có hai luồng chính:
 
@@ -11348,48 +11349,52 @@
   
 		*	Dữ liệu được xử lý dưới dạng ký tự có thể đọc được bởi con người 
 		
-		*  Các ký tự kết thúc dòng (như `\n`) có thể được chuyển đổi bởi hệ thống
+		*  Các ký tự kết thúc dòng (như \n) có thể được hệ thống tự động chuyển đổi tùy theo nền tảng.
 		
-			* VD: `\n` thành `\r\n` trên Windows 	
+			* VD: Trên Windows, `\n` khi ghi ra tệp sẽ được chuyển thành `\r\n`, và khi đọc vào thì `\r\n` lại được chuyển ngược thành `\n`.
 	
 	* **Luồng nhị phân (Binary Stream):**	
   
 		*	Dữ liệu được xử lý chính xác từng byte mà không có bất kỳ chuyển đổi nào
 		
-		*  Phù hợp với việc lưu trữ dữ liệu không phải văn bản (hình ảnh, âm thanh, cơ sở dữ liệu...).
+		*  Nội dung trong bộ nhớ được sao chép nguyên vẹn (byte-for-byte) ra tệp và ngược lại.
 		
-* Mọi luồng trong C đều được biểu diễn bởi con trỏ đến cấu trúc FILE.
+		* Phù hợp với việc lưu trữ dữ liệu không phải văn bản như hình ảnh, âm thanh, cơ sở dữ liệu, các cấu trúc dữ liệu nhị phân.
+		
+		* Mọi luồng trong C đều được biểu diễn bởi con trỏ đến cấu trúc FILE. 
   
  
 ##### **1.1.2. Cấu trúc FILE và Con trỏ FILE**
 
 * 	Cấu trúc FILE được định nghĩa trong file tiêu đề `<stdio.h>`
 
+*  Đây là một kiểu dữ liệu do thư viện chuẩn C định nghĩa, lập trình viên không cần và không nên truy cập trực tiếp vào các thành phần bên trong của nó. 
+
 *  **VD khai báo:**
 	
 			FILE *fp;        // fp là con trỏ đến một luồng tệp tin
 
-	* **Vai trò:**
+* **Vai trò:**
 	 
-		*  Nó đóng vai trò như một lớp vỏ bọc trừu tượng hóa (abstraction layer) giữa chương trình người dùng và hệ điều hành.
+	*  Nó đóng vai trò như một lớp vỏ bọc trừu tượng hóa (abstraction layer) giữa chương trình người dùng và hệ điều hành.
 		
-		*  Che giấu các chi tiết cấp thấp của hệ điều hành, chẳng hạn như file descriptor (số mô tả tệp tin) trong Unix/Linux hoặc HANDLE trong Windows.
+	*  Che giấu các chi tiết cấp thấp của hệ điều hành, chẳng hạn như file descriptor (số mô tả tệp tin) trong Unix/Linux hoặc HANDLE trong Windows.
 		
-		*  Chứa các thông tin quản lý luồng quan trọng:
+*  **Chứa các thông tin quản lý luồng quan trọng:**
 		
-			*  Con trỏ vị trí hiện tại trong tệp (current file position).
+	*  Con trỏ vị trí hiện tại trong tệp (current file position indicator) – xác định byte tiếp theo sẽ được đọc hoặc ghi.
 			
-			*  Trạng thái của luồng (error flag, EOF flag).
+	*  Trạng thái của luồng: error flag (cờ lỗi) và EOF flag (cờ cuối tệp).
 			
-			*  Bộ đệm (buffer) nội bộ.
+	*  Bộ đệm (buffer) nội bộ và con trỏ quản lý bộ đệm.
 			
-			*  Chế độ mở tệp (read, write, append, binary, text...).
+	*  Chế độ mở tệp (read, write, append, binary, text...).
 			
-			*  File descriptor tương ứng.
+	*  File descriptor tương ứng của hệ điều hành.
 			
 *  Khi gọi hàm `fopen()`, hệ thống sẽ cấp phát một cấu trúc `FILE`, khởi tạo các thành phần cần thiết và trả về con trỏ đến cấu trúc đó
 
-	* Nếu không mở được tệp, hàm sẽ trở về `NULL`     
+* Nếu không mở được tệp (tệp không tồn tại, không đủ quyền truy cập, hệ thống hết tài nguyên...), hàm sẽ trả về NULL.
 
 ##### **1.1.3. Bộ đệm (Buffering) trong luồng FILE**
 
@@ -11397,30 +11402,34 @@
 
 	*  Truy cập trực tiếp vào đĩa cứng (hoặc thiết bị I/O) rất chậm so với tốc độ của CPU và RAM
 	
-	* Mỗi lần gọi system call (như `read()`/`write()` của kernel) đều có chi phí lớn (context switch).
+	*  Nếu mỗi lần ghi một ký tự đều thực hiện một thao tác đĩa, hiệu suất chương trình sẽ cực kỳ thấp. 
+	
+	*  Mỗi lần gọi system call (như read() hoặc write() của kernel hệ điều hành) đều có chi phí lớn do phải thực hiện context switch từ user mode sang kernel mode.
 	
 	* Bộ đệm giúp tối ưu hóa hiệu suất bằng cách gom nhiều thao tác đọc/ghi nhỏ thành các khối lớn hơn.  
 	
 
 * **Các chế độ bộ đệm:**
 	 
-	*  **Fully buffered:**
+	*  **Fully buffered (đệm toàn phần):**
 		
-		*  Chỉ ghi ra thiết bị khi bộ đệm đầy hoặc gọi `fflush()`
+		*  Dữ liệu chỉ được ghi ra thiết bị vật lý khi bộ đệm đầy hoặc khi lập trình viên gọi hàm `fflush()` hoặc` fclose()`.
 		
-		*  Thường dùng cho tệp tin trên đĩa
+		*  Thường áp dụng cho tệp tin trên đĩa cứng.
 		
-	*  **Line buffered:**
+		*  Kích thước bộ đệm mặc định thường là BUFSIZ (thường là 8192 byte hoặc 4096 byte tùy hệ thống).
 		
-		*  Ghi ra khi gặp ký tự `\n` hoặc bộ đệm đầy
+	*  **Line buffered (đệm dòng):**
 		
-		*  Thường dùng cho luồng xuất ra màn hình
+		*  Dữ liệu được ghi ra thiết bị khi gặp ký tự xuống dòng `\n` hoặc khi bộ đệm đầy.
+		
+		*  Thường áp dụng cho luồng stdout khi xuất ra màn hình tương tác.
 			
-	*  **Unbuffered:**
+	*  **Unbuffered (không có bộ đệm):**
 		
-		*  Ghi/đọc ngay lập tức, không qua bộ đệm
+		*  Dữ liệu được ghi/đọc ngay lập tức, không qua bộ đệm trung gian.
 		
-		*  Thường dùng cho `stderr`
+		*  Thường áp dụng cho stderr để đảm bảo thông báo lỗi luôn xuất hiện ngay lập tức, ngay cả khi chương trình bị crash.
 
 #### **1.2.Mở và đóng luồng tệp tin**
 
@@ -11434,13 +11443,15 @@
 
 	* Hàm `fopen()` thiết lập một kênh giao tiếp giữa chương trình và tệp tin (hoặc thiết bị), cấp phát và khởi tạo cấu trúc FILE, sau đó trả về con trỏ đến cấu trúc này. 
 	
-	* Nếu không mở được tệp, hàm trả về `NULL`. 
+	* Nếu thất bại (tệp không tồn tại, không đủ quyền, hệ thống hết tài nguyên...), hàm trả về NULL và biến toàn cục errno được đặt thành mã lỗi tương ứng.
 
 *  **Tham số:**
 
 	* `filename:` 
 	
-		* Chuỗi ký tự chứa đường dẫn và tên tệp tin cần mở (có thể là đường dẫn tương đối hoặc tuyệt đối)
+		* Chuỗi ký tự chứa đường dẫn và tên tệp tin cần mở.
+		
+		* Có thể là đường dẫn tương đối (relative path) hoặc đường dẫn tuyệt đối (absolute path).
 		
 	* `mode:`
 	
@@ -11452,6 +11463,14 @@
 	
 	* `NULL` nếu thất bại 
 
+*  **VD:**
+
+		FILE *fp = fopen("data.txt", "r");
+		if (fp == NULL) {
+		    perror("fopen that bai");   // In thông báo lỗi chi tiết
+		    return 1;
+		}
+
 ##### **1.2.2. Hàm fclose() – Đóng luồng tệp tin**
 
 *	**Khai báo hàm:**
@@ -11460,25 +11479,32 @@
 
 *  **Chức năng:**
 
-	* Đẩy (flush) toàn bộ dữ liệu còn lại trong bộ đệm của luồng ra thiết bị lưu trữ.
+	* Đẩy (flush) toàn bộ dữ liệu còn lại trong bộ đệm nội bộ của luồng ra thiết bị lưu trữ vật lý.
+	
+	* Nếu không gọi fclose(), dữ liệu còn trong bộ đệm có thể bị mất. 
 	
 	* Yêu cầu hệ điều hành đóng tệp tin, giải phóng file descriptor và các tài nguyên liên quan.
 	
-	* Giải phóng bộ nhớ của cấu trúc `FILE` mà `fopen()` đã cấp phát. 
+	* Giải phóng vùng nhớ của cấu trúc `FILE` mà `fopen()` đã cấp phát trên heap.
 	
 *  **Giá trị trả về:**
 
 	* `0:` Đóng thành công
 	
-	* `EOF:` Có lỗi xảy ra khi đóng
+	* `EOF:` Có lỗi xảy ra trong quá trình đóng (ví dụ: không flush được dữ liệu ra đĩa do đĩa đầy).
 
-*  **Nguyên tắc quản trị:**
+*  **Nguyên tắc quản trị tài nguyên:**
 
-	* Luôn kiểm tra kết quả của `fopen()`.
+	* Luôn kiểm tra giá trị trả về của fopen() trước khi sử dụng con trỏ FILE.
 	
-	* Mỗi `fopen()` thành công phải có một `fclose()` tương ứng.
+	* Mỗi lần `fopen()` thành công phải có đúng một lần fclose() tương ứng để tránh rò rỉ tài nguyên (resource leak).
 	
-	* Xử lý lỗi một cách an toàn bằng `perror()` hoặc `strerror(errno)`. 
+	* Sau khi gọi fclose(), không được sử dụng con trỏ FILE đó nữa vì nó trỏ đến vùng nhớ đã được giải phóng.
+	
+	* Nên đặt con trỏ về NULL sau khi đóng để tránh lỗi sử dụng con trỏ treo (dangling pointer):
+
+			fclose(fp);
+			fp = NULL; 
 
 #### **1.3.Các chế độ truy cập tệp tin (File Modes)**
 
@@ -11486,11 +11512,11 @@
 
 *	**"r" (Read):**
 
-	* Mở tệp tin chỉ để đọc
+	* Mở tệp tin chỉ để đọc, con trỏ vị trí đặt ở đầu tệp.
 	
-	* Tệp phải tồn tại
+	* Tệp phải tồn tại trước, nếu không fopen() trả về NULL.
 	
-	* Con trỏ đặt ở đầu tệp.    	
+	* Không cho phép ghi bất kỳ dữ liệu nào vào tệp.
 
 			#include <stdio.h>
 			#include<stdlib.h>
@@ -11516,11 +11542,11 @@
 
 *	**"w" (Write):**
 
-	* Mở tệp để ghi
+	* Mở tệp để ghi, con trỏ vị trí đặt ở đầu tệp.
 	
-	* Nếu tệp tồn tại thì xóa sạch nội dung cũ
+	* Nếu tệp đã tồn tại, toàn bộ nội dung cũ bị xóa sạch ngay khi mở.
 	
-	* Tạo tệp mới nếu chưa tồn tại.   	
+	* Nếu tệp chưa tồn tại, tệp mới được tạo ra.
 
 			#include <stdio.h>
 
@@ -11547,9 +11573,11 @@
 
 *	**"a" (Append):**
 
-	* Mở tệp để ghi nối vào cuối tệp
+	* Mở tệp để ghi, con trỏ vị trí luôn được đặt ở cuối tệp trước mỗi thao tác ghi.
 	
-	* Tạo tệp mới nếu chưa tồn tại.
+	* Nội dung cũ được giữ nguyên, dữ liệu mới được nối thêm vào cuối.
+	
+	* Nếu tệp chưa tồn tại, tệp mới được tạo ra. 
 
 			#include <stdio.h>
 
@@ -11575,7 +11603,7 @@
 
 ##### **1.3.2. Các bổ ngữ**
 
-*	**"+":**
+*	**"+":** 
 
 	* Chế độ cập nhật (update) – cho phép vừa đọc vừa ghi
 	
@@ -11717,83 +11745,304 @@
 
 #### **1.4.Các luồng chuẩn mặc định**
 
-##### **1.4.1. Các chế độ cơ bản**
+##### **1.4.1. Định nghĩa**
+
+*	Khi chương trình C khởi động, hệ điều hành tự động mở và cung cấp sẵn ba luồng chuẩn.
+
+*  Lập trình viên có thể sử dụng chúng ngay mà không cần gọi fopen().
+
+*  Ba luồng này được khai báo sẵn trong `<stdio.h>` dưới dạng các macro có kiểu `FILE*`:  	
+
+			extern FILE *stdin;
+			extern FILE *stdout;
+			extern FILE *stderr;
 
 *	**stdin:**
 
-	* Luồng đầu vào chuẩn (thường là bàn phím), line buffered	
+	* Mặc định kết nối với bàn phím.
+	
+	* Chế độ bộ đệm: line buffered – dữ liệu từ bàn phím chỉ được gửi vào chương trình sau khi người dùng nhấn Enter.
+	
+	* Được sử dụng bởi các hàm scanf(), getchar(), fgets(stdin, ...)...
+	
+	* File descriptor tương ứng trong hệ điều hành: 0 (STDIN_FILENO).  
 
 *	**stdout:**
 
-	* Luồng đầu ra chuẩn (thường là màn hình), line buffered hoặc fully buffered.
+	* Mặc định kết nối với màn hình console.
+	
+	* Chế độ bộ đệm: line buffered khi kết nối trực tiếp với terminal tương tác, chuyển sang fully buffered khi bị chuyển hướng ra file hoặc pipe.
+	
+	* Được sử dụng bởi các hàm printf(), putchar(), puts(), fputs(str, stdout)...
+	
+	* File descriptor tương ứng trong hệ điều hành: 1 (STDOUT_FILENO).
 
 *	**stderr:**
 
-	* Luồng báo lỗi chuẩn (thường là màn hình), unbuffered (không có bộ đệm).
- 		        
+	* Mặc định kết nối với màn hình console, hoàn toàn tách biệt với stdout về mặt luồng dữ liệu.
+	
+	* Chế độ bộ đệm: unbuffered – mọi thông báo lỗi được xuất ra ngay lập tức, kể cả khi chương trình bị crash trước khi bộ đệm được đẩy ra.
+	
+	* Được sử dụng bởi hàm perror(), fprintf(stderr, ...)...
+	
+	* File descriptor tương ứng trong hệ điều hành: 2 (STDERR_FILENO).
+
+##### **1.4.2. Phân tách stdout và stderr**
+
+*	Cho phép người dùng chuyển hướng đầu ra bình thường vào file mà không làm mất thông báo lỗi trên màn hình.
+
+*  Cho phép lọc, ghi log và xử lý lỗi độc lập với kết quả bình thường của chương trình.
+
+*  Giúp các công cụ tự động hóa (script, pipeline) dễ dàng phân biệt kết quả thành công và thông báo lỗi.
+
+			./chuong_trinh > output.txt          # stdout vào file, stderr vẫn ra màn hình
+			./chuong_trinh 2> error.txt          # stderr vào file, stdout ra màn hình
+			./chuong_trinh > output.txt 2> error.txt   # tách riêng cả hai
+			./chuong_trinh > output.txt 2>&1     # gộp cả hai vào cùng một file
+			./chuong_trinh 2>/dev/null           # bỏ qua mọi thông báo lỗi
+
+##### **1.4.3. Quản lý các luồng chuẩn**
+
+*	Vì stdin, stdout, stderr đều có kiểu FILE*, chúng có thể được truyền trực tiếp vào bất kỳ hàm nào nhận tham số FILE*:
+
+		#include <stdio.h>
+
+		int main() {
+		    char name[50];
+		    int age;
+
+		    // Đọc từ stdin bằng fgets (an toàn hơn scanf)
+		    fprintf(stdout, "Nhap ho ten: ");
+		    fflush(stdout);                        // Đảm bảo prompt xuất hiện ngay
+		    fgets(name, sizeof(name), stdin);
+
+		    // Đọc từ stdin bằng fscanf
+		    fprintf(stdout, "Nhap tuoi: ");
+		    fflush(stdout);
+		    fscanf(stdin, "%d", &age);
+
+		    // Xuất kết quả ra stdout
+		    fprintf(stdout, "Xin chao %s, ban %d tuoi!\n", name, age);
+
+		    // Xuất thông báo lỗi ra stderr
+		    if (age < 0 || age > 150) {
+		        fprintf(stderr, "Loi: Tuoi khong hop le (%d)!\n", age);
+		        return 1;
+		    }
+
+		    return 0;
+		}
+
+##### **1.4.4. Chuyển hướng luồng chuẩn trong chương trình C**
+
+*	Ngoài chuyển hướng từ shell, lập trình viên có thể chuyển hướng các luồng chuẩn ngay trong mã nguồn C bằng hàm freopen():
+
+		FILE *freopen(const char *filename, const char *mode, FILE *stream);
+		
+* Hàm này đóng luồng hiện tại và mở lại luồng đó kết nối với tệp tin chỉ định, giữ nguyên con trỏ FILE* (stdin, stdout hoặc stderr không bị thay đổi địa chỉ).
+
+* VD – Chuyển hướng stdout và stderr ra file trong chương trình:
+
+		#include <stdio.h>
+
+		int main() {
+		    // Chuyển hướng stdout ra file log
+		    if (freopen("output.txt", "w", stdout) == NULL) {
+		        perror("Khong the chuyen huong stdout");
+		        return 1;
+		    }
+
+		    // Chuyển hướng stderr ra file lỗi riêng
+		    if (freopen("error.txt", "w", stderr) == NULL) {
+		        // Lưu ý: stderr đã bị chuyển hướng nên perror() cũng vào file
+		        perror("Khong the chuyen huong stderr");
+		        return 1;
+		    }
+
+		    // Từ đây mọi printf() ghi vào output.txt
+		    printf("Chuong trinh bat dau chay\n");
+		    printf("Ket qua xu ly: %d\n", 42);
+
+		    // Mọi fprintf(stderr,...) ghi vào error.txt
+		    fprintf(stderr, "Canh bao: Du lieu co the chua chinh xac\n");
+
+		    printf("Chuong trinh ket thuc\n");
+		    return 0;
+		}
+
+##### **1.4.5. Lưu ý**
+
+*	**Vấn đề bộ đệm với stdout:**
+
+	* Khi stdout ở chế độ fully buffered (bị chuyển hướng ra file hoặc pipe), dữ liệu có thể không xuất hiện ngay.
+	
+	*  Cần gọi fflush(stdout) sau các thông báo quan trọng hoặc trước khi chương trình chờ đầu vào từ người dùng.	
+
+			printf("Nhap so: ");
+			fflush(stdout);    // Bắt buộc nếu stdout đang fully buffered
+			scanf("%d", &n);
+		
+*	**Không nên đóng luồng chuẩn bằng fclose():**
+
+	* Gọi fclose(stdin), fclose(stdout) hoặc fclose(stderr) có thể gây ra hành vi không xác định trong phần còn lại của chương trình.
+	
+	* Nếu cần chuyển hướng, hãy dùng freopen() thay vì đóng rồi mở lại thủ công.
+	
+	* Luôn dùng fprintf(stderr, ...) hoặc perror() cho thông báo lỗi, không dùng printf().  
+
+			#include <stdio.h>
+			#include <errno.h>
+			#include <string.h>
+
+			int main() {
+			    FILE *fp = fopen("khong_ton_tai.txt", "r");
+			    if (fp == NULL) {
+			        // Cách 1: dùng perror() – tự động thêm mô tả lỗi từ errno
+			        perror("fopen that bai");
+
+			        // Cách 2: dùng fprintf(stderr,...) – kiểm soát định dạng tốt hơn
+			        fprintf(stderr, "Loi %d: %s\n", errno, strerror(errno));
+
+			        // Cách sai: dùng printf() – thông báo lỗi sẽ mất nếu stdout bị chuyển hướng
+			        // printf("Loi: khong mo duoc file\n");  // KHONG NEN
+
+			        return 1;
+			    }
+			    fclose(fp);
+			    return 0;
+			}
+	 		        
 ### **II.  NHẬP XUẤT TỆP TIN VĂN BẢN**
 
-####  **2.1. Đặc tính**
+####  **2.1. Đặc tính của chế độ văn bản**
 
 #####  **2.1.1. Dịch ký tự cuối dòng (Line Ending Translation)**
 
-* **Trên Windows:**
+* Các hệ điều hành khác nhau sử dụng quy ước khác nhau để biểu diễn ký tự xuống dòng:
 
-	* Ký tự xuống dòng `\n` (LF - Line Feed) khi ghi sẽ được tự động chuyển thành `\r\n` (CRLF - Carriage Return + Line Feed). 
+	* **Windows:**
 	
-	* Ngược lại, khi đọc, `\r\n` sẽ được chuyển thành `\n`. 
+		*  Sử dụng `\r\n` (CRLF – Carriage Return + Line Feed, 2 byte). 
 
-* **Trên Unix/Linux:**
-
-	* Không có chuyển đổi, `\n` được giữ nguyên.
-
-
+	* **Unix/Linux/macOS:**
 	
+		*  Sử dụng `\n` (LF – Line Feed, 1 byte).
+
+* Trong chế độ văn bản, thư viện C chuẩn tự động xử lý sự khác biệt này:
+	
+	* **Trên Windows:** khi ghi \n vào tệp, hệ thống tự động chuyển thành \r\n. Khi đọc \r\n từ tệp, hệ thống tự động chuyển thành \n.
+	
+	* **Trên Unix/Linux:** không có bất kỳ chuyển đổi nào, \n được giữ nguyên. . 
 
 #####  **2.1.2. Nhận diện ký tự kết thúc tệp (End-of-File Marker)**
 
-* Khi đọc, nếu gặp ký tự `EOF` (thường là giá trị `-1`), hàm đọc sẽ báo hiệu kết thúc tệp.
+* Khi các hàm đọc gặp phải điều kiện kết thúc tệp, chúng trả về giá trị đặc biệt EOF (được định nghĩa là **-1** trong `<stdio.h>`).
 
 * Trong chế độ văn bản, một số hệ thống có thể sử dụng ký tự `Ctrl+Z` (ASCII 26) làm dấu kết thúc tệp (đặc biệt trên Windows với tệp văn bản cũ). 
 
 * Lưu ý:
 
-	* Không nên mở tệp nhị phân ở chế độ văn bản vì sẽ gây sai lệch dữ liệu.   
+	* Không được mở tệp nhị phân (hình ảnh, âm thanh...) ở chế độ văn bản.
 
-	* Nên sử dụng chế độ nhị phân ("rb", "wb", ...) khi xử lý file không phải văn bản thuần.
+	* Nếu trong dữ liệu nhị phân tình cờ có byte 0x1A (trên Windows) hoặc chuỗi byte 0x0D 0x0A bị xử lý sai, dữ liệu sẽ bị đọc sai hoặc bị cắt ngắn.
 
 ####  **2.2. Thao tác theo từng ký tự**
 
-* **Đọc ký tự:** 
+* **Đọc ký tự - fgetc() và getc():** 
 
-	* `int fgetc(FILE *stream);`
+	* Khai báo: 
+
+		* `int fgetc(FILE *stream);`
 	
-	* `int getc(FILE *stream);`
+		* `int getc(FILE *stream);`
  
-	* Chức năng: Đọc một ký tự từ luồng và trả về mã ASCII của ký tự đó.
+	* Chức năng: 
 	
-	* Giá trị trả về:
-	
-		* Ký tự đọc được (0-255).
+		* Đọc một ký tự từ luồng, tăng con trỏ vị trí lên một byte và trả về mã ASCII (0–255) của ký tự đọc được dưới dạng int (không phải char để có thể biểu diễn EOF = -1).
 		
-		* `EOF (-1)` nếu gặp cuối tệp hoặc lỗi.   
-
-* **Ghi ký tự:** 
-
-	* `int fputc(int c, FILE *stream);`
+	* Phân biệt fgetc() và getc():
 	
-	* `int putc(int c, FILE *stream);`
- 
-	* Chức năng: Ghi một ký tự vào luồng.
+		* getc() thường được cài đặt dưới dạng macro để tối ưu tốc độ, còn fgetc() luôn là hàm thực sự.
+		
+		* Trong thực tế, hai hàm này có thể dùng thay thế cho nhau.    
 	
 	* Giá trị trả về:
 	
-		* Ký tự vừa ghi nếu thành công, EOF nếu lỗi.
+		* Mã ASCII của ký tự đọc được (0–255) nếu thành công.
+		
+		* EOF (-1) nếu gặp cuối tệp hoặc có lỗi I/O.
+		
+	* VD:
 
-				FILE *fp = fopen("data.txt", "w");
-				fputc('A', fp);
-				fputc('\n', fp);
-				fclose(fp);
+			#include <stdio.h>
+
+			int main() {
+			    FILE *fp;
+			    int c;
+			    int count = 0;
+
+			    fp = fopen("data.txt", "r");
+			    if (fp == NULL) {
+			        perror("Khong the mo file");
+			        return 1;
+			    }
+
+			    while ((c = fgetc(fp)) != EOF) {
+			        printf("%c", (char)c);
+			        count++;
+			    }
+
+			    if (feof(fp)) {
+			        printf("\nDa doc het file. Tong so ky tu: %d\n", count);
+			    } else {
+			        perror("Co loi khi doc file");
+			    }
+
+			    fclose(fp);
+			    return 0;
+			} 
+
+* **Ghi ký tự – fputc() và putc():** 
+
+	* Khai báo: 
+
+		* `int fputc(int c, FILE *stream);`
+		
+		* `int putc(int c, FILE *stream);`
+ 
+	* Chức năng: 
+	
+		* Ghi một ký tự (được truyền vào dưới dạng int) vào luồng tại vị trí con trỏ hiện tại, sau đó tăng con trỏ vị trí lên một byte.
+	
+	* Giá trị trả về:
+	
+		* Mã ASCII của ký tự vừa ghi nếu thành công, EOF nếu có lỗi.
+		
+	* VD:  Sao chép nội dung file từng ký tự:
+
+			#include <stdio.h>
+
+			int main() {
+			    FILE *src, *dst;
+			    int c;
+
+			    src = fopen("nguon.txt", "r");
+			    dst = fopen("dich.txt", "w");
+
+			    if (src == NULL || dst == NULL) {
+			        perror("Loi mo file");
+			        return 1;
+			    }
+
+			    while ((c = fgetc(src)) != EOF) {
+			        fputc(c, dst);
+			    }
+
+			    printf("Sao chep hoan tat!\n");
+			    fclose(src);
+			    fclose(dst);
+			    return 0;
+			}
 
 
 
@@ -11809,11 +12058,15 @@
 	
 		*  Đọc tối đa `n-1` ký tự từ luồng vào mảng `str`.
 
-		*  Dừng khi gặp ký tự `\n` hoặc cuối tệp
+		*  Dừng khi gặp ký tự xuống dòng `\n` hoặc khi đến cuối tệp (EOF).
 		
-		* Bao gồm cả ký tự `\n` vào chuỗi nếu gặp
+		* Ký tự `\n` nếu gặp sẽ được bao gồm trong chuỗi kết quả.
 		
-		* Tự động thêm ký tự `'\0'` kết thúc chuỗi  
+		* Tự động thêm ký tự kết thúc chuỗi `\0'` ở vị trí sau ký tự cuối cùng đọc được.
+
+	* **Giá trị trả về:**
+	
+		*  Con trỏ str nếu thành công, NULL nếu gặp EOF trước khi đọc được ký tự nào hoặc có lỗi.
 		
 	* VD:
 	
@@ -11887,16 +12140,23 @@
 
 	* **Chức năng:**
 	
-		*  Ghi một chuỗi ký tự vào luồng.
+		*  Ghi toàn bộ chuỗi ký tự str vào luồng (không bao gồm ký tự kết thúc chuỗi '\0').
 
-		*  Không tự động thêm ký tự \n ở cuối.
+		*  Khác với puts(), hàm fputs() không tự động thêm ký tự \n ở cuối.
+		
+		* Nếu cần xuống dòng, phải tự thêm \n vào chuỗi.
 		
 		
-	* VD:
+	* **Giá trị trả về:**
 	
+		*  Giá trị không âm nếu thành công, EOF nếu có lỗi.
+
 				FILE *fp = fopen("log.txt", "a");
-				fputs("Dong du lieu moi\n", fp);
-				fclose(fp);
+				if (fp != NULL) {
+				    fputs("Dong du lieu moi\n", fp);
+				    fputs("Them mot dong nua\n", fp);
+				    fclose(fp);
+				}
 
 ####  **2.4.  Thao tác theo định dạng**
 
@@ -11905,6 +12165,12 @@
 	*  Khai báo 
 
 			int fprintf(FILE *stream, const char *format, ...);
+
+	* **Chức năng:**
+	
+		*  Ghi dữ liệu ra luồng theo định dạng giống như printf(), nhưng xuất ra tệp tin hoặc luồng chỉ định.  
+		
+		*  Hỗ trợ tất cả các ký tự định dạng như %d, %f, %s, %c, %x...
 
 	* **Chức năng:**
 	
@@ -11958,20 +12224,49 @@
 
 	* **Chức năng:**
 	
-		*  Đọc và phân tích dữ liệu từ luồng theo định dạng giống như scanf()
+		*  Đọc và phân tích cú pháp (parse) dữ liệu từ luồng stream theo chuỗi định dạng, hoạt động giống scanf() nhưng đọc từ tệp thay vì từ stdin.
 		
-	* **VD:** 
+		*  Dừng đọc khi gặp ký tự không khớp với định dạng, gặp EOF hoặc lỗi.
 
-				FILE *fp = fopen("student.txt", "w");
-				fprintf(fp, "%s %d %.2f\n", "Nguyen Van A", 20, 8.75);
+	* **Giá trị trả về:**
+	
+		*  Số biến đã được gán giá trị thành công, EOF nếu gặp cuối tệp trước khi gán được bất kỳ biến nào.
 
-				fclose(fp);
+	* **Hạn chế của fscanf():**
+	
+		*  Không an toàn với dữ liệu đầu vào không đúng định dạng.
+		
+		*  Trong các ứng dụng thực tế, nên kết hợp fgets() để đọc từng dòng, sau đó dùng sscanf() để phân tích cú pháp.
+		 
+		
+	* **VD: Ghi và đọc lại dữ liệu sinh viên** 
 
-				fp = fopen("student.txt", "r");
-				char name[50];
-				int age;
-				float score;
-				fscanf(fp, "%s %d %f", name, &age, &score);
+			#include <stdio.h>
+
+			int main() {
+			    // Ghi dữ liệu
+			    FILE *fp = fopen("student.txt", "w");
+			    if (fp == NULL) { perror("Loi ghi"); return 1; }
+			    fprintf(fp, "%s %d %.2f\n", "Nguyen_Van_A", 20, 8.75);
+			    fprintf(fp, "%s %d %.2f\n", "Tran_Thi_B", 21, 9.10);
+			    fclose(fp);
+
+			    // Đọc lại dữ liệu
+			    fp = fopen("student.txt", "r");
+			    if (fp == NULL) { perror("Loi doc"); return 1; }
+
+			    char name[50];
+			    int age;
+			    float score;
+
+			    printf("Danh sach sinh vien:\n");
+			    while (fscanf(fp, "%s %d %f", name, &age, &score) == 3) {
+			        printf("Ten: %s, Tuoi: %d, Diem: %.2f\n", name, age, score);
+			    }
+
+			    fclose(fp);
+			    return 0;
+			}
 				
 ### **III. NHẬP XUẤT TỆP TIN NHỊ PHÂN**
 
@@ -11979,7 +12274,7 @@
 
 * Khi mở tệp tin ở chế độ nhị phân (binary mode – có chữ `b` trong chế độ: "rb", "wb", "ab", "rb+"...), thư viện stdio sẽ không thực hiện bất kỳ chuyển đổi ký tự nào.
 
-* Đặc điểm
+* Đặc điểm:
 
 	*  Dữ liệu trong bộ nhớ được sao chép nguyên bản (byte-for-byte) ra tệp và ngược lại.
 	
@@ -11987,11 +12282,20 @@
 	
 	*  Không có xử lý đặc biệt cho ký tự kết thúc tệp (EOF marker). 
 
+* Khi nào nên dùng chế độ nhị phân:
+
+	*  Lưu trữ các cấu trúc dữ liệu (struct) ra tệp.
+	
+	*  Làm việc với tệp hình ảnh, âm thanh, video.
+	
+	*  Trao đổi dữ liệu với phần cứng hoặc giao thức truyền thông.
+	
+	* Khi cần kiểm soát chính xác từng byte của tệp.  
 		
 
-####  **3.2. Đọc ghi các khối dữ liệu**
+####  **3.2. Đọc ghi các khối dữ liệu – fread() và fwrite()**
 
-* **Cú pháp:**
+* **Khai báo:**
 
 		size_t fread(void *buffer, size_t size, size_t count, FILE *stream);
 
@@ -11999,7 +12303,7 @@
 		
 * **Tham số:**
 
-	* **buffer:** Con trỏ đến vùng nhớ chứa dữ liệu (đọc) hoặc cần ghi
+	* **buffer:** Con trỏ đến vùng nhớ chứa dữ liệu cần ghi (fwrite) hoặc vùng nhớ sẽ nhận dữ liệu đọc về (fread).
 	
 	* **size:** Kích thước (theo byte) của mỗi phần tử
 	
@@ -12009,26 +12313,66 @@
 
 * **Giá trị trả về:**
 
-	* Số lượng phần tử thực sự đã đọc/ghi thành công
+	* Số lượng phần tử (không phải byte) đã được đọc/ghi thành công.
 	
-	* Giá trị này phải được kiểm tra sau mỗi lần gọi để phát hiện lỗi hoặc cuối tệp.
+	* Nếu giá trị trả về nhỏ hơn count, có thể đã gặp EOF (với fread) hoặc có lỗi xảy ra.
 	
-* **VD:**
+	* Bắt buộc phải kiểm tra giá trị trả về sau mỗi lần gọi. 
 	
-			int arr[100];
-			FILE *fp = fopen("data.bin", "wb");
-			fwrite(arr, sizeof(int), 100, fp);   // Ghi 100 số nguyên
-			fclose(fp);
+* **VD - Ghi và đọc mảng số nguyên:**
+	
+		#include <stdio.h>
+
+		int main() {
+		    int arr_write[] = {10, 20, 30, 40, 50};
+		    int arr_read[5];
+		    size_t written, read_count;
+
+		    // Ghi mảng ra tệp nhị phân
+		    FILE *fp = fopen("numbers.bin", "wb");
+		    if (fp == NULL) { perror("Loi ghi"); return 1; }
+
+		    written = fwrite(arr_write, sizeof(int), 5, fp);
+		    printf("Da ghi %zu phan tu\n", written);
+		    fclose(fp);
+
+		    // Đọc lại từ tệp nhị phân
+		    fp = fopen("numbers.bin", "rb");
+		    if (fp == NULL) { perror("Loi doc"); return 1; }
+
+		    read_count = fread(arr_read, sizeof(int), 5, fp);
+		    printf("Da doc %zu phan tu\n", read_count);
+
+		    for (int i = 0; i < 5; i++) {
+		        printf("arr_read[%d] = %d\n", i, arr_read[i]);
+		    }
+
+		    fclose(fp);
+		    return 0;
+		}
 
 
 ####  **3.3. Tuần tự hóa cấu trúc**
 
-* Không nên chứa con trỏ bên trong cấu trúc.
+* Tuần tự hóa (serialization) là kỹ thuật chuyển đổi trạng thái của một đối tượng trong bộ nhớ thành chuỗi byte để lưu trữ ra tệp hoặc truyền qua mạng.
 
-* Nên dùng `sizeof(Struct)` để đảm bảo kích thước chính xác.
+* Quá trình ngược lại gọi là giải tuần tự hóa (deserialization).
+
+* **Lưu ý:**  
+
+	* Không nên chứa con trỏ bên trong cấu trúc vì con trỏ chỉ có giá trị trong phiên chạy hiện tại của chương trình; khi ghi ra tệp và đọc lại sau, địa chỉ đó không còn ý nghĩa.
 	
-* Cần kiểm tra giá trị trả về của `fread/fwrite`.
+	* Cần lưu ý vấn đề padding (phần đệm căn chỉnh bộ nhớ) mà compiler tự động thêm vào struct.
 	
+	* Kích thước thực tế của struct có thể lớn hơn tổng kích thước các trường.
+	
+	* Nên dùng sizeof(TenStruct) để lấy kích thước chính xác, không tự tính tay.
+	
+* **VD:  Lưu và đọc danh sách sinh viên**   
+	
+			#include <stdio.h>
+			#include <string.h>
+
 			typedef struct {
 			    char name[50];
 			    int age;
@@ -12036,18 +12380,119 @@
 			    long id;
 			} Student;
 
-			Student sv1 = {"Tran Van B", 21, 8.5, 2023001};
+			int main() {
+			    Student students[] = {
+			        {"Nguyen Van A", 20, 8.5, 2023001},
+			        {"Tran Thi B",   21, 9.2, 2023002},
+			        {"Le Van C",     19, 7.8, 2023003}
+			    };
+			    int count = 3;
 
-			// Ghi cấu trúc ra tệp
-			FILE *fp = fopen("student.dat", "wb");
-			fwrite(&sv1, sizeof(Student), 1, fp);
-			fclose(fp);
+			    // Ghi danh sách sinh viên ra tệp nhị phân
+			    FILE *fp = fopen("students.dat", "wb");
+			    if (fp == NULL) { perror("Loi ghi"); return 1; }
 
-			// Đọc lại từ tệp
-			Student sv2;
-			fp = fopen("student.dat", "rb");
-			fread(&sv2, sizeof(Student), 1, fp);
-			fclose(fp);
+			    size_t written = fwrite(students, sizeof(Student), count, fp);
+			    printf("Da ghi %zu sinh vien vao file\n", written);
+			    fclose(fp);
+
+			    // Đọc lại từ tệp nhị phân
+			    Student sv;
+			    fp = fopen("students.dat", "rb");
+			    if (fp == NULL) { perror("Loi doc"); return 1; }
+
+			    printf("\nDanh sach sinh vien:\n");
+			    while (fread(&sv, sizeof(Student), 1, fp) == 1) {
+			        printf("ID: %ld | Ten: %-20s | Tuoi: %d | GPA: %.1f\n",
+			               sv.id, sv.name, sv.age, sv.gpa);
+			    }
+
+			    fclose(fp);
+			    return 0;
+			}
+
+####  **3.4. Vấn đề về thứ tự byte (Endianness)**
+
+* **Khái niệm:**
+
+	*  Endianness (thứ tự byte) là cách thức mà một kiến trúc CPU lưu trữ các byte của một giá trị đa byte (như int 4 byte, float 4 byte, long long 8 byte...) vào bộ nhớ.
+
+* **Little-endian:**
+
+	* Byte có giá trị thấp nhất (Least Significant Byte – LSB) được lưu tại địa chỉ bộ nhớ thấp nhất.
+	
+	* Các kiến trúc phổ biến dùng Little-endian: x86, x86-64 (Intel, AMD), ARM (ở chế độ mặc định).
+	
+	* Ví dụ: Số nguyên 0x12345678 được lưu trong bộ nhớ theo thứ tự: 78 56 34 12.  
+
+* **Big-endian:**
+
+	* Byte có giá trị cao nhất (Most Significant Byte – MSB) được lưu tại địa chỉ bộ nhớ thấp nhất.
+	
+	* Các kiến trúc dùng Big-endian: SPARC, PowerPC, một số vi điều khiển nhúng, giao thức mạng TCP/IP.
+	
+	* Ví dụ: Số nguyên 0x12345678 được lưu trong bộ nhớ theo thứ tự: 12 34 56 78.
+
+* **Minh họa:**  
+
+		Giá trị int: 0x12345678
+
+		Little-endian (x86):     [78] [56] [34] [12]  (địa chỉ tăng dần →)
+		Big-endian (SPARC):      [12] [34] [56] [78]  (địa chỉ tăng dần →)
+
+* **Rủi ro trong thực tế:**
+
+	* Một tệp nhị phân được tạo trên hệ thống Little-endian (máy tính x86) sẽ bị đọc sai khi mở trên hệ thống Big-endian và ngược lại.
+	
+	* Ví dụ: giá trị int 1 (0x00000001) được lưu là [01 00 00 00] trên Little-endian; khi đọc trên Big-endian sẽ bị hiểu là 0x01000000 = 16777216.
+
+* **Kiểm tra Endianness của hệ thống hiện tại:**
+
+		#include <stdio.h>
+
+		int main() {
+		    unsigned int x = 0x12345678;
+		    unsigned char *p = (unsigned char *)&x;
+
+		    printf("Byte tai dia chi thap nhat: 0x%02X\n", p[0]);
+
+		    if (p[0] == 0x78) {
+		        printf("He thong nay la LITTLE-ENDIAN\n");
+		    } else if (p[0] == 0x12) {
+		        printf("He thong nay la BIG-ENDIAN\n");
+		    }
+		    return 0;
+		}
+	
+	* Giải pháp – Chuyển đổi sang Network Byte Order:
+
+			#include <stdio.h>
+			#include <arpa/inet.h>   // Unix/Linux
+
+			int main() {
+			    FILE *fp;
+			    unsigned int value = 305419896;   // 0x12345678
+
+			    // Ghi ra tệp theo Network Byte Order (Big-endian)
+			    fp = fopen("portable.bin", "wb");
+			    if (fp == NULL) { perror("Loi"); return 1; }
+
+			    unsigned int network_value = htonl(value);   // host to network long
+			    fwrite(&network_value, sizeof(unsigned int), 1, fp);
+			    fclose(fp);
+
+			    // Đọc lại và chuyển về host byte order
+			    fp = fopen("portable.bin", "rb");
+			    if (fp == NULL) { perror("Loi"); return 1; }
+
+			    unsigned int read_value;
+			    fread(&read_value, sizeof(unsigned int), 1, fp);
+			    unsigned int host_value = ntohl(read_value);   // network to host long
+
+			    printf("Gia tri doc duoc: %u\n", host_value);
+			    fclose(fp);
+			    return 0;
+			}
 
 ### **IV. ĐỊNH VỊ LUỒNG TỆP TIN**
 
@@ -12056,22 +12501,28 @@
 * **Truy cập tuần tự:**
 
 	* Đọc/ghi dữ liệu theo thứ tự từ đầu đến cuối tệp. 
+	
+	* Con trỏ vị trí tự động tiến về phía trước sau mỗi thao tác. 
 
 * **Truy cập ngẫu nhiên:**
 
-	* Cho phép di chuyển con trỏ vị trí (file position indicator) đến bất kỳ vị trí nào trong tệp để đọc hoặc ghi dữ liệu.
+	* Cho phép di chuyển con trỏ vị trí (file position indicator) đến bất kỳ vị trí nào trong tệp mà không cần đọc qua các phần trước đó.
+	
+	*  Đặc biệt hiệu quả với tệp nhị phân có cấu trúc đồng nhất (như mảng các struct có cùng kích thước), vì có thể tính toán chính xác offset của từng phần tử.
 
 ####  **4.2. Di chuyển con trỏ vị trí**
 
-* **Cú pháp:**
+* **Khai báo:**
 
 		int fseek(FILE *stream, long offset, int origin); 
 
+* **Tham số:**
+
 	* `stream`: Con trỏ luồng tệp tin
 	
-	* `offset`: Số byte cần di chuyển
+	* `offset`: Số byte cần dịch chuyển (có thể âm để dịch về phía trước).
 	
-	* `origin`: Điểm xuất phát để tính offset
+	* `origin`: Điểm xuất phát để tính offset, nhận một trong ba giá trị:
 	
 		* `SEEK_SET`: byte thứ `offset` từ đầu
 		
@@ -12094,135 +12545,342 @@
 			fseek(fp, -128, SEEK_END);   // Lùi 128 byte từ cuối tệp
 		
 
-####  **4.3. Lấy vị trí hiện tại**
+####  **4.3. Lấy vị trí hiện tại – ftell()**
 
-* **Cú pháp:**
+* **Khai báo:**
 
 		long ftell(FILE *stream);
 
-* Trả về vị trí hiện tại của con trỏ vị trí, tính bằng số byte từ đầu tệp.
+* **Chức năng:**
 
-* Ứng dụng:
+	* Trả về vị trí hiện tại của con trỏ vị trí, tính bằng số byte từ đầu tệp.
 
-	* Xác định kích thước tệp.
+* **Giá trị trả về:**
+
+	* Vị trí hiện tại (kiểu long) nếu thành công, -1L nếu có lỗi.
+
+* **Ứng dụng:**
+
+	* Xác định kích thước tệp (di chuyển đến cuối rồi gọi ftell()).
 	
-	* Lưu vị trí hiện tại để quay lại sau.
+	* Lưu vị trí hiện tại để có thể quay lại sau.
 	
-	* Kiểm tra vị trí trước và sau khi thao tác.
+	* Kiểm tra lượng dữ liệu đã đọc.
 	
-* VD:
+* **VD – Xác định kích thước tệp:**
 
-			long current_pos = ftell(fp);
-			printf("Vi tri hien tai: %ld byte\n", current_pos);      	
+		#include <stdio.h>
 
-####  **4.4. Quay về đầu tệp**
+		long get_file_size(const char *filename) {
+		    FILE *fp = fopen(filename, "rb");
+		    if (fp == NULL) return -1;
 
-* **Cú pháp:**
+		    fseek(fp, 0, SEEK_END);    // Di chuyển đến cuối tệp
+		    long size = ftell(fp);      // Lấy vị trí = kích thước tệp
+		    fclose(fp);
+		    return size;
+		}
+
+		int main() {
+		    long size = get_file_size("data.txt");
+		    if (size >= 0) {
+		        printf("Kich thuoc tep: %ld byte\n", size);
+		    }
+		    return 0;
+		}
+
+####  **4.4. Quay về đầu tệp - rewind()**
+
+* **Khai báo:**
 
 		void rewind(FILE *stream);
 
-* Đưa con trỏ vị trí về đầu tệp `(SEEK_SET` với offset = 0).
+* **Chức năng:**
 
-* Đồng thời xóa các cờ lỗi (error flag) và cờ cuối tệp (EOF flag) của luồng.
+	* Đưa con trỏ vị trí về đầu tệp (tương đương fseek(stream, 0, SEEK_SET)).
+	
+	* Ngoài ra, rewind() còn xóa đồng thời cả error flag và EOF flag của luồng, điều mà fseek() không làm. 
+
+* **Ứng dụng:**
+
+	* Thường dùng sau khi đã đọc hết tệp và muốn đọc lại từ đầu, hoặc sau khi ghi xong và muốn đọc lại nội dung vừa ghi.
+
+
+				#include <stdio.h>
+
+				int main() {
+				    FILE *fp = fopen("data.txt", "w+");
+				    if (fp == NULL) { perror("Loi"); return 1; }
+
+				    fprintf(fp, "Dong 1\n");
+				    fprintf(fp, "Dong 2\n");
+				    fprintf(fp, "Dong 3\n");
+
+				    // Quay về đầu để đọc lại những gì vừa ghi
+				    rewind(fp);
+
+				    char line[100];
+				    printf("Doc lai noi dung vua ghi:\n");
+				    while (fgets(line, sizeof(line), fp) != NULL) {
+				        printf("  %s", line);
+				    }
+
+				    fclose(fp);
+				    return 0;
+				}
+
 
 ### **V. CƠ CHẾ XỬ LÝ LỖI THAO TÁC TỆP**
 
 ####  **5.1. Phân biệt trạng thái cuối tệp và lỗi**
 
-* Khi thực hiện các hàm đọc như `fgetc(), fgets(), fread(), fscanf()`..., việc thất bại có thể xuất phát từ hai nguyên nhân khác nhau:
+* Khi các hàm đọc như fgetc(), fgets(), fread(), fscanf() thất bại hoặc trả về EOF, có hai nguyên nhân hoàn toàn khác nhau:
 
-	* Đã đến cuối tệp (End-of-File).
+	* Đã đọc đến hết tệp (End-of-File) – đây là trạng thái bình thường, không phải lỗi.
 	
-	* Xảy ra lỗi I/O (lỗi cứng, mất quyền truy cập, đĩa đầy, hỏng sector...). 
+	* Xảy ra lỗi I/O thực sự – đĩa đầy, mất quyền truy cập, sector hỏng, thiết bị bị ngắt kết nối...
 
 * **Hàm feof():**
 
 			int feof(FILE *stream);
 
-* Trả về giá trị khác 0 (thường là 1) nếu cờ hiệu end-of-file đã được bật.
+	* Trả về giá trị khác 0 (thường là 1) nếu cờ hiệu end-of-file (EOF flag) của luồng đã được bật.
 
-* Chỉ cho biết đã đọc hết dữ liệu, không phải là lỗi. 
+	* EOF flag chỉ được bật sau khi một thao tác đọc thực sự gặp phải cuối tệp – không bật trước khi đọc.
+	
+	* Lưu ý: Không dùng feof() làm điều kiện của vòng lặp đọc vì nó kiểm tra sau khi đọc, dẫn đến vòng lặp thực hiện thêm một lần thừa. 
 
 * **Hàm ferror():**
 
 			int ferror(FILE *stream);
 
-* Trả về giá trị khác 0 nếu cờ hiệu lỗi đã được bật.
+	* Trả về giá trị khác 0 nếu cờ hiệu lỗi (error flag) của luồng đã được bật do lỗi I/O.
 
-* Cho biết đã xảy ra lỗi trong quá trình I/O.
+* **VD - Phân biệt EOF và lỗi sau khi đọc:**
 
-* **VD:**
+		#include <stdio.h>
 
-			FILE *fp = fopen("data.bin", "rb");
-			if (fp == NULL) { /* xử lý lỗi */ }
+		int main() {
+		    FILE *fp = fopen("data.bin", "rb");
+		    if (fp == NULL) {
+		        perror("Khong the mo file");
+		        return 1;
+		    }
 
-			int c;
-			while ((c = fgetc(fp)) != EOF) {
-			    // Xử lý dữ liệu
-			}
+		    int c;
+		    while ((c = fgetc(fp)) != EOF) {
+		        // Xử lý dữ liệu đọc được
+		        printf("%02X ", (unsigned char)c);
+		    }
+		    printf("\n");
 
-			if (feof(fp)) {
-			    printf("Da doc den cuoi tep tin.\n");
-			} else if (ferror(fp)) {
-			    printf("Co loi xay ra khi doc tep tin!\n");
-			    perror("Chi tiet loi");
-			}
+		    // Phân biệt EOF và lỗi
+		    if (feof(fp)) {
+		        printf("Da doc het tep tin binh thuong.\n");
+		    } else if (ferror(fp)) {
+		        printf("Co loi I/O xay ra trong qua trinh doc!\n");
+		        perror("Chi tiet loi");
+		    }
 
-			fclose(fp); 
+		    fclose(fp);
+		    return 0;
+		}
 
 
 
-####  **5.2. Đặt lại trạng thái lỗi**
+####  **5.2. Đặt lại trạng thái lỗi – clearerr()*
 
-* **Cú pháp:**
+* **Khai báo:**
 
 		void clearerr(FILE *stream);
 
 		
-* Xóa cả hai cờ hiệu: EOF flag và Error flag.
+* **Chức năng:**
 
-* Cho phép tiếp tục thực hiện các thao tác I/O trên luồng sau khi đã khắc phục lỗi (nếu có thể).
-
-* Ứng dụng:  
-
-	* Sau khi xử lý lỗi tạm thời (ví dụ: chờ đĩa sẵn sàng).
+	*  Xóa đồng thời cả EOF flag và error flag của luồng, đưa luồng về trạng thái bình thường.
 	
-	* Trước khi thử lại các thao tác đọc/ghi.
+* **Ứng dụng:**
 
-####  **5.3. Hàm setvbuf() – Thiết lập chế độ bộ đệm**
+	*  Sau khi xử lý xong điều kiện EOF và muốn tiếp tục đọc từ vị trí khác (kết hợp với fseek())..  
 
-* **Cú pháp:**
+	* Sau khi khắc phục được nguyên nhân lỗi tạm thời (ví dụ: đợi đĩa sẵn sàng) và muốn thử lại thao tác.
 
-		int setvbuf(FILE *stream, char *buffer, int mode, size_t size);
+			#include <stdio.h>
+
+			int main() {
+			    FILE *fp = fopen("data.txt", "r");
+			    if (fp == NULL) { perror("Loi"); return 1; }
+
+			    char buf[100];
+
+			    // Đọc hết file
+			    while (fgets(buf, sizeof(buf), fp) != NULL) {
+			        printf("%s", buf);
+			    }
+
+			    printf("Lan 1: feof=%d, ferror=%d\n", feof(fp), ferror(fp));
+
+			    // Xóa cờ EOF và quay về đầu để đọc lại
+			    clearerr(fp);
+			    rewind(fp);
+
+			    printf("Sau clearerr: feof=%d, ferror=%d\n", feof(fp), ferror(fp));
+
+			    // Đọc lại từ đầu
+			    if (fgets(buf, sizeof(buf), fp) != NULL) {
+			        printf("Dong dau tien doc lai: %s", buf);
+			    }
+
+			    fclose(fp);
+			    return 0;
+			}
+
+####  **5.3. Kiểm soát bộ đệm – fflush() và setvbuf()**
+
+* **Hàm fflush():**
+
+	* **Khai báo:** 
+
+			int fflush(FILE *stream);
 
 		
-* Các chế độ.
+	* **Chức năng:** 
 
-	* Full buffering: `_IOFBF`
-	
-	* Line buffering: `_IOLBF`
-	
-	* No buffering: `_IONBF`  
+		* Cưỡng bức đẩy (flush) toàn bộ dữ liệu đang nằm trong bộ đệm nội bộ của luồng ra thiết bị vật lý ngay lập tức, mà không cần đợi bộ đệm đầy hoặc gặp ký tự \n.
+		
+		* Nếu stream là NULL, hàm flush tất cả các luồng đang mở có bộ đệm ghi. 
+
+	* **Giá trị trả về:** 
+
+		* 0 nếu thành công, EOF nếu có lỗi.
+
+	* **Các trường hợp cần dùng fflush():** 
+
+		* Đảm bảo dữ liệu được ghi ra đĩa ngay lập tức trước khi chương trình có thể bị crash hoặc mất điện.
+		
+		* Sau khi ghi dữ liệu và trước khi chuyển sang đọc trên cùng một luồng (trong chế độ "r+" hoặc "w+").
+		
+		* Đảm bảo thông báo xuất ra stdout xuất hiện ngay (khi stdout đang ở chế độ fully buffered). 
+
+					#include <stdio.h>
+					#include <unistd.h>   // sleep() – Unix/Linux
+
+					int main() {
+					    FILE *fp = fopen("realtime_log.txt", "w");
+					    if (fp == NULL) { perror("Loi"); return 1; }
+
+					    for (int i = 1; i <= 5; i++) {
+					        fprintf(fp, "Log entry %d\n", i);
+
+					        // Đảm bảo dữ liệu được ghi ra đĩa ngay lập tức
+					        fflush(fp);
+
+					        printf("Da ghi log entry %d\n", i);
+					        sleep(1);   // Mô phỏng chờ đợi
+					    }
+
+					    fclose(fp);
+					    return 0;
+					}
+
+* **Hàm setvbuf():**
+
+	* **Khai báo:** 
+
+			int setvbuf(FILE *stream, char *buffer, int mode, size_t size);
+
+		
+	* **Tham số:** 
+
+		* **stream:** Con trỏ luồng cần thiết lập bộ đệm.
+		
+		* **buffer:** 
+		
+			*  Con trỏ đến vùng nhớ do người dùng cung cấp làm bộ đệm
+			
+			*  Nếu là NULL, hệ thống tự cấp phát bộ đệm mới.
+
+		* **mode:** 
+		
+			*  `_IOFBF` (Fully Buffered): Ghi khi bộ đệm đầy.
+			
+			* `_IOLBF` (Line Buffered): Ghi khi gặp \n.
+			
+			*  `_IONBF` (No Buffering): Không dùng bộ đệm, ghi ngay lập tức.
+
+		* **size:** 
+		
+			*  Kích thước bộ đệm (chỉ có ý nghĩa khi mode là _IOFBF hoặc _IOLBF).
+
+	* **Lưu ý:** 
+
+		* Phải gọi setvbuf() ngay sau khi mở luồng, trước bất kỳ thao tác đọc/ghi nào.
+
+	* **Giá trị trả về:** 
+
+		* 0 nếu thành công, giá trị khác 0 nếu thất bại.
+
+				#include <stdio.h>
+
+				int main() {
+				    FILE *fp = fopen("output.txt", "w");
+				    if (fp == NULL) { perror("Loi"); return 1; }
+
+				    // Thiết lập bộ đệm toàn phần kích thước 16KB
+				    char my_buffer[16384];
+				    setvbuf(fp, my_buffer, _IOFBF, sizeof(my_buffer));
+
+				    // Mọi thao tác ghi sau đây đều dùng bộ đệm 16KB
+				    for (int i = 0; i < 1000; i++) {
+				        fprintf(fp, "Dong %d: Du lieu mau\n", i);
+				    }
+
+				    // Bộ đệm được flush tự động khi gọi fclose()
+				    fclose(fp);
+				    return 0;
+				}
 
 ####  **5.4. Kỹ thuật khóa tệp tin**
 
-* File Locking là cơ chế ngăn chặn nhiều tiến trình (hoặc thread) cùng truy cập một tệp tin đồng thời, đảm bảo tính toàn vẹn dữ liệu (data integrity) trong môi trường đa nhiệm.
+* **Khái niệm:**
 
-* Các loại khóa phổ biến:
+	*  File Locking là cơ chế ngăn chặn nhiều tiến trình (process) hoặc luồng (thread) cùng truy cập và sửa đổi một tệp tin đồng thời, đảm bảo tính toàn vẹn dữ liệu (data integrity) trong môi trường đa nhiệm.
+	
+	*  Kỹ thuật này nằm ngoài chuẩn C89/C99/C11 và phụ thuộc vào hệ điều hành.
+	
+* **Các loại  khóa phổ biến:**
 
-	* Exclusive Lock (khóa độc quyền): 
+	* **Exclusive Lock (khóa độc quyền – Write Lock):**
 	
-		* Chỉ cho phép một tiến trình đọc/ghi.
+		*  Chỉ cho phép duy nhất một tiến trình đọc hoặc ghi tệp tại một thời điểm.
 		
-		* Các tiến trình khác phải chờ 
+		*  Các tiến trình khác cố truy cập phải chờ cho đến khi khóa được giải phóng.
 		
-		* Sử dụng khi cần ghi dữ liệu 
+		*  Sử dụng khi cần ghi hoặc cập nhật dữ liệu. 
+
+	* **Shared Lock (khóa chia sẻ – Read Lock):**
 	
-	* Shared Lock (khóa chia sẻ): 
-	
-		* Nhiều tiến trình có thể đọc cùng lúc, nhưng không ai được ghi.
+		*  Nhiều tiến trình có thể đọc tệp đồng thời.
 		
-		* Sử dụng khi chỉ cần đọc dữ liệu    
+		*  Không tiến trình nào được ghi khi có Shared Lock đang hoạt động.
+		
+		*  Sử dụng khi chỉ cần đọc dữ liệu.
+
+	* **Tầm quan trọng trong thực tế:**
+	
+		*  Hệ thống cơ sở dữ liệu nhiều người dùng đồng thời ghi vào cùng một tệp.
+		
+		*  Server web ghi log từ nhiều request đồng thời.
+		
+		*  Hệ thống nhúng có nhiều task truy cập cùng một tệp cấu hình.
+		
+	* **VD minh họa nguy cơ khi không có File Locking:**
+
+			Tiến trình A đọc giá trị: balance = 1000
+			Tiến trình B đọc giá trị: balance = 1000
+			Tiến trình A tính toán: balance = 1000 - 500 = 500, ghi ra tệp
+			Tiến trình B tính toán: balance = 1000 - 200 = 800, ghi ra tệp  ← Sai!
+			Kết quả: balance = 800 thay vì 300 (mất 500 đơn vị!)
 
 
 
